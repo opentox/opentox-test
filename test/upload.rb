@@ -76,14 +76,14 @@ class UploadTest < Test::Unit::TestCase
 =begin
   def test_rest_client_wrapper
     ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
-      file = File.join File.dirname(__FILE__), "toxbank-investigation","data/valid", f
+      file = File.join File.dirname(__FILE__), "toxbank-investigation","data/toxbank-investigation/valid", f
       investigation_uri = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.read(file),:name => file}, {:content_type => "application/zip", :subjectid => @@subjectid}
       puts investigation_uri
       zip = File.join @tmpdir,"tmp.zip"
       #puts "curl -k -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
       `curl -k -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
       `unzip -o #{zip} -d #{@tmpdir}`
-      files = `unzip -l toxbank-investigation/data/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
+      files = `unzip -l toxbank-investigation/data/toxbank-investigation/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
 
       # get isatab files
@@ -106,13 +106,13 @@ class UploadTest < Test::Unit::TestCase
 =begin
   def test_ruby_api
     ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
-      file = File.join File.dirname(__FILE__), "data/valid", f
+      file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       investigation = OpenTox::Investigation.create $toxbank_investigation[:uri], :file => file, :headers => {:content_type => "application/zip", :subjectid => @@subjectid}
       zip = File.join @tmpdir,"tmp.zip"
       #puts "curl -k -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
       `curl -k -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
       `unzip -o #{zip} -d #{@tmpdir}`
-      files = `unzip -l data/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
+      files = `unzip -l data/toxbank-investigation/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
 
       # get isatab files

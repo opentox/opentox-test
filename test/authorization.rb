@@ -1,16 +1,18 @@
-require 'test/unit'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
 TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
-AA ||= "https://opensso.in-silico.ch"
-AA_USER = "guest"
-AA_PASS = "guest"
-@@subjectid = OpenTox::Authorization.authenticate(AA_USER,AA_PASS)
+unless defined? $aa[:uri] #overwrite turned off A&A server for testing
+  $aa[:uri] = "https://opensso.in-silico.ch"
+  @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
+end
+
+@@subjectid ||= OpenTox::Authorization.authenticate($aa[:user],$aa[:password]) 
 
 class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
  
   def test_01_server
-    assert_equal(AA, OpenTox::Authorization.server)
+    @aaserver = $aa[:uri]
+    assert_equal(@aaserver, OpenTox::Authorization.server)
   end
  
   def test_02_get_token
@@ -25,7 +27,7 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
   end
   
   def test_04_logout
-    tok = login
+    tok = login 
     assert logout(tok)
     assert_equal false, OpenTox::Authorization.is_token_valid(tok)
   end
@@ -39,11 +41,11 @@ end
 class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
 
   def test_01_list_user_groups
-    assert_kind_of Array, OpenTox::Authorization.list_user_groups(AA_USER, @@subjectid)
+    assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user], @@subjectid)
   end
   
   def test_02_get_user
-    assert_equal AA_USER, OpenTox::Authorization.get_user(@@subjectid)
+    assert_equal $aa[:user], OpenTox::Authorization.get_user(@@subjectid)
   end
 
 end
@@ -71,7 +73,7 @@ class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
     owner_rights = {"GET" => true, "POST" => true, "PUT" => true, "DELETE" => true}
     groupmember_rights = {"GET" => true, "POST" => nil, "PUT" => nil, "DELETE" => nil}
     owner_rights.each do |request, right|
-      assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request, @@subjectid), "#{AA_USER} requests #{request} to #{TEST_URI}"
+      assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request, @@subjectid), "#{$aa[:user]} requests #{request} to #{TEST_URI}"
     end
     groupmember_rights.each do |request, r|
       assert_equal r, OpenTox::Authorization.authorize(TEST_URI, request, tok_anonymous), "anonymous requests #{request} to #{TEST_URI}"
@@ -103,5 +105,5 @@ def logout (token)
 end
 
 def login
-  OpenTox::Authorization.authenticate(AA_USER,AA_PASS)
+  OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
 end 
