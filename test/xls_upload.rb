@@ -1,0 +1,63 @@
+require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+
+class UploadTest < Test::Unit::TestCase
+
+  def setup
+    @tmpdir = File.join(File.dirname(__FILE__),"tmp")
+    FileUtils.mkdir_p @tmpdir
+    FileUtils.rm_r Dir[File.join @tmpdir, '*']
+  end
+
+  def test_01_invalid_xls_upload 
+    # upload
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.xls"
+    response = `curl -k -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
+    assert_match /202/, response
+    uri = response.split("\n")[-1]
+    t = OpenTox::Task.new(uri)
+    t.wait
+    assert_match t.hasStatus, "Error"
+  end
+  
+  def test_02_valid_xls_upload
+    # upload
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/isa_TB_BII.xls"
+    response = `curl -k -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
+    assert_match /202/, response
+    uri = response.split("\n")[-1]
+    t = OpenTox::Task.new(uri)
+    assert t.running?
+    t.wait
+    assert t.completed?
+    uri = t.resultURI
+    
+    # get zip file
+    zip = File.join @tmpdir,"tmp.zip"
+    `curl -k -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
+    `unzip -o #{zip} -d #{@tmpdir}`
+    [
+      "i_Investigation.txt",
+      "s_BII-S-1.txt",
+      "s_BII-S-2.txt",
+      "a_metabolome.txt",
+      "a_microarray.txt",
+      "a_proteome.txt",
+      "a_transcriptome.txt",
+    ].each{|f| assert_equal true, File.exists?(File.join(@tmpdir,f)) }
+
+    # get isatab files
+    `curl -k -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
+      if u.match(/txt$/)
+        response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{u}`
+        assert_match /200/, response
+      end
+    end
+
+    # delete
+    response = `curl -k -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
+    assert_match /200/, response
+    response = `curl -k -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
+    assert_match /404/, response
+  end
+  
+end
