@@ -27,6 +27,8 @@ class UploadTest < Test::Unit::TestCase
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -k -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
+=begin
+<<<<<<< Updated upstream
       # task
       puts taskuri = response.split("\n")[-1]
       #t = OpenTox::Task.new(taskuri)
@@ -43,6 +45,18 @@ class UploadTest < Test::Unit::TestCase
       urii = uri.gsub("https", "http")
       assert_match /#{urii}/, metadata
       # zip
+=======
+=end
+      uri = response.split("\n")[-1]
+      t = OpenTox::Task.new(uri)
+      t.wait
+      assert_equal true, t.completed?
+      assert_match t.hasStatus, "Completed"
+      uri = t.resultURI
+      #`curl -k "#{uri}/metadata"`
+      metadata = `curl -k  -H accept:application/rdf+xml -H "subjectid:#{@@subjectid}" #{uri}/metadata`
+      assert_match /#{uri}/, metadata
+#>>>>>>> Stashed changes
       zip = File.join @tmpdir,"tmp.zip"
       `curl -k -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
       `unzip -o #{zip} -d #{@tmpdir}`
@@ -52,7 +66,8 @@ class UploadTest < Test::Unit::TestCase
       urilist = `curl -k -H accept:text/uri-list #{$toxbank_investigation[:uri]}`.split("\n")
       urilist.each do |uri|    
         unless uri.match(/[n3|zip]$/)
-          response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri.gsub("http", "https")}`
+          #response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri.gsub("http", "https")}`
+          response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
       end
@@ -63,7 +78,6 @@ class UploadTest < Test::Unit::TestCase
       assert_match /404/, response
     end
   end
-=begin
   def test_04_invalid_zip_upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.zip"
     response = `curl -k -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
@@ -75,6 +89,7 @@ class UploadTest < Test::Unit::TestCase
     # TODO: test errorReport, rdf output of tasks has to be fixed for that purpose
   end
 
+=begin
 
   def test_rest_client_wrapper
     ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
