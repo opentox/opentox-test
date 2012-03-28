@@ -27,33 +27,50 @@ class UploadTest < Test::Unit::TestCase
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -k -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
+=begin
+<<<<<<< Updated upstream
+      # task
+      puts taskuri = response.split("\n")[-1]
+      #t = OpenTox::Task.new(taskuri)
+      #assert t.running?
+      #assert_match t.hasStatus, "Running"
+      #t.wait
+      #assert t.completed?
+      #assert_match t.hasStatus, "Completed"
+      #uri = t.resultURI
+      count = `curl -k -H accept:text/uri-list #{$toxbank_investigation[:uri]}`.split("\n").count-1
+      puts uri = "#{$toxbank_investigation[:uri]}\/#{count}"
+      # metadata
+      metadata = `curl -k -H accept:application/rdf+xml "subjectid:#{@@subjectid}" #{uri}/metadata`
+      urii = uri.gsub("https", "http")
+      assert_match /#{urii}/, metadata
+      # zip
+=======
+=end
       uri = response.split("\n")[-1]
       t = OpenTox::Task.new(uri)
-      puts uri
-      assert t.running?
-      assert_match t.hasStatus, "Running"
       t.wait
-      assert t.completed?
+      assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
       uri = t.resultURI
       #`curl -k "#{uri}/metadata"`
-      metadata = `curl -k "subjectid:#{@@subjectid}" #{uri}/metadata`
+      metadata = `curl -k  -H accept:application/rdf+xml -H "subjectid:#{@@subjectid}" #{uri}/metadata`
       assert_match /#{uri}/, metadata
+#>>>>>>> Stashed changes
       zip = File.join @tmpdir,"tmp.zip"
-      #puts "curl -k -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
       `curl -k -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
       `unzip -o #{zip} -d #{@tmpdir}`
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
-
       # get isatab files
-      `curl -k -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
-        unless u.match(/[n3|zip]$/)
-          response = `curl -k -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{u}`
+      urilist = `curl -k -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
+      urilist.each do |uri|    
+        unless uri.match(/[n3|zip]$/)
+          #response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri.gsub("http", "https")}`
+          response = `curl -k -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{uri}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
       end
-
       # delete
       response = `curl -k -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
       assert_match /200/, response
@@ -61,7 +78,6 @@ class UploadTest < Test::Unit::TestCase
       assert_match /404/, response
     end
   end
-
   def test_04_invalid_zip_upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.zip"
     response = `curl -k -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
@@ -74,6 +90,7 @@ class UploadTest < Test::Unit::TestCase
   end
 
 =begin
+
   def test_rest_client_wrapper
     ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "toxbank-investigation","data/toxbank-investigation/valid", f

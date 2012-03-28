@@ -26,9 +26,8 @@ class UploadTest < Test::Unit::TestCase
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
-    assert t.running?
     t.wait
-    assert t.completed?
+    assert_equal true, t.completed?
     uri = t.resultURI
     
     # get zip file
