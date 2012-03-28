@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    response = `curl -k -i #{$toxbank_investigation[:uri]}`
+    response = `curl -k -H "subjectid:#{@@subjectid}" -i #{$toxbank_investigation[:uri]}`
     assert_match /200/, response
   end
 
@@ -49,7 +49,7 @@ class UploadTest < Test::Unit::TestCase
       # get isatab files
       `curl -k -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
         unless u.match(/[n3|zip]$/)
-          response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{u}`
+          response = `curl -k -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{u}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
       end
