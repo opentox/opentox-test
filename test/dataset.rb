@@ -27,7 +27,7 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal "EPAFHM.mini",  d[RDF::URI("http://purl.org/dc/elements/1.1/title")]
     d.delete :subjectid => @@subjectid
     assert_raise OpenTox::NotFoundError do
-      d.get @@subjectid
+      d.get
     end
   end
 
