@@ -8,35 +8,35 @@ DATA_DIR = File.join(File.dirname(__FILE__),"data")
 class DatasetTest < Test::Unit::TestCase
 
   def test_all
-    datasets = OpenTox::Dataset.all DATASET
+    datasets = OpenTox::Dataset.all DATASET, @@subjectid
     assert_equal OpenTox::Dataset, datasets.first.class
   end
 
   def test_create_empty
-    d = OpenTox::Dataset.create DATASET
+    d = OpenTox::Dataset.create DATASET, @@subjectid
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{DATASET}/, d.uri.to_s
-    d.delete
+    d.delete :subjectid => @@subjectid
   end
 
   def test_create_from_file
-    d = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"EPAFHM.mini.csv")
+    d = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"EPAFHM.mini.csv"), @@subjectid
     assert_equal OpenTox::Dataset, d.class
     assert_equal d.uri, d[RDF::XSD.anyURI]
     assert_equal "EPAFHM.mini",  d.metadata[RDF::URI("http://purl.org/dc/elements/1.1/title")].first.to_s # DC.title is http://purl.org/dc/terms/title
     assert_equal "EPAFHM.mini",  d[RDF::URI("http://purl.org/dc/elements/1.1/title")]
-    d.delete
+    d.delete :subjectid => @@subjectid
     assert_raise OpenTox::NotFoundError do
       d.get
     end
   end
 
   def test_from_yaml
-    @dataset = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"hamster_carcinogenicity.yaml")
+    @dataset = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"hamster_carcinogenicity.yaml"), @@subjectid
     assert_equal OpenTox::Dataset, @dataset.class
     assert_equal "hamster_carcinogenicity", @dataset[RDF::URI("http://purl.org/dc/elements/1.1/title")]
     hamster_carc?
-    @dataset.delete
+    @dataset.delete :subjectid => @@subjectid
   end
 
 =begin
@@ -51,17 +51,17 @@ class DatasetTest < Test::Unit::TestCase
 =end
 
   def test_multicolumn_csv
-    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/multicolumn.csv"
+    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/multicolumn.csv", @@subjectid
     assert_equal 5, @dataset.features.size
     assert_equal 4, @dataset.compounds.size
-    @dataset.delete
+    @dataset.delete :subjectid => @@subjectid
   end
 
   def test_from_csv
-    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/hamster_carcinogenicity.csv", @@subjectid
     assert_equal OpenTox::Dataset, @dataset.class
     hamster_carc?
-    @dataset.delete
+    @dataset.delete :subjectid => @@subjectid
   end
 
 =begin

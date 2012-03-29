@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    response = `curl -k -i #{$toxbank_investigation[:uri]}`
+    response = `curl -k -H "subjectid:#{@@subjectid}" -i #{$toxbank_investigation[:uri]}`
     assert_match /200/, response
   end
 
@@ -63,11 +63,11 @@ class UploadTest < Test::Unit::TestCase
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
-      urilist = `curl -k -H accept:text/uri-list #{$toxbank_investigation[:uri]}`.split("\n")
+      urilist = `curl -k -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
       urilist.each do |uri|    
         unless uri.match(/[n3|zip]$/)
           #response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri.gsub("http", "https")}`
-          response = `curl -k -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{uri}`
+          response = `curl -k -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{uri}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
       end
