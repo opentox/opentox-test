@@ -18,6 +18,8 @@ class UploadTest < Test::Unit::TestCase
   def test_02_get_inexisting
     response = `curl -k -H "Accept:text/uri-list" -i -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}/foo`.chomp
     assert_match /404/, response
+    response = `curl -k -H "Accept:application/rdf+xml" -i -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}/999999/metadata`.chomp
+    assert_match /404/, response
   end
 
   def test_03_valid_zip_upload
