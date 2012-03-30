@@ -48,7 +48,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # get investigation/{id} as text/uri-list
   def test_03_get_investigation_uri_list
     #puts @@uri
-    @@uri = "http://toxbank-ch.in-silico.ch/60"
+    #@@uri = "http://toxbank-ch.in-silico.ch/60"
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
     #puts result.to_yaml
     assert_equal "text/uri-list", result.headers[:content_type]
