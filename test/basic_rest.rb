@@ -29,7 +29,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check post to investigation service with wrong content type
   def test_01_post_investigation_400
-    uri = File.join($toxbank_investigation[:uri], 'investigation')
+    uri = File.join($toxbank_investigation[:uri], "nonexistingpath")
     assert_raise OpenTox::NotFoundError do
       OpenTox::RestClientWrapper.post uri, {}, { :accept => 'text/dummy', :subjectid => @@subjectid }
     end
@@ -39,9 +39,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_02_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-
     task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
