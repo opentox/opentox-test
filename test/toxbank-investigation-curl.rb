@@ -24,7 +24,7 @@ class UploadTest < Test::Unit::TestCase
 
   def test_03_valid_zip_upload
     # upload
-    #["isa-tab-renamed.zip"].each do |f|
+    #["E-MTAB-798_philippe.zip"].each do |f|
     ["BII-I-1.zip","isa-tab-renamed.zip","E-MTAB-798_philippe.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
