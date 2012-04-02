@@ -17,38 +17,18 @@ class UploadTest < Test::Unit::TestCase
 
   def test_02_get_inexisting
     response = `curl -Lk -H "Accept:text/uri-list" -i -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}/foo`.chomp
-    assert_match /404/, response
+    assert_match /401/, response
     response = `curl -Lk -H "Accept:application/rdf+xml" -i -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}/999999/metadata`.chomp
-    assert_match /404/, response
+    assert_match /401/, response
   end
 
   def test_03_valid_zip_upload
     # upload
     #["isa-tab-renamed.zip"].each do |f|
-    ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
+    ["BII-I-1.zip","isa-tab-renamed.zip","E-MTAB-798_philippe.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
-=begin
-<<<<<<< Updated upstream
-      # task
-      puts taskuri = response.split("\n")[-1]
-      #t = OpenTox::Task.new(taskuri)
-      #assert t.running?
-      #assert_match t.hasStatus, "Running"
-      #t.wait
-      #assert t.completed?
-      #assert_match t.hasStatus, "Completed"
-      #uri = t.resultURI
-      count = `curl -Lk -H accept:text/uri-list #{$toxbank_investigation[:uri]}`.split("\n").count-1
-      puts uri = "#{$toxbank_investigation[:uri]}\/#{count}"
-      # metadata
-      metadata = `curl -Lk -H accept:application/rdf+xml "subjectid:#{@@subjectid}" #{uri}/metadata`
-      urii = uri.gsub("https", "http")
-      assert_match /#{urii}/, metadata
-      # zip
-=======
-=end
       uri = response.split("\n")[-1]
       t = OpenTox::Task.new(uri)
       t.wait
