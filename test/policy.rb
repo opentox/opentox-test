@@ -84,10 +84,9 @@ class PolicyTest < Test::Unit::TestCase
     assert_equal GROUP_TYPE, policy.type
   end
 
-=begin
   def test_06_load_xml_and_check_defaults
     policies = OpenTox::Policies.new()
-    xml = File.read(File.join(File.dirname(__FILE__), "../lib/templates/default_policy.xml"))
+    xml = policies.get_xml_template("default_policy")
     policies.load_xml(xml)
     # check user policy
     policy = policies.policies["policy_user"]
@@ -116,6 +115,5 @@ class PolicyTest < Test::Unit::TestCase
     assert policy.subject.type == GROUP_TYPE
     assert policy.subject.value == GROUP_VALUE
   end
-=end
 
 end
