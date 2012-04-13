@@ -2,17 +2,17 @@ require 'test/unit'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 #require "./validate-owl.rb"
 
-TASK_SERVICE_URI = "http://ot-dev.in-silico.ch/task" 
-#TASK_SERVICE_URI = "http://ot-test.in-silico.ch/task" 
-#TASK_SERVICE_URI = "https://ambit.uni-plovdiv.bg:8443/ambit2/task" #not compatible
+begin
+  @@service_uri = $task[:uri]
+rescue
+  puts "Configuration Error: $task[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
 
 class TaskTest < Test::Unit::TestCase
 
-
-=begin
-=end
   def test_all
-    all = OpenTox::Task.all(TASK_SERVICE_URI)
+    all = OpenTox::Task.all(@@service_uri)
     assert_equal Array, all.class
     t = all.last
     assert_equal OpenTox::Task, t.class
@@ -20,23 +20,22 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_create_and_complete
-    task = OpenTox::Task.create TASK_SERVICE_URI, :description => "test" do
+    task = OpenTox::Task.create @@service_uri, :description => "test" do
       sleep 1
-      TASK_SERVICE_URI
+      @@service_uri
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
     task.wait
     assert task.completed?
     assert_equal "Completed", task.hasStatus
-    assert_equal TASK_SERVICE_URI, task.resultURI
+    assert_equal @@service_uri, task.resultURI
   end
 
-
   def test_create_and_cancel
-    task = OpenTox::Task.create TASK_SERVICE_URI do
+    task = OpenTox::Task.create @@service_uri do
       sleep 2
-      TASK_SERVICE_URI
+      @@service_uri
     end
     assert task.running?
     task.cancel
@@ -44,7 +43,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_create_and_fail
-    task = OpenTox::Task.create TASK_SERVICE_URI, :description => "test failure", :creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.create @@service_uri, :description => "test failure", :creator => "http://test.org/fake_creator" do
       sleep 1
       raise "A runtime error occured"
     end
@@ -56,7 +55,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_create_and_fail_with_opentox_error
-    task = OpenTox::Task.create TASK_SERVICE_URI, :description => "test failure", :creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.create @@service_uri, :description => "test failure", :creator => "http://test.org/fake_creator" do
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
@@ -70,7 +69,7 @@ class TaskTest < Test::Unit::TestCase
 =begin
   # temporarily removed until uri checking from virtual machines has been fixed
   def test_wrong_result_uri
-    task = OpenTox::Task.create TASK_SERVICE_URI, :description => "test wrong result uri", :creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.create @@service_uri, :description => "test wrong result uri", :creator => "http://test.org/fake_creator" do
       sleep 1
       "Asasadasd"
     end

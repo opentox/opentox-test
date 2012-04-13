@@ -11,12 +11,6 @@ POLICY_NAME = "test_policy_#{rand(100000)}"
 RULE_NAME = "test_rule_#{rand(100000)}"
 SUBJECT_NAME = "test_subject_#{rand(100000)}"
 
-AA ||= "https://opensso.in-silico.ch"
-AA_USER = "guest"
-AA_PASS = "guest"
-
-@@subjectid = OpenTox::Authorization.authenticate(AA_USER,AA_PASS)
-
 class PolicyTest < Test::Unit::TestCase
 
   def test_01_class
@@ -67,16 +61,16 @@ class PolicyTest < Test::Unit::TestCase
 
   def test_04_group_user
     policies = OpenTox::Policies.new()
-    policies.load_default_policy(AA_USER, TEST_URI, "member")
+    policies.load_default_policy($aa[:user], TEST_URI, "member")
     assert_equal "member", policies.policies["policy_group"].group
-    assert_equal AA_USER, policies.policies["policy_user"].user
+    assert_equal $aa[:user], policies.policies["policy_user"].user
   end
 
   def test_05_DN
     policies = OpenTox::Policies.new()
     policies.new_policy(POLICY_NAME)
     policy = policies.policies[policies.names[0]]
-    policy.set_ot_user(AA_USER)
+    policy.set_ot_user($aa[:user])
     assert_equal USER_VALUE, policy.value
     assert_equal USER_TYPE, policy.type
     policy.set_ot_group(USER_GROUP)
