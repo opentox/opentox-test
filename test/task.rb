@@ -4,6 +4,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
 begin
   @@service_uri = $task[:uri]
+  puts "Service URI is: #{@@service_uri}"
 rescue
   puts "Configuration Error: $task[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
   exit

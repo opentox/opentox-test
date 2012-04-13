@@ -6,6 +6,7 @@ DATA_DIR = File.join(File.dirname(__FILE__),"data")
 
 begin
   @@service_uri = $dataset[:uri]
+  puts "Service URI is: #{@@service_uri}"
 rescue
   puts "Configuration Error: $dataset[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
   exit
