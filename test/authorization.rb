@@ -1,12 +1,6 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
 TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
-unless defined? $aa[:uri] #overwrite turned off A&A server for testing
-  $aa[:uri] = "https://opensso.in-silico.ch"
-  @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
-end
-
-@@subjectid ||= OpenTox::Authorization.authenticate($aa[:user],$aa[:password]) 
 
 class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
  

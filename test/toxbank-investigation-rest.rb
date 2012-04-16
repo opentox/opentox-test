@@ -78,15 +78,12 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
 
-=begin
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert_raise OpenTox::NotFoundError do
-      OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
-    end
+    assert result.match(/^Investigation [\d]+ deleted$/)
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
-=end
 
 end
 

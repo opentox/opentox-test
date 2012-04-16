@@ -56,6 +56,8 @@ class UploadTest < Test::Unit::TestCase
     response = `curl -Lk -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
     assert_match /200/, response
     response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
+    assert_match /401/, response
+    response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
     assert_match /404/, response
   end
   
