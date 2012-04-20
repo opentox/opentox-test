@@ -8,28 +8,32 @@ class UploadTest < Test::Unit::TestCase
   def teardown
   end
  
-  def test_01_query_sparqle_rdf
+  def test_01_query_sparqle_rdf_BII_I_1
     id = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
     #test_all
     response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/`.chomp
-    assert_match /DoseResponse-Trial/, response
-    assert_match /Investigation/, response
-    assert_match /BII-I-1/, response
+    assert_match /[https\:\/\/toxbanktest2, https\:\/\/toxbank\-dev]/, response
     #test_id_query_sparqle
     response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0`.chomp
-    assert_match /TB-DoseResponseTrial-acetaminophen/, response
+    assert_match /[title, Manchester, givenname, Castrillo]/, response
     #test_metadata_query_sparqle
     response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/metadata`.chomp
-    assert_match /DoseResponse-Trial/, response
-    #test_resource_ISA_Investigation
-    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/ISA_1879`.chomp
-    assert_match /[Person, User, Contact]/, response
+    assert_match /[I2225, BII\-I\-1, S2223, S2224, Growth, Background]/, response
+    #test_resource_Investigation
+    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/I2225`.chomp
+    assert_match /[BII\-I\-1, title, Growth, abstract, Background]/, response
     #test_resource_Study
-    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/S1887`.chomp
-    assert_match /A451/, response
+    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/S2223`.chomp
+    assert_match /[hasProtocol, P\_2202, description, Comprehensive, title, rapamycin, Rapamycin, Affymetrix]/, response
     #test_resource_Assay
-    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/A451`.chomp
+    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/A1269`.chomp
     assert_match /Assay/, response
+    #test_resource_Protocol
+    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/P_2202`.chomp
+    assert_match /[mRNA, extraction]/, response
+    #test_resource_ISA
+    response = `curl -i -k -H subjectid:#{id} -H accept:application/rdf+xml https://toxbank-dev.in-silico.ch/0/ISA_3981`.chomp
+    assert_match /[givenname, Castrillo, family\_name, Juan]/, response
   end  
 
 end
