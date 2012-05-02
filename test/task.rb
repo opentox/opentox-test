@@ -12,54 +12,57 @@ end
 
 class TaskTest < Test::Unit::TestCase
 
-  def test_all
-    all = OpenTox::Task.all(@@service_uri)
-    assert_equal Array, all.class
-    t = all.last
-    assert_equal OpenTox::Task, t.class
-    assert_equal RDF::OT1.Task, t[RDF.type]
-  end
-
-  def test_create_and_complete
-    task = OpenTox::Task.create @@service_uri, :description => "test" do
+  def test_01_create_and_complete
+    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test" do
       sleep 1
       @@service_uri
     end
-    assert task.running?
+    assert_equal true, task.running?
     assert_equal "Running", task.hasStatus
     task.wait
-    assert task.completed?
+    assert_equal true,  task.completed?
     assert_equal "Completed", task.hasStatus
     assert_equal @@service_uri, task.resultURI
   end
 
-  def test_create_and_cancel
+  def test_02_all
+    all = OpenTox::Task.all(@@service_uri)
+    assert_equal Array, all.class
+    t = all.last
+    assert_equal OpenTox::Task, t.class
+    assert_equal RDF::OT.Task, t[RDF.type]
+  end
+
+  def test_03_create_and_cancel
     task = OpenTox::Task.create @@service_uri do
       sleep 2
       @@service_uri
     end
-    assert task.running?
+    task.pull
+    assert_equal true, task.running?
     task.cancel
-    assert task.cancelled?
+    assert_equal true,task.cancelled?
   end
 
-  def test_create_and_fail
-    task = OpenTox::Task.create @@service_uri, :description => "test failure", :creator => "http://test.org/fake_creator" do
-      sleep 1
+  def test_04_create_and_fail
+    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+      sleep 2
       raise "A runtime error occured"
     end
-    assert task.running?
+    assert_equal true, task.running?
     assert_equal "Running", task.hasStatus
     task.wait
     assert task.error?
+    task.pull
     assert_equal "Error", task.hasStatus
   end
 
-  def test_create_and_fail_with_opentox_error
-    task = OpenTox::Task.create @@service_uri, :description => "test failure", :creator => "http://test.org/fake_creator" do
+  def test_05_create_and_fail_with_opentox_error
+    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
+    puts task.uri
     assert task.running?
     assert_equal "Running", task.hasStatus
     task.wait
