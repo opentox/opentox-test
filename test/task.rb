@@ -55,6 +55,7 @@ class TaskTest < Test::Unit::TestCase
     assert task.error?
     task.pull
     assert_equal "Error", task.hasStatus
+    # TODO test error reports
   end
 
   def test_05_create_and_fail_with_opentox_error
@@ -62,20 +63,19 @@ class TaskTest < Test::Unit::TestCase
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
-    puts task.uri
     assert task.running?
     assert_equal "Running", task.hasStatus
     task.wait
     assert task.error?
     assert_equal "Error", task.hasStatus
+    # TODO test error reports
   end
 
-=begin
   # temporarily removed until uri checking from virtual machines has been fixed
-  def test_wrong_result_uri
-    task = OpenTox::Task.create @@service_uri, :description => "test wrong result uri", :creator => "http://test.org/fake_creator" do
+  def test_06_wrong_result_uri
+    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test wrong result uri", RDF::DC.creator => "http://test.org/fake_creator" do
       sleep 1
-      "Asasadasd"
+      "http://Asasadasd"
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
@@ -83,6 +83,7 @@ class TaskTest < Test::Unit::TestCase
     assert task.error?
     assert_equal "Error", task.hasStatus
   end
+=begin
 =end
 
 end
