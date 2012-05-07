@@ -24,8 +24,7 @@ class UploadTest < Test::Unit::TestCase
 
   def test_03_valid_zip_upload
     # upload
-    #["isa-tab-renamed.zip"].each do |f|
-    ["BII-I-1.zip","isa-tab-renamed.zip","E-MTAB-798_philippe.zip"].each do |f|
+    ["BII-I-1.zip","E-MTAB-798_philippe.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
@@ -54,6 +53,8 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
       assert_match /200/, response
       response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
+      assert_match /401/, response
+      response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
       assert_match /404/, response
     end
   end
@@ -71,7 +72,7 @@ class UploadTest < Test::Unit::TestCase
 =begin
 
   def test_rest_client_wrapper
-    ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
+    ["BII-I-1.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "toxbank-investigation","data/toxbank-investigation/valid", f
       investigation_uri = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.read(file),:name => file}, {:content_type => "application/zip", :subjectid => @@subjectid}
       puts investigation_uri
@@ -101,7 +102,7 @@ class UploadTest < Test::Unit::TestCase
 
 =begin
   def test_ruby_api
-    ["BII-I-1.zip","isa-tab-renamed.zip"].each do |f|
+    ["BII-I-1.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       investigation = OpenTox::Investigation.create $toxbank_investigation[:uri], :file => file, :headers => {:content_type => "application/zip", :subjectid => @@subjectid}
       zip = File.join @tmpdir,"tmp.zip"

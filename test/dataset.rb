@@ -4,23 +4,30 @@ DATASET = "http://ot-dev.in-silico.ch/dataset"
 DATA_DIR = File.join(File.dirname(__FILE__),"data")
 # TODO: add subjectids
 
+begin
+  @@service_uri = $dataset[:uri]
+  puts "Service URI is: #{@@service_uri}"
+rescue
+  puts "Configuration Error: $dataset[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
 
 class DatasetTest < Test::Unit::TestCase
 
   def test_all
-    datasets = OpenTox::Dataset.all DATASET, @@subjectid
+    datasets = OpenTox::Dataset.all @@service_uri, @@subjectid
     assert_equal OpenTox::Dataset, datasets.first.class
   end
 
   def test_create_empty
-    d = OpenTox::Dataset.create DATASET, @@subjectid
+    d = OpenTox::Dataset.create @@service_uri, @@subjectid
     assert_equal OpenTox::Dataset, d.class
-    assert_match /#{DATASET}/, d.uri.to_s
+    assert_match /#{@@service_uri}/, d.uri.to_s
     d.delete :subjectid => @@subjectid
   end
 
   def test_create_from_file
-    d = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"EPAFHM.mini.csv"), @@subjectid
+    d = OpenTox::Dataset.from_file @@service_uri, File.join(DATA_DIR,"EPAFHM.mini.csv"), @@subjectid
     assert_equal OpenTox::Dataset, d.class
     assert_equal d.uri, d[RDF::XSD.anyURI]
     assert_equal "EPAFHM.mini",  d.metadata[RDF::URI("http://purl.org/dc/elements/1.1/title")].first.to_s # DC.title is http://purl.org/dc/terms/title
@@ -32,7 +39,7 @@ class DatasetTest < Test::Unit::TestCase
   end
 
   def test_from_yaml
-    @dataset = OpenTox::Dataset.from_file DATASET, File.join(DATA_DIR,"hamster_carcinogenicity.yaml"), @@subjectid
+    @dataset = OpenTox::Dataset.from_file @@service_uri, File.join(DATA_DIR,"hamster_carcinogenicity.yaml"), @@subjectid
     assert_equal OpenTox::Dataset, @dataset.class
     assert_equal "hamster_carcinogenicity", @dataset[RDF::URI("http://purl.org/dc/elements/1.1/title")]
     hamster_carc?
@@ -42,7 +49,7 @@ class DatasetTest < Test::Unit::TestCase
 =begin
 # TODO: fix (mime type??0 and add Egons example
   def test_sdf_with_multiple_features
-    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/CPDBAS_v5c_1547_29Apr2008part.sdf"
+    @dataset = OpenTox::Dataset.from_file @@service_uri, "#{DATA_DIR}/CPDBAS_v5c_1547_29Apr2008part.sdf"
     assert_equal OpenTox::Dataset, @dataset.class
     puts @dataset.features.size
     puts @dataset.compounds.size
@@ -51,14 +58,14 @@ class DatasetTest < Test::Unit::TestCase
 =end
 
   def test_multicolumn_csv
-    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/multicolumn.csv", @@subjectid
+    @dataset = OpenTox::Dataset.from_file @@service_uri, "#{DATA_DIR}/multicolumn.csv", @@subjectid
     assert_equal 5, @dataset.features.size
     assert_equal 4, @dataset.compounds.size
     @dataset.delete :subjectid => @@subjectid
   end
 
   def test_from_csv
-    @dataset = OpenTox::Dataset.from_file DATASET, "#{DATA_DIR}/hamster_carcinogenicity.csv", @@subjectid
+    @dataset = OpenTox::Dataset.from_file @@service_uri, "#{DATA_DIR}/hamster_carcinogenicity.csv", @@subjectid
     assert_equal OpenTox::Dataset, @dataset.class
     hamster_carc?
     @dataset.delete :subjectid => @@subjectid
@@ -66,7 +73,7 @@ class DatasetTest < Test::Unit::TestCase
 
 =begin
   def test_save
-    d = OpenTox::Dataset.create DATASET
+    d = OpenTox::Dataset.create @@service_uri
     d.metadata
     d.metadata[RDF::DC.title] = "test"
     d.save

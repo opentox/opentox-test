@@ -43,6 +43,16 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     uri = task.resultURI
     @@uri = URI(uri)
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
+    # check_rdf
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}`.chomp
+    assert_match /[Term Source Name, OBI, DOID, BTO, NEWT, UO, CHEBI, PATO, TBP, TBC, TBO, TBU, TBK]/, response
+    assert_match /[Investigation Identifier, BII\-I\-1]/, response
+    assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
+    assert_match /[Investigation Description, Background Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[Owning Organisation URI, TBO\:G176, 	Public]/, response
+    assert_match /[Consortium URI, TBC\:G2, Douglas Connect]/, response
+    assert_match /[Principal Investigator URI, TBU\:U115, Glenn	Myatt]/, response
+    assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response    
   end
 
   # get investigation/{id} as text/uri-list
@@ -78,15 +88,12 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
 
-=begin
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert_raise OpenTox::NotFoundError do
-      OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
-    end
+    assert result.match(/^Investigation [\d]+ deleted$/)
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
-=end
 
 end
 
