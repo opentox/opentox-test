@@ -44,7 +44,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = URI(uri)
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
     # check_rdf
-    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{$toxbank_investigation[:uri]}/0`.chomp
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}`.chomp
     assert_match /[Term Source Name, OBI, DOID, BTO, NEWT, UO, CHEBI, PATO, TBP, TBC, TBO, TBU, TBK]/, response
     assert_match /[Investigation Identifier, BII\-I\-1]/, response
     assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
