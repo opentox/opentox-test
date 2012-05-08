@@ -43,8 +43,11 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     uri = task.resultURI
     @@uri = URI(uri)
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
-    # check_rdf
-    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}`.chomp
+  end
+
+  # get investigation/{id}/metadata in rdf and check contents
+  def test_03_check_metadata
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert_match /[Term Source Name, OBI, DOID, BTO, NEWT, UO, CHEBI, PATO, TBP, TBC, TBO, TBU, TBK]/, response
     assert_match /[Investigation Identifier, BII\-I\-1]/, response
     assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
@@ -55,8 +58,9 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response    
   end
 
+
   # get investigation/{id} as text/uri-list
-  def test_03_get_investigation_uri_list
+  def test_04_get_investigation_uri_list
     #puts @@uri
     #@@uri = "http://toxbank-ch.in-silico.ch/60"
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
@@ -65,19 +69,19 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   # get investigation/{id} as application/zip
-  def test_04_get_investigation_zip
+  def test_05_get_investigation_zip
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/zip", :subjectid => @@subjectid}
     assert_equal "application/zip", result.headers[:content_type]
   end
 
   # get investigation/{id} as text/tab-separated-values
-  def test_05_get_investigation_tab
+  def test_06_get_investigation_tab
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/tab-separated-values", :subjectid => @@subjectid}
     assert_equal "text/tab-separated-values;charset=utf-8", result.headers[:content_type]
   end
 
   # get investigation/{id} as application/sparql-results+json
-  def test_06_get_investigation_sparql
+  def test_07_get_investigation_sparql
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
