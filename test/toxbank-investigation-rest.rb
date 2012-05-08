@@ -59,6 +59,14 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[hasStudy, S1, S2]/, response
     assert_match /[abstract, Background
     Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[hasOwner, ISA_3977, ISA_3976, ISA_3975]/, response
+    # resource
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/ISA_3977`.chomp
+    assert_match /[givenname, Zeef, family_name, Leo]/, response
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/ISA_3976`.chomp
+    assert_match /[givenname, Castrillo, family_name, Juan]/, response
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/ISA_3975`.chomp
+    assert_match /[givenname, Stephen, family_name, Oliver]/, response
   end
 
   # get investigation/{id} as text/uri-list
