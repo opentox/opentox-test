@@ -67,6 +67,14 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[givenname, Castrillo, family_name, Juan]/, response
     response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/ISA_3975`.chomp
     assert_match /[givenname, Stephen, family_name, Oliver]/, response
+    # Study
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/S1`.chomp
+    assert_match /[title, A time course analysis of  transcription response in yeast treated with rapamycin]/, response
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/S2`.chomp
+    assert_match /[title, Study of the impact of changes in flux on the transcriptome]/, response
+    # Protocol
+    response = `curl -i -k -H subjectid:#{@@subjectid} -H accept:application/rdf+xml #{uri}/P_1110`.chomp
+    assert_match /[label, EukGE\-WS4]/, response
   end
 
   # get investigation/{id} as text/uri-list
