@@ -13,7 +13,7 @@ end
 class TaskTest < Test::Unit::TestCase
 
   def test_01_create_and_complete
-    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test" do
+    task = OpenTox::Task.create @@service_uri, @@subjectid, RDF::DC.description => "test" do
       sleep 1
       @@service_uri
     end
@@ -34,18 +34,17 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_03_create_and_cancel
-    task = OpenTox::Task.create @@service_uri do
+    task = OpenTox::Task.create @@service_uri, @@subjectid do
       sleep 2
       @@service_uri
     end
-    task.pull
     assert_equal true, task.running?
     task.cancel
     assert_equal true,task.cancelled?
   end
 
   def test_04_create_and_fail
-    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.create @@service_uri, @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
       sleep 2
       raise "A runtime error occured"
     end
@@ -53,13 +52,12 @@ class TaskTest < Test::Unit::TestCase
     assert_equal "Running", task.hasStatus
     task.wait
     assert task.error?
-    task.pull
     assert_equal "Error", task.hasStatus
     # TODO test error reports
   end
 
   def test_05_create_and_fail_with_opentox_error
-    task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.create @@service_uri, @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
@@ -71,6 +69,7 @@ class TaskTest < Test::Unit::TestCase
     # TODO test error reports
   end
 
+=begin
   # temporarily removed until uri checking from virtual machines has been fixed
   def test_06_wrong_result_uri
     task = OpenTox::Task.create @@service_uri, RDF::DC.description => "test wrong result uri", RDF::DC.creator => "http://test.org/fake_creator" do
@@ -83,7 +82,6 @@ class TaskTest < Test::Unit::TestCase
     assert task.error?
     assert_equal "Error", task.hasStatus
   end
-=begin
 =end
 
 end
