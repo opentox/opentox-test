@@ -38,7 +38,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
     response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => @@subjectid }
     task_uri = response.chomp
-    task = OpenTox::Task.new task_uri
+    task = OpenTox::Task.new task_uri, @@subjectid
     task.wait
     uri = task.resultURI
     @@uri = URI(uri)
@@ -129,7 +129,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert result.match(/^Investigation [\d]+ deleted$/)
+    assert_equal 200, result.code
+    #assert result.match(/^Investigation [\d]+ deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
 
