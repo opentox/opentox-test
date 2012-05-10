@@ -129,7 +129,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert result.match(/^Investigation [\d]+ deleted$/)
+    assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
 
