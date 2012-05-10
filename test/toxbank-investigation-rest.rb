@@ -36,7 +36,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => @@subjectid }
+    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => ""}, { :subjectid => @@subjectid }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -120,6 +120,23 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
 
+  def test_30_check_owner_policy
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", @@subjectid)
+  end
+
+  def test_31_check_policies
+    puts OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid)
+    assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
+    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
+    #assert_equal nil, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", @@subjectid)
+    #assert_equal nil, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", @@subjectid)
+    #assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s,"GET", @@subjectid)
+  end
+
+
   # check if uri is in uri-list
   def test_98_get_investigation
     response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, :subjectid => @@subjectid
@@ -129,7 +146,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert result.match(/^Investigation [\d]+ deleted$/)
+    assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
 

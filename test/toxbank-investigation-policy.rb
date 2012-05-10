@@ -46,9 +46,20 @@ class TBAccountBasicTest < Test::Unit::TestCase
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    test_98_delete_policies
   end
 
-  def test_11_create_pi_policy
+  def test_11_create_membergroup_policy
+    guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/organisation/G176", $pi[:subjectid]) #PI creates policies
+    guest.send_policy(@@fake_uri)
+    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
+    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
+    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    test_98_delete_policies
+  end
+
+  def test_12_create_pi_policy
     piaccount = OpenTox::TBAccount.new($pi[:uri], $pi[:subjectid])
     piaccount.send_policy(@@fake_uri, "all")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", $pi[:subjectid])
@@ -57,12 +68,11 @@ class TBAccountBasicTest < Test::Unit::TestCase
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", $pi[:subjectid])
   end
 
-
-  
   def test_98_delete_policies
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
     policies.each do |policy|
-      OpenTox::Authorization.delete_policy(policy, $pi[:subjectid])
+      res = OpenTox::Authorization.delete_policy(policy, $pi[:subjectid])
+      assert res
     end
   end
 end
