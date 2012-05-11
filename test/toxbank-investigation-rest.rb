@@ -36,8 +36,9 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => ""}, { :subjectid => @@subjectid }
+    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"}, { :subjectid => @@subjectid }
     task_uri = response.chomp
+    puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
@@ -128,14 +129,9 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_31_check_policies
-    puts OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid)
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
-    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
-    #assert_equal nil, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", @@subjectid)
-    #assert_equal nil, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", @@subjectid)
-    #assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s,"GET", @@subjectid)
+    assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
-
 
   # check if uri is in uri-list
   def test_98_get_investigation
