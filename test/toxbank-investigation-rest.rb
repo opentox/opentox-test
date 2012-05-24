@@ -53,16 +53,16 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[Investigation Identifier, BII\-I\-1]/, response
     assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
     assert_match /[Investigation Description, Background Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[Investigation Publication Author List]/, response
     assert_match /[Owning Organisation URI, TBO\:G176, 	Public]/, response
     assert_match /[Consortium URI, TBC\:G2, Douglas Connect]/, response
     assert_match /[Principal Investigator URI, TBU\:U115, Glenn	Myatt]/, response
     assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response
     # metadata
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
-    assert_match /[title, Growth control of the eukaryote cell]/, response
+    assert_match /[title, Growth control of the eukaryote cell, hasKeyword, Epigenetics, CellViabilityAssay, CellMigrationAssays]/, response
     assert_match /[hasStudy, S1, S2]/, response
-    assert_match /[abstract, Background
-    Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[abstract, Background Cell growth underlies many key cellular and developmental processes]/, response
     assert_match /[hasOwner, ISA_3977, ISA_3976, ISA_3975]/, response
     # resource
     response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3977", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
