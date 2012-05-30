@@ -34,15 +34,22 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # create an investigation by uploading a zip file
   def test_02_post_investigation
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => @@subjectid }
     task_uri = response.chomp
-    task = OpenTox::Task.new task_uri, @@subjectid
+    task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
     @@uri = URI(uri)
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
+    assert_match /[TBU\:U296]/, response
+    # POST zip on existing id
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    OpenTox::RestClientWrapper.post "#{@@uri}", {:file => File.open(file)}, { :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    assert_match /[TBU\:U115]/, response
   end
 
   # get investigation/{id}/metadata in rdf and check contents
