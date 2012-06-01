@@ -34,16 +34,23 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # create an investigation by uploading a zip file
   def test_02_post_investigation
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"}, { :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"}, { :subjectid => @@subjectid }
     task_uri = response.chomp
     puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
     @@uri = URI(uri)
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
+    assert_match /[TBU\:U296]/, response
+    # POST zip on existing id
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    OpenTox::RestClientWrapper.post "#{@@uri}", {:file => File.open(file)}, { :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    assert_match /[TBU\:U115]/, response
   end
 
   # get investigation/{id}/metadata in rdf and check contents
@@ -54,16 +61,16 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[Investigation Identifier, BII\-I\-1]/, response
     assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
     assert_match /[Investigation Description, Background Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[Investigation Publication Author List]/, response
     assert_match /[Owning Organisation URI, TBO\:G176, 	Public]/, response
     assert_match /[Consortium URI, TBC\:G2, Douglas Connect]/, response
     assert_match /[Principal Investigator URI, TBU\:U115, Glenn	Myatt]/, response
     assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response
     # metadata
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
-    assert_match /[title, Growth control of the eukaryote cell]/, response
+    assert_match /[title, Growth control of the eukaryote cell, hasKeyword, Epigenetics, CellViabilityAssay, CellMigrationAssays]/, response
     assert_match /[hasStudy, S1, S2]/, response
-    assert_match /[abstract, Background
-    Cell growth underlies many key cellular and developmental processes]/, response
+    assert_match /[abstract, Background Cell growth underlies many key cellular and developmental processes]/, response
     assert_match /[hasOwner, ISA_3977, ISA_3976, ISA_3975]/, response
     # resource
     response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3977", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
@@ -142,7 +149,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # delete investigation/{id}
   def test_99_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
-    assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
+    assert_equal 200, result.code
+    #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
   end
 

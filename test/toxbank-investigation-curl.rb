@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    response = `curl -Lk -H "subjectid:#{@@subjectid}" -i #{$toxbank_investigation[:uri]}`
+    response = `curl -Lk -H Accept:text/uri-list -H "subjectid:#{@@subjectid}" -i #{$toxbank_investigation[:uri]}`
     assert_match /200/, response
   end
 
@@ -29,7 +29,8 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
       uri = response.split("\n")[-1]
-      t = OpenTox::Task.new(uri)
+      #puts uri
+      t = OpenTox::Task.new(uri,@@subjectid)
       t.wait
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
@@ -42,7 +43,8 @@ class UploadTest < Test::Unit::TestCase
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
-      urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
+      #urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
+      urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{uri}`.split("\n")
       urilist.each do |uri|    
         unless uri.match(/[n3|zip]$/)
           response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{uri}`
@@ -63,7 +65,7 @@ class UploadTest < Test::Unit::TestCase
     response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
-    t = OpenTox::Task.new(uri)
+    t = OpenTox::Task.new(uri,@@subjectid)
     t.wait
     assert_match t.hasStatus, "Error"
     # TODO: test errorReport, rdf output of tasks has to be fixed for that purpose
