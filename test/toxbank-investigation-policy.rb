@@ -35,6 +35,7 @@ class TBAccountBasicTest < Test::Unit::TestCase
         account = OpenTox::TBAccount.new(accounturi, $pi[:subjectid])
         assert_equal name, account.account
         assert_equal accounturi, account.uri
+        assert_equal "TBU:#{accounturi.split('/')[-1]}", account.ns_uri
       end
     end
   end
