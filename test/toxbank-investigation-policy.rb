@@ -30,8 +30,12 @@ class TBAccountBasicTest < Test::Unit::TestCase
 
   def test_04_get_account_via_username
     @@accounts.each do |name, uri|
-      account = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user?username=#{name}", $pi[:subjectid])
-      assert_equal name, account.account
+      if uri.match(RDF::TBU.to_s)
+        accounturi = OpenTox::RestClientWrapper.get("http://toxbanktest1.opentox.org:8080/toxbank/user?username=#{name}", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
+        account = OpenTox::TBAccount.new(accounturi, $pi[:subjectid])
+        assert_equal name, account.account
+        assert_equal accounturi, account.uri
+      end
     end
   end
 
@@ -56,7 +60,7 @@ class TBAccountBasicTest < Test::Unit::TestCase
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
     test_98_delete_policies
   end
 
