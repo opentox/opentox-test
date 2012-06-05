@@ -1,5 +1,5 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-require File.join(ENV["HOME"],"toxbank-investigation","tb_policy.rb")
+require File.join(ENV["HOME"],"toxbank-investigation","tbaccount.rb")
 
 class TBAccountBasicTest < Test::Unit::TestCase
   @@accounts = {"mrautenberg" => "http://toxbanktest1.opentox.org:8080/toxbank/user/U124", "guest" => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", "member" => "http://toxbanktest1.opentox.org:8080/toxbank/organisation/G176"}
@@ -54,10 +54,7 @@ class TBAccountBasicTest < Test::Unit::TestCase
   def test_10_create_guest_policy
     guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user/U2", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri)
-    #puts @@fake_uri
     assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
-    #pols = OpenTox::Authorization.list_uri_policies(@@fake_uri, @@subjectid)
-    #puts OpenTox::Authorization.list_policy(pols[0], @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
     assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
@@ -83,6 +80,18 @@ class TBAccountBasicTest < Test::Unit::TestCase
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET", $pi[:subjectid])
   end
+
+  def test_13_create_guest_rw_policy
+    guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user/U2", $pi[:subjectid]) #PI creates policies
+    guest.send_policy(@@fake_uri, "readwrite")
+    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
+    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    test_98_delete_policies
+  end
+
 
   def test_98_delete_policies
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
