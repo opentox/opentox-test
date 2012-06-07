@@ -103,10 +103,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # get investigation/{id} as text/uri-list
   def test_04_get_investigation_uri_list
-    #puts @@uri
-    #@@uri = "http://toxbank-ch.in-silico.ch/60"
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
-    #puts result.to_yaml
     assert_equal "text/uri-list", result.headers[:content_type]
   end
 
@@ -137,7 +134,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   def test_31_check_policies
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
-    assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
+    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
 
   # check if uri is in uri-list
