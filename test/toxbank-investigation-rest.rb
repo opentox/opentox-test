@@ -27,7 +27,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # check post to investigation service without file
   def test_01_post_investigation_400
     assert_raise OpenTox::RestCallError do
-      response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => @@subjectid }
+      response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => $pi[:subjectid] }
     end
   end
 
@@ -36,27 +36,42 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
     #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
-    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"}, { :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
-    puts task_uri
+    #puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
     @@uri = URI(uri)
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
     assert_match /[TBU\:U296]/, response
     # POST zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-    OpenTox::RestClientWrapper.post "#{@@uri}", {:file => File.open(file)}, { :subjectid => @@subjectid }
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    OpenTox::RestClientWrapper.post "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[TBU\:U115]/, response
   end
 
+  def test_03a_check_published
+    #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    #assert !response
+  end
+
+  def test_03b_put_published
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
+    assert response
+  end
+
+  def test_03c_check_published
+    #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    #assert response
+  end
+
   # get investigation/{id}/metadata in rdf and check contents
-  def test_03a_check_metadata
+  def test_04a_check_metadata
     # accept:application/rdf+xml
-    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[Term Source Name, OBI, DOID, BTO, NEWT, UO, CHEBI, PATO, TBP, TBC, TBO, TBU, TBK]/, response
     assert_match /[Investigation Identifier, BII\-I\-1]/, response
     assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
@@ -67,74 +82,74 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_match /[Principal Investigator URI, TBU\:U115, Glenn	Myatt]/, response
     assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response
     # metadata
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[title, Growth control of the eukaryote cell, hasKeyword, Epigenetics, CellViabilityAssay, CellMigrationAssays]/, response
     assert_match /[hasStudy, S1, S2]/, response
     assert_match /[abstract, Background Cell growth underlies many key cellular and developmental processes]/, response
     assert_match /[hasOwner, ISA_3977, ISA_3976, ISA_3975]/, response
     # resource
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3977", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3977", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[givenname, Zeef, family_name, Leo]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3976", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3976", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[givenname, Castrillo, family_name, Juan]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3975", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3975", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[givenname, Stephen, family_name, Oliver]/, response
     # Study
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/S1", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/S1", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[title, A time course analysis of  transcription response in yeast treated with rapamycin]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/S2", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/S2", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[title, Study of the impact of changes in flux on the transcriptome]/, response
     # Protocol
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/P_1110", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/P_1110", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /[label, EukGE\-WS4]/, response
   end
 
-  def test_03b
+  def test_04b
     # accept:text/turtle
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
-  def test_03c
+  def test_04c
     # accept:text/plain
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => @@subjectid}
-    assert_equal "text/plain", response.headers[:content_type] 
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    assert_equal "text/plain", response.headers[:content_type]
   end
 
   # get investigation/{id} as text/uri-list
-  def test_04_get_investigation_uri_list
-    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+  def test_05_get_investigation_uri_list
+    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_equal "text/uri-list", result.headers[:content_type]
   end
 
   # get investigation/{id} as application/zip
-  def test_05_get_investigation_zip
-    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/zip", :subjectid => @@subjectid}
+  def test_06_get_investigation_zip
+    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/zip", :subjectid => $pi[:subjectid]}
     assert_equal "application/zip", result.headers[:content_type]
   end
 
   # get investigation/{id} as text/tab-separated-values
-  def test_06_get_investigation_tab
-    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/tab-separated-values", :subjectid => @@subjectid}
+  def test_07_get_investigation_tab
+    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/tab-separated-values", :subjectid => $pi[:subjectid]}
     assert_equal "text/tab-separated-values;charset=utf-8", result.headers[:content_type]
   end
 
   # get investigation/{id} as application/sparql-results+json
-  def test_07_get_investigation_sparql
-    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+  def test_08_get_investigation_sparql
+    result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
 
   def test_30_check_owner_policy
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
   end
 
   def test_31_check_policies
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
-    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
+    assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
 
   # check if uri is in uri-list
@@ -145,10 +160,10 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # delete investigation/{id}
   def test_99_delete_investigation
-    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => @@subjectid
+    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => $pi[:subjectid]
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
-    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, @@subjectid)
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
   end
 
 end

@@ -72,14 +72,25 @@ class TBAccountBasicTest < Test::Unit::TestCase
     test_98_delete_policies
   end
 
-  def test_12_create_pi_policy
+  def test_12a_create_pi_policy # create pi policy via account uri 
     piaccount = OpenTox::TBAccount.new($pi[:uri], $pi[:subjectid])
     piaccount.send_policy(@@fake_uri, "all")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET", $pi[:subjectid])
+    test_98_delete_policies
   end
+
+  def test_12b_create_pi_policy # create pi policy via subjectid only
+    ret = OpenTox::Authorization.create_pi_policy(@@fake_uri, $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", $pi[:subjectid])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET", $pi[:subjectid])
+    test_98_delete_policies
+  end
+
 
   def test_13_create_guest_rw_policy
     guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user/U2", $pi[:subjectid]) #PI creates policies
