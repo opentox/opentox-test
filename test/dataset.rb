@@ -1,8 +1,6 @@
 require 'test/unit'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-DATASET = "http://ot-dev.in-silico.ch/dataset"
 DATA_DIR = File.join(File.dirname(__FILE__),"data")
-# TODO: add subjectids
 
 begin
   puts "Service URI is: #{$dataset[:uri]}"
@@ -20,9 +18,22 @@ class DatasetTest < Test::Unit::TestCase
 
   def test_create_empty
     d = OpenTox::Dataset.create $dataset[:uri], @@subjectid
+    puts d
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
     d.delete :subjectid => @@subjectid
+  end
+
+  def test_create_from_ntriples
+    d = OpenTox::Dataset.from_file $dataset[:uri], File.join(DATA_DIR,"hamster_carcinogenicity.ntriples"), @@subjectid
+    assert_equal OpenTox::Dataset, d.class
+    assert_equal d.uri, d[RDF::XSD.anyURI]
+    assert_equal "Hamster Carcinogenicity",  d.metadata[RDF::URI("http://purl.org/dc/elements/1.1/title")].first.to_s # DC.title is http://purl.org/dc/terms/title
+    assert_equal "Hamster Carcinogenicity",  d[RDF::URI("http://purl.org/dc/elements/1.1/title")]
+    d.delete :subjectid => @@subjectid
+    assert_raise OpenTox::RestCallError do
+      d.get
+    end
   end
 
   def test_create_from_file
