@@ -28,12 +28,19 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
 
   # check post to investigation service without file
-  def test_01_post_investigation_400
+  def test_01a_post_investigation_400
     assert_raise OpenTox::RestCallError do
     response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => $pi[:subjectid] }
     end
   end
-
+=begin
+  def test_01b_upload_empty_zip
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip"
+    assert_raise OpenTox::RestCallError do
+    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    end
+  end
+=end
   # create an investigation by uploading a zip file
   def test_02_post_investigation
     @@uri = ""
@@ -151,16 +158,22 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check if uri is in uri-list
   def test_98_get_investigation
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, :subjectid => @@subjectid
-    assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    assert_match @@uri.to_s, response
+    #assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
 
   # delete investigation/{id}
-  def test_99_delete_investigation
+  def test_99_a_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => $pi[:subjectid]
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
+  end
+
+  def test_99_b_check_urilist
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    assert_no_match /#{@@uri.to_s}/, response
   end
 
 end
