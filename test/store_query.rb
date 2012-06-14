@@ -44,12 +44,11 @@ class UploadTest < Test::Unit::TestCase
     #assert_match /ns0\:hasMember/, response
   end
   
-  def test_05_delete_data
-    #response = `curl -i -k -u #{FOUR_STORE_USER}:#{FOUR_STORE_PASS} -X DELETE '#{FOUR_STORE}/data/?graph=#{FOUR_STORE}/data/#{FOUR_STORE_USER}/BII-I-1.n3'`.chomp
+  def test_98_delete_data
     response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1.n3'`.chomp
     assert_match /200/, response
   end
-=begin  
+=begin
   def test_06_simultaneous_uploads 
     threads = []
     5.times do |t|
@@ -66,7 +65,7 @@ class UploadTest < Test::Unit::TestCase
     threads = []
     5.times do |t|
       threads << Thread.new(t) do |up|
-        #puts "Start Time >> " << (Time.now).to_s
+        puts "Start Time >> " << (Time.now).to_s
         response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/#{$four_store[:user]}/test#{t}.n3'`.chomp
         assert_match /200/, response
       end
@@ -74,4 +73,26 @@ class UploadTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 =end
+  def test_08_RestCalls
+    # RestCallError_mime_type
+    assert OpenTox::RestCallError do
+      response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
+      assert_match /application\/rdf\+xml is not a supported mime type for SELECT statements./, response
+    end 
+  end
+
+  def test_09
+    # sparql-results+xml
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
+    assert_match /200/, response.headers[:status]
+  end
+
+  def test_10
+    # get uri-list only of your SERVICE
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    # toxbank_investigation as example SERVICE
+    assert_match /#{$toxbank_investigation[:uri]}/, response
+    h = `hostname -f`.strip
+    assert_no_match /#{h}\/investigation/, response
+  end
 end
