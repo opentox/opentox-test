@@ -24,13 +24,23 @@ end
 
 class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
+  RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
+  RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
+
   # check post to investigation service without file
-  def test_01_post_investigation_400
+  def test_01a_post_investigation_400
     assert_raise OpenTox::RestCallError do
-      response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => $pi[:subjectid] }
     end
   end
-
+=begin
+  def test_01b_upload_empty_zip
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip"
+    assert_raise OpenTox::RestCallError do
+    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    end
+  end
+=end
   # create an investigation by uploading a zip file
   def test_02_post_investigation
     @@uri = ""
@@ -45,12 +55,19 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = URI(uri)
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert @@uri.host == URI($toxbank_investigation[:uri]).host
-    assert_match /[TBU\:U296]/, response
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1b/}
+    
     # POST zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
     OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[TBU\:U115]/, response
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
   end
 
   def test_03a_check_published_false
@@ -68,40 +85,27 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     #assert response
   end
 
-  # get investigation/{id}/metadata in rdf and check contents
+  # get investigation/{id}/metadata in rdf and check content
   def test_04a_check_metadata
     # accept:application/rdf+xml
-    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[Term Source Name, OBI, DOID, BTO, NEWT, UO, CHEBI, PATO, TBP, TBC, TBO, TBU, TBK]/, response
-    assert_match /[Investigation Identifier, BII\-I\-1]/, response
-    assert_match /[Investigation Title, Growth control of the eukaryote cell\: a systems biology study in yeast]/, response
-    assert_match /[Investigation Description, Background Cell growth underlies many key cellular and developmental processes]/, response
-    assert_match /[Investigation Publication Author List]/, response
-    assert_match /[Owning Organisation URI, TBO\:G176, 	Public]/, response
-    assert_match /[Consortium URI, TBC\:G2, Douglas Connect]/, response
-    assert_match /[Principal Investigator URI, TBU\:U115, Glenn	Myatt]/, response
-    assert_match /[Investigation keywords, TBK\:Blotting, Southwestern;TBK\:Molecular Imaging;DOID\:primary carcinoma of the liver cells]/, response
-    # metadata
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[title, Growth control of the eukaryote cell, hasKeyword, Epigenetics, CellViabilityAssay, CellMigrationAssays]/, response
-    assert_match /[hasStudy, S1, S2]/, response
-    assert_match /[abstract, Background Cell growth underlies many key cellular and developmental processes]/, response
-    assert_match /[hasOwner, ISA_3977, ISA_3976, ISA_3975]/, response
-    # resource
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3977", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[givenname, Zeef, family_name, Leo]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3976", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[givenname, Castrillo, family_name, Juan]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/ISA_3975", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[givenname, Stephen, family_name, Oliver]/, response
-    # Study
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/S1", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[title, A time course analysis of  transcription response in yeast treated with rapamycin]/, response
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/S2", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[title, Study of the impact of changes in flux on the transcriptome]/, response
-    # Protocol
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/P_1110", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_match /[label, EukGE\-WS4]/, response
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::DC.title)
+    assert @g.has_predicate?(RDF::DC.abstract)
+    assert @g.has_predicate?(RDF::TB.hasKeyword)
+    assert @g.has_predicate?(RDF::TB.hasOwner)
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    assert @g.has_predicate?(RDF::TB.hasProject)
+    assert @g.has_predicate?(RDF::TB.hasOrganisation)
+    @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
+    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
+    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match r[2].to_s.split("/").last, /G176/}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
+    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
+    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
   def test_04b
@@ -154,16 +158,22 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check if uri is in uri-list
   def test_98_get_investigation
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, :subjectid => @@subjectid
-    assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    assert_match @@uri.to_s, response
+    #assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
 
   # delete investigation/{id}
-  def test_99_delete_investigation
+  def test_99_a_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => $pi[:subjectid]
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
+  end
+
+  def test_99_b_check_urilist
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    assert_no_match /#{@@uri.to_s}/, response
   end
 
 end
