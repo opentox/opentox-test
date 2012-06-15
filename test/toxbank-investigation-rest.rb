@@ -28,19 +28,26 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
 
   # check post to investigation service without file
-  def test_01a_post_investigation_400
+  def test_01a_post_investigation_400_no_file
     assert_raise OpenTox::RestCallError do
-    response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :accept => 'text/dummy', :subjectid => $pi[:subjectid] }
+      response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
-=begin
-  def test_01b_upload_empty_zip
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip"
+
+  def test_01b_wrong_mime_type
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
     assert_raise OpenTox::RestCallError do
-    response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+      response =  OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     end
   end
-=end
+
+  def test_01c_upload_empty_zip
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
+    assert_raise OpenTox::RestCallError do
+      response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    end
+  end
+
   # create an investigation by uploading a zip file
   def test_02_post_investigation
     @@uri = ""
@@ -165,7 +172,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # delete investigation/{id}
   def test_99_a_delete_investigation
-    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, :subjectid => $pi[:subjectid]
+    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
