@@ -52,7 +52,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_02_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
-    #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -H "subjectid:#{@@subjectid}"`
+    #task_uri = `curl -k -X POST #{$toxbank_investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -F "allowReadByUser=http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124" -H "subjectid:#{$pi[:subjectid]}"`
     response = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
@@ -69,7 +69,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     
     # POST zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-    OpenTox::RestClientWrapper.post "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
@@ -77,7 +77,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
   end
 
-  def test_03a_check_published
+  def test_03a_check_published_false
     #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     #assert !response
   end
@@ -87,7 +87,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert response
   end
 
-  def test_03c_check_published
+  def test_03c_check_published_true
     #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     #assert response
   end
@@ -165,7 +165,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check if uri is in uri-list
   def test_98_get_investigation
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_match @@uri.to_s, response
     #assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
