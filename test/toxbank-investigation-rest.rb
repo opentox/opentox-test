@@ -158,7 +158,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check if uri is in uri-list
   def test_98_get_investigation
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_match @@uri.to_s, response
     #assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
