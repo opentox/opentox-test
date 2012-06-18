@@ -77,6 +77,11 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
   end
 
+  def test_02a_check_not_list_policies_file
+    result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
+    assert result.grep(/user_policies/).size == 0
+  end
+
   def test_03a_check_published_false
     #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     #assert !response
