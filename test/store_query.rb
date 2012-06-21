@@ -88,11 +88,8 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_10
-    # get uri-list only of your SERVICE
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
-    # toxbank_investigation as example SERVICE
-    assert_match /#{$toxbank_investigation[:uri]}/, response
-    h = `hostname -f`.strip
-    assert_no_match /#{h}\/investigation/, response
+    # get uri-list
+    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid } 
+    response.split("\n").each{|r| assert_match /#{$toxbank_investigation[:uri]}/, r}
   end
 end
