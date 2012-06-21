@@ -69,7 +69,12 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     
     # POST zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-    OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file), :published => "false"}, { :subjectid => $pi[:subjectid] }
+    if response.code == 202
+      task_uri = response.chomp
+      task = OpenTox::Task.new task_uri
+      task.wait
+    end
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
@@ -77,14 +82,16 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
   end
 
-  def test_02a_check_not_list_policies_file
+  def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
   end
 
   def test_03a_check_published_false
-    #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
-    #assert !response
+    data = OpenTox::RestClientWrapper.get($toxbank_investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isPublished}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
+    assert @g.first.object.value == "false"
   end
 
   def test_03b_put_published
@@ -93,8 +100,10 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_03c_check_published_true
-    #response = OpenTox::RestClientWrapper.get "#{@@uri}/published", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
-    #assert response
+    data = OpenTox::RestClientWrapper.get($toxbank_investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isPublished}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
+    assert @g.first.object.value == "true"
   end
 
   # get investigation/{id}/metadata in rdf and check content
@@ -107,6 +116,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert @g.has_predicate?(RDF::DC.abstract)
     assert @g.has_predicate?(RDF::TB.hasKeyword)
     assert @g.has_predicate?(RDF::TB.hasOwner)
+    assert @g.has_predicate?(RDF::TB.isPublished)
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     assert @g.has_predicate?(RDF::TB.hasProject)
     assert @g.has_predicate?(RDF::TB.hasOrganisation)
@@ -116,6 +126,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
     @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
