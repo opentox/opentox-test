@@ -67,14 +67,14 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1b/}
     
-    # POST zip on existing id
+    # PUT zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
     response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file), :published => "false"}, { :subjectid => $pi[:subjectid] }
-    if response.code == 202
-      task_uri = response.chomp
-      task = OpenTox::Task.new task_uri
-      task.wait
-    end
+    assert_equal 202, response.code
+    task_uri = response.chomp
+    #puts task_uri
+    task = OpenTox::Task.new task_uri
+    task.wait
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
@@ -96,7 +96,12 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   def test_03b_put_published
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
-    assert response
+    task_uri = response.chomp
+    #puts task_uri
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
   end
 
   def test_03c_check_published_true
