@@ -42,7 +42,7 @@ class UploadTest < Test::Unit::TestCase
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
-      urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
+      urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{uri}`.split("\n")
       urilist.each do |u|
         unless u.match(/[n3|zip]$/)
           response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{u}`
