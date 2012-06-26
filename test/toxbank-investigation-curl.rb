@@ -28,8 +28,8 @@ class UploadTest < Test::Unit::TestCase
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
-      uri = response.split("\n")[-1]
-      t = OpenTox::Task.new(uri)
+      taskuri = response.split("\n")[-1]
+      t = OpenTox::Task.new(taskuri)
       t.wait
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
@@ -43,10 +43,10 @@ class UploadTest < Test::Unit::TestCase
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
       urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
-      urilist.each do |uri|    
-        unless uri.match(/[n3|zip]$/)
-          response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{uri}`
-          assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
+      urilist.each do |u|
+        unless u.match(/[n3|zip]$/)
+          response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{@@subjectid}" #{u}`
+          assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace)
         end
       end
       # delete
