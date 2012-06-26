@@ -45,9 +45,9 @@ class UploadTest < Test::Unit::TestCase
       # get isatab files
       #urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
       urilist = `curl -Lk -H "subjectid:#{$pi[:subjectid]}" -H "Accept:text/uri-list" #{uri}`.split("\n")
-      urilist.each do |uri|    
-        unless uri.match(/[n3|zip]$/)
-          response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
+      urilist.each do |u|
+        unless u.match(/[n3|zip]$/)
+          response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{$pi[:subjectid]}" #{u}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
       end
