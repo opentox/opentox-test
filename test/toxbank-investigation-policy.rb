@@ -103,6 +103,21 @@ class TBAccountBasicTest < Test::Unit::TestCase
     test_98_delete_policies
   end
 
+  # create 3 policies and delete all policies except pi-policy with policies_reset method
+  def test_14_check_reset_policies
+    guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user/U2", $pi[:subjectid]) #PI creates policies
+    guest.send_policy(@@fake_uri)
+    member = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/organisation/G176", $pi[:subjectid]) #PI creates policies
+    member.send_policy(@@fake_uri)
+    piaccount = OpenTox::TBAccount.new($pi[:uri], $pi[:subjectid])
+    piaccount.send_policy(@@fake_uri, "all")
+    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid]).size
+    result = OpenTox::Authorization.reset_policies(@@fake_uri, $pi[:subjectid])
+    policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
+    assert_equal 1, policies.size
+    assert policies[0] =~ /^tbi-#{piaccount.account}-users-*/
+    test_98_delete_policies
+  end
 
   def test_98_delete_policies
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
