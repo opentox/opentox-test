@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    response = `curl -Lk -H Accept:text/uri-list -H "subjectid:#{$pi[:subjectid]}" -i #{$toxbank_investigation[:uri]}`
+    response = `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" -i #{$toxbank_investigation[:uri]}`
     assert_match /200/, response
   end
 
@@ -28,9 +28,9 @@ class UploadTest < Test::Unit::TestCase
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
       assert_match /202/, response
-      uri = response.split("\n")[-1]
+      taskuri = response.split("\n")[-1]
       #puts uri
-      t = OpenTox::Task.new(uri,$pi[:subjectid])
+      t = OpenTox::Task.new(taskuri,$pi[:subjectid])
       t.wait
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
