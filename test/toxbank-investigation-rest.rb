@@ -145,7 +145,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_04c
     # accept:text/plain
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
-    assert_equal "text/plain", response.headers[:content_type]
+    assert_match  /^text\/plain/ , response.headers[:content_type]
   end
 
   # get investigation/{id} as text/uri-list
