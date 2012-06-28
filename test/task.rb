@@ -71,6 +71,24 @@ class TaskTest < Test::Unit::TestCase
     # TODO test error reports
   end
 
+  def test_06_check_resultURIs
+    resulturi = "http://resulturi/test/1"
+    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
+      sleep 30
+      resulturi
+    end
+    assert_equal "Running", task.hasStatus
+    response = OpenTox::RestClientWrapper.get task.uri,nil, {:accept => "text/uri-list"}
+    assert_equal 202, response.code
+    assert_equal task.uri, response
+    assert_equal nil, task.resultURI
+    task.wait
+    response = OpenTox::RestClientWrapper.get task.uri,nil, {:accept => "text/uri-list"}
+    assert_equal 200, response.code
+    assert_equal resulturi, response
+    assert_equal resulturi, task.resultURI
+  end
+
 =begin
   # temporarily removed until uri checking from virtual machines has been fixed
   def test_06_wrong_result_uri
