@@ -66,20 +66,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1b/}
-    
-    # PUT zip on existing id
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-    response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file), :published => "false"}, { :subjectid => $pi[:subjectid] }
-    assert_equal 202, response.code
-    task_uri = response.chomp
-    #puts task_uri
-    task = OpenTox::Task.new task_uri
-    task.wait
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
   end
 
   def test_02a_check_policy_file_not_listed
@@ -111,8 +97,32 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert @g.first.object.value == "true"
   end
 
+  def test_04a_check_summary_searchable_false
+    data = OpenTox::RestClientWrapper.get($toxbank_investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isSummarySearchable}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
+    assert @g.first.object.value == "false"
+  end
+
+  def test_04b_put_summary_searchable
+    response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    #puts task_uri
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
+  end
+
+  def test_04c_check_summary_searchable_true
+    data = OpenTox::RestClientWrapper.get($toxbank_investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isSummarySearchable}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
+    assert @g.first.object.value == "true"
+  end
+
   # get investigation/{id}/metadata in rdf and check content
-  def test_04a_check_metadata
+  def test_05a_check_metadata
     # accept:application/rdf+xml
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
@@ -132,44 +142,86 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
     @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
-  def test_04b
+  def test_05b
     # accept:text/turtle
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
-  def test_04c
+  def test_05c
     # accept:text/plain
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     assert_match  /^text\/plain/ , response.headers[:content_type]
   end
 
   # get investigation/{id} as text/uri-list
-  def test_05_get_investigation_uri_list
+  def test_06_get_investigation_uri_list
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_equal "text/uri-list", result.headers[:content_type]
   end
 
   # get investigation/{id} as application/zip
-  def test_06_get_investigation_zip
+  def test_07_get_investigation_zip
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/zip", :subjectid => $pi[:subjectid]}
     assert_equal "application/zip", result.headers[:content_type]
   end
 
   # get investigation/{id} as text/tab-separated-values
-  def test_07_get_investigation_tab
+  def test_08_get_investigation_tab
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "text/tab-separated-values", :subjectid => $pi[:subjectid]}
     assert_equal "text/tab-separated-values;charset=utf-8", result.headers[:content_type]
   end
 
   # get investigation/{id} as application/sparql-results+json
-  def test_08_get_investigation_sparql
+  def test_09_get_investigation_sparql
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal "application/rdf+xml", result.headers[:content_type]
+  end
+
+  def test_10_update_investigation
+    # PUT zip on existing id
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    assert_equal 202, response.code
+    task_uri = response.chomp
+    #puts task_uri
+    task = OpenTox::Task.new task_uri
+    task.wait
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
+  end
+
+  # get investigation/{id}/metadata in rdf and check content
+  def test_11_check_metadata_again
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::DC.title)
+    assert @g.has_predicate?(RDF::DC.abstract)
+    assert @g.has_predicate?(RDF::TB.hasKeyword)
+    assert @g.has_predicate?(RDF::TB.hasOwner)
+    assert @g.has_predicate?(RDF::TB.isPublished)
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    assert @g.has_predicate?(RDF::TB.hasProject)
+    assert @g.has_predicate?(RDF::TB.hasOrganisation)
+    @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
+    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
+    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match r[2].to_s.split("/").last, /G176/}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
+    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
+    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
   def test_30_check_owner_policy

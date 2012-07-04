@@ -112,7 +112,10 @@ class TBAccountBasicTest < Test::Unit::TestCase
     piaccount = OpenTox::TBAccount.new($pi[:uri], $pi[:subjectid])
     piaccount.send_policy(@@fake_uri, "all")
     assert_equal 3, OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid]).size
-    result = OpenTox::Authorization.reset_policies(@@fake_uri, $pi[:subjectid])
+    result = OpenTox::Authorization.reset_policies(@@fake_uri,"users", $pi[:subjectid])
+    policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
+    assert_equal 2, policies.size
+    result = OpenTox::Authorization.reset_policies(@@fake_uri,"groups", $pi[:subjectid])
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri, $pi[:subjectid])
     assert_equal 1, policies.size
     assert policies[0] =~ /^tbi-#{piaccount.account}-users-*/
