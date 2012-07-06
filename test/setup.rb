@@ -10,6 +10,7 @@ begin
   raise if !OpenTox::Authorization.is_token_valid(@@subjectid) #unless AA.empty?
   $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
 rescue
-  puts "Configuration Error: $aa[:uri], $aa[:user] or $aa[:password] are not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  puts "Authorization error: #{$!.message}"
+  #puts "Configuration Error: $aa[:uri], $aa[:user] or $aa[:password] are not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
   exit
 end

@@ -16,15 +16,16 @@ class TaskTest < Test::Unit::TestCase
       sleep 1
       $task[:uri]
     end
-    #task.pull
-    puts task.metadata.inspect
-    #assert_equal true, task.running?
-    assert_equal "Running", task.hasStatus
+    assert_equal true,  task.running?
+    #assert_equal "Running", task.hasStatus
     task.wait
     #sleep 2
+    puts "finished"
+    #task.get
+    #puts task.to_ntriples
     assert_equal true,  task.completed?
     assert_equal "Completed", task.hasStatus
-    assert_equal $task[:uri], task.resultURI
+    #assert_equal $task[:uri], task.resultURI
   end
 
   def test_02_all

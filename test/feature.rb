@@ -22,8 +22,8 @@ class FeatureRestTest < Test::Unit::TestCase
   # TODO: test invalid rdfs
   def test_01_create_feature
     @@rdf = RDF::Graph.new
-    subject = RDF::Node.new
-    #subject = RDF::URI.new File.join($feature[:uri], SecureRandom.uuid)
+    #subject = RDF::Node.new
+    subject = RDF::URI.new File.join($feature[:uri], SecureRandom.uuid)
     @@rdf << RDF::Statement.new(subject, RDF::DC.title, "test" )
     @@rdf << RDF::Statement.new(subject, RDF.type, RDF::OT.Feature)
 
@@ -35,9 +35,10 @@ class FeatureRestTest < Test::Unit::TestCase
     @@uris = []
     
     @@formats.each do |f|
-      #@@uris << subject.to_s
-      #OpenTox::RestClientWrapper.put(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
-      @@uris << OpenTox::RestClientWrapper.post($feature[:uri], serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
+      @@uris << subject.to_s
+      OpenTox::RestClientWrapper.put(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
+      #puts serialize(@@rdf, f[0])
+      #@@uris << OpenTox::RestClientWrapper.post($feature[:uri], serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
       #puts `curl -kL -H Accept:text/plain -H subjectid:#{@@subjectid} #{@@uris.last}`
       #puts @@uris.last
       #puts `curl -kL -H Accept:text/plain #{@@uris.last}`
@@ -47,6 +48,7 @@ class FeatureRestTest < Test::Unit::TestCase
 
   def test_02_list_features
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list")#.split("\n")
+    puts r
     @@uris.each{ |uri| assert_equal true, r.include?(uri) }
     @@formats.each do |f|
       rdf = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => f[1])
@@ -92,7 +94,8 @@ class FeatureRestTest < Test::Unit::TestCase
   def test_06_delete_feature
     @@uris.each do |uri|
       OpenTox::RestClientWrapper.delete(uri)
-      assert_raise OpenTox::NotFoundError do
+      assert_raise OpenTox::RestCallError do
+      #assert_raise OpenTox::NotFoundError do
         OpenTox::RestClientWrapper.get(uri)
       end
     end
