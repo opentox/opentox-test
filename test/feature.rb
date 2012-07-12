@@ -22,7 +22,6 @@ class FeatureRestTest < Test::Unit::TestCase
   # TODO: test invalid rdfs
   def test_01_create_feature
     @@rdf = RDF::Graph.new
-    #subject = RDF::Node.new
     subject = RDF::URI.new File.join($feature[:uri], SecureRandom.uuid)
     @@rdf << RDF::Statement.new(subject, RDF::DC.title, "test" )
     @@rdf << RDF::Statement.new(subject, RDF.type, RDF::OT.Feature)
@@ -37,27 +36,13 @@ class FeatureRestTest < Test::Unit::TestCase
     @@formats.each do |f|
       @@uris << subject.to_s
       OpenTox::RestClientWrapper.put(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
-      #puts serialize(@@rdf, f[0])
-      #@@uris << OpenTox::RestClientWrapper.post($feature[:uri], serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
-      #puts `curl -kL -H Accept:text/plain -H subjectid:#{@@subjectid} #{@@uris.last}`
-      #puts @@uris.last
-      #puts `curl -kL -H Accept:text/plain #{@@uris.last}`
       assert_equal true, URI.accessible?(@@uris.last, @@subjectid)
     end
   end
 
   def test_02_list_features
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list")#.split("\n")
-    puts r
     @@uris.each{ |uri| assert_equal true, r.include?(uri) }
-    @@formats.each do |f|
-      rdf = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => f[1])
-      @@uris.each do |uri|
-        assert_match /#{uri}/, rdf
-        assert_match /test/, rdf
-        assert_match /Feature/, rdf
-      end
-    end
   end
 
   def test_03_get_feature
@@ -101,43 +86,42 @@ class FeatureRestTest < Test::Unit::TestCase
     end
   end
 
-end
-
-=begin
-class FeatureCrudTest < Test::Unit::TestCase
-
-  def test_01_create_feature
-    @@feature = OpenTox::Feature.create $feature[:uri] 
+  def test_11_create_feature
+    @@feature = OpenTox::Feature.new nil, @@subjectid
+    @@feature.title = "test"
+    @@feature.put
     assert_equal true, URI.accessible?(@@feature.uri)
   end
 
-  def test_02_list_features
-    r = OpenTox::Feature.all($feature[:uri])
-    assert_equal true, r.include?(@@feature)
+  def test_12_list_features
+    r = OpenTox::Feature.all $feature[:uri], @@subjectid
+    assert_equal true, r.collect{|f| f.uri}.include?(@@feature.uri)
   end
 
-  def test_03_get_feature
-    @@rdf = @@feature.metadata
-    assert_match /#{@@feature.uri}/, @@rdf
+  def test_13_get_feature
+    @@feature.get
+    assert_equal "test", @@feature.title
+    assert_equal RDF::OT.Feature, @@feature[RDF.type]
   end
 
-  def test_04_update_feature
-    @@feature[RDF::DC.title] = "test"
-    @@feature.save
-    assert_match "test", OpenTox::RestClientWrapper.get(@@uri)
+  def test_14_update_feature
+    @@feature.title = "test2"
+    @@feature.put
+    assert_match "test", OpenTox::RestClientWrapper.get(@@feature.uri)
   end
 
-  def test_05_delete_feature
+  def test_15_delete_feature
     uri = @@feature.uri
     @@feature.delete
-    r = OpenTox::RestClientWrapper.get($feature[:uri]).split("\n")
-    assert_equal false, r.include?(@@uri)
-    assert_equal false, URI.accessible?(@@uri)
+    assert_equal false, URI.accessible?(uri)
   end
 
 end
+=begin
+=end
 
 
+=begin
   def test_ambit_feature
     uri = "http://apps.ideaconsult.net:8080/ambit2/feature/35796",
     f = OpenTox::Feature.new(uri)
