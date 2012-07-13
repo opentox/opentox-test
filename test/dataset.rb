@@ -12,11 +12,11 @@ end
 
 class DatasetTest < Test::Unit::TestCase
 
+=begin
   def test_append_to_existing
     #TODO
   end
 
-=begin
 # TODO: and add Egons example
   def test_sdf_with_multiple_features
     @dataset = OpenTox::Dataset.new nil, @@subjectid
@@ -27,9 +27,7 @@ class DatasetTest < Test::Unit::TestCase
     puts @dataset.compounds.size
     @dataset.delete
   end
-=end
 
-=begin
 # TODO: create unordered example file with working references
 # e.g. download from ambit, upload
   def test_create_from_ntriples
@@ -95,7 +93,6 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
     d.delete
     assert_equal false, URI.accessible?(d.uri)
-
   end
 
   def test_create_from_file
@@ -114,6 +111,9 @@ class DatasetTest < Test::Unit::TestCase
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload "#{DATA_DIR}/multicolumn.csv"
     d.get
+    assert_not_nil d[RDF::OT.Warnings]
+    assert_match /Duplicated compound/,  d[RDF::OT.Warnings]
+    assert_match /3, 5/,  d[RDF::OT.Warnings]
     assert_equal 5, d.features.size
     assert_equal 5, d.compounds.size
     assert_equal 4, d.compounds.collect{|c| c.uri}.uniq.size
