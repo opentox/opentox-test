@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   def test_01_invalid_xls_upload 
     # upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.xls"
-    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
+    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
@@ -22,7 +22,7 @@ class UploadTest < Test::Unit::TestCase
   def test_02_valid_xls_upload
     # upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/isa_TB_BII.xls"
-    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{@@subjectid}" #{$toxbank_investigation[:uri]}`.chomp
+    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
@@ -32,7 +32,7 @@ class UploadTest < Test::Unit::TestCase
     
     # get zip file
     zip = File.join @tmpdir,"tmp.zip"
-    `curl -Lk -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
+    `curl -Lk -H "Accept:application/zip" -H "subjectid:#{$pi[:subjectid]}" #{uri} > #{zip}`
     `unzip -o #{zip} -d #{@tmpdir}`
     [
       "i_Investigation.txt",
@@ -45,19 +45,19 @@ class UploadTest < Test::Unit::TestCase
     ].each{|f| assert_equal true, File.exists?(File.join(@tmpdir,f)) }
 
     # get isatab files
-    `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
+    `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`.split("\n").each do |u|
       if u.match(/txt$/)
-        response = `curl -Lk -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{u}`
+        response = `curl -Lk -i -H Accept:text/tab-separated-values -H "subjectid:#{$pi[:subjectid]}" #{u}`
         assert_match /200/, response
       end
     end
 
     # delete
-    response = `curl -Lk -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
+    response = `curl -Lk -i -X DELETE -H "subjectid:#{$pi[:subjectid]}" #{uri}`
     assert_match /200/, response
-    response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
+    response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
     assert_match /401/, response
-    response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
+    response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
     assert_match /404/, response
   end
   
