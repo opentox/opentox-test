@@ -115,16 +115,17 @@ class DatasetTest < Test::Unit::TestCase
     assert_match /Duplicated compound/,  d[RDF::OT.Warnings]
     assert_match /3, 5/,  d[RDF::OT.Warnings]
     assert_equal 5, d.features.size
-    assert_equal 5, d.compounds.size
-    assert_equal 4, d.compounds.collect{|c| c.uri}.uniq.size
-    assert_equal [["1", 1.0, "true", "true", "test"], ["1", 2.0, "false", "7.5", "test"], ["1", 3.0, "true", "5", "test"], ["0", 4.0, "false", "false", "test"], ["1", 2.0, "true", "4", "test_2"]], d.data_entries
+    assert_equal 6, d.compounds.size
+    assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
+    assert_equal [["1", 1.0, "true", "true", "test"], ["1", 2.0, "false", "7.5", "test"], ["1", 3.0, "true", "5", "test"], ["0", 4.0, "false", "false", "test"], ["1", 2.0, "true", "4", "test_2"],["1", nil, "false", nil, nil]], d.data_entries
+    assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.each_with_index do |row,i|
       compound = OpenTox::Compound.from_smiles $compound[:uri], row.shift
       original_compound = OpenTox::Compound.from_smiles $compound[:uri], original_csv[i].shift
       assert_equal original_compound.uri, compound.uri
-      assert_equal original_csv[i].collect{|v| v.strip}, row
+      assert_equal original_csv[i].collect{|v| v.to_s.strip}, row
     end
     d.delete 
     assert_equal false, URI.accessible?(d.uri)
