@@ -146,4 +146,16 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal false, URI.accessible?(d.uri)
   end
 
+  def test_from_xls
+    d = OpenTox::Dataset.new nil, @@subjectid
+    d.upload "#{DATA_DIR}/hamster_carcinogenicity.xls"
+    d.get
+    assert_equal OpenTox::Dataset, d.class
+    assert_equal 1, d.features.size
+    assert_equal 85, d.compounds.size
+    assert_equal 85, d.data_entries.size
+    d.delete 
+    assert_equal false, URI.accessible?(d.uri)
+  end
+
 end
