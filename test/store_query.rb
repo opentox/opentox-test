@@ -12,7 +12,7 @@ class UploadTest < Test::Unit::TestCase
     response = `curl -i -k --user #{$four_store[:user]}:#{$four_store[:password]} '#{$four_store[:uri]}/status/'`.chomp
     assert_match /200/, response
     response = `curl -i -k -u guest:guest '#{$four_store[:uri]}/status/'`.chomp
-    assert_match /401/, response
+    assert_match /401/, response unless $four_store[:uri].match(/localhost/)
   end
   
   def test_02_add_data
@@ -76,20 +76,20 @@ class UploadTest < Test::Unit::TestCase
   def test_08_RestCalls
     # RestCallError_mime_type
     assert OpenTox::RestCallError do
-      response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
       assert_match /application\/rdf\+xml is not a supported mime type for SELECT statements./, response
     end 
   end
 
   def test_09
     # sparql-results+xml
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
     assert_match /200/, response.headers[:status]
   end
 
   def test_10
     # get uri-list
-    response = OpenTox::RestClientWrapper.get $toxbank_investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid } 
-    response.split("\n").each{|r| assert_match /#{$toxbank_investigation[:uri]}/, r}
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid } 
+    response.split("\n").each{|r| assert_match /#{$investigation[:uri]}/, r}
   end
 end
