@@ -13,7 +13,7 @@ end
 class DatasetLargeTest < Test::Unit::TestCase
 
   def test_01_upload_epafhm
-    f = "./data/EPAFHM.csv"
+    f = File.join DATA_DIR, "EPAFHM.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
     puts d.uri
@@ -26,7 +26,7 @@ class DatasetLargeTest < Test::Unit::TestCase
   end
 
   def test_02_upload_multicell
-    f = "./data/multi_cell_call.csv"
+    f = File.join DATA_DIR, "multi_cell_call.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
     puts d.uri
@@ -40,7 +40,7 @@ class DatasetLargeTest < Test::Unit::TestCase
   end
 
   def test_03_upload_isscan
-    f = "./data/ISSCAN-multi.csv"
+    f = File.join DATA_DIR, "ISSCAN-multi.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
     puts d.uri
@@ -76,7 +76,7 @@ class DatasetLargeTest < Test::Unit::TestCase
 =begin
   # TODO: segfaults during csv parsing
   def test_05_upload_kazius
-    f = "./data/kazius.csv"
+    f = File.join DATA_DIR, "kazius.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
     puts d.uri
