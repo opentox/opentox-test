@@ -19,9 +19,9 @@ class UploadTest < Test::Unit::TestCase
 
   def test_02_get_inexisting
     response = `curl -Lk -H "Accept:text/uri-list" -i -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}/foo`.chomp
-    assert_match /401/, response
+    assert_match /401|404/, response
     response = `curl -Lk -H "Accept:application/rdf+xml" -i -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}/999999/metadata`.chomp
-    assert_match /401/, response
+    assert_match /401|404/, response
   end
 
   def test_03_valid_zip_upload
@@ -31,10 +31,10 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
       assert_match /202/, response
       taskuri = response.split("\n")[-1]
-      #puts uri
-      t = OpenTox::Task.new(taskuri,$pi[:subjectid])
-      puts t.uri
+      puts taskuri
+      t = OpenTox::Task.new taskuri
       t.wait
+      t.get
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
       uri = t.resultURI
@@ -58,9 +58,9 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -i -X DELETE -H "subjectid:#{$pi[:subjectid]}" #{uri}`
       assert_match /200/, response
       response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
-      assert_match /401/, response
+      assert_match /401|404/, response
       response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
-      assert_match /404/, response
+      assert_match /404|404/, response
     end
   end
   def test_04_invalid_zip_upload
