@@ -79,7 +79,7 @@ class FeatureRestTest < Test::Unit::TestCase
   def test_06_delete_feature
     @@uris.each do |uri|
       OpenTox::RestClientWrapper.delete(uri)
-      assert_raise OpenTox::RestCallError do
+      assert_raise OpenTox::NotFoundError do
       #assert_raise OpenTox::NotFoundError do
         OpenTox::RestClientWrapper.get(uri)
       end

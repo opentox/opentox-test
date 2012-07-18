@@ -99,6 +99,7 @@ class DatasetTest < Test::Unit::TestCase
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     d.get
+    #puts d.to_turtle
     assert_equal OpenTox::Dataset, d.class
     assert_not_nil d[RDF::OT.Warnings]
     assert_equal "EPAFHM.mini.csv",  d[RDF::OT.hasSource]
@@ -110,6 +111,7 @@ class DatasetTest < Test::Unit::TestCase
   def test_multicolumn_csv
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload "#{DATA_DIR}/multicolumn.csv"
+    #puts d.uri
     d.get
     assert_not_nil d[RDF::OT.Warnings]
     assert_match /Duplicated compound/,  d[RDF::OT.Warnings]
