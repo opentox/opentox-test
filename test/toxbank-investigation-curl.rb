@@ -11,27 +11,30 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    response = `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" -i #{$toxbank_investigation[:uri]}`
+    puts $investigation.inspect
+    puts "curl -Lk -H \"Accept:text/uri-list\" -H \"subjectid:#{$pi[:subjectid]}\" -i #{$investigation[:uri]}"
+    response = `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" -i #{$investigation[:uri]}`
     assert_match /200/, response
   end
 
   def test_02_get_inexisting
-    response = `curl -Lk -H "Accept:text/uri-list" -i -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}/foo`.chomp
-    assert_match /401/, response
-    response = `curl -Lk -H "Accept:application/rdf+xml" -i -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}/999999/metadata`.chomp
-    assert_match /401/, response
+    response = `curl -Lk -H "Accept:text/uri-list" -i -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}/foo`.chomp
+    assert_match /401|404/, response
+    response = `curl -Lk -H "Accept:application/rdf+xml" -i -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}/999999/metadata`.chomp
+    assert_match /401|404/, response
   end
 
   def test_03_valid_zip_upload
     # upload
     ["BII-I-1.zip","E-MTAB-798_philippe.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
-      response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
+      response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
       assert_match /202/, response
       taskuri = response.split("\n")[-1]
-      #puts uri
-      t = OpenTox::Task.new(taskuri,$pi[:subjectid])
+      puts taskuri
+      t = OpenTox::Task.new taskuri
       t.wait
+      t.get
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
       uri = t.resultURI
@@ -43,7 +46,7 @@ class UploadTest < Test::Unit::TestCase
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
-      #urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$toxbank_investigation[:uri]}`.split("\n")
+      #urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$investigation[:uri]}`.split("\n")
       urilist = `curl -Lk -H "subjectid:#{$pi[:subjectid]}" -H "Accept:text/uri-list" #{uri}`.split("\n")
       urilist.each do |u|
         unless u.match(/[n3|zip]$/)
@@ -55,14 +58,14 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -i -X DELETE -H "subjectid:#{$pi[:subjectid]}" #{uri}`
       assert_match /200/, response
       response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
-      assert_match /401/, response
+      assert_match /401|404/, response
       response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
-      assert_match /404/, response
+      assert_match /404|404/, response
     end
   end
   def test_04_invalid_zip_upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.zip"
-    response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
+    response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri,$pi[:subjectid])
@@ -76,7 +79,7 @@ class UploadTest < Test::Unit::TestCase
   def test_rest_client_wrapper
     ["BII-I-1.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "toxbank-investigation","data/toxbank-investigation/valid", f
-      investigation_uri = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.read(file),:name => file}, {:content_type => "application/zip", :subjectid => @@subjectid}
+      investigation_uri = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.read(file),:name => file}, {:content_type => "application/zip", :subjectid => @@subjectid}
       puts investigation_uri
       zip = File.join @tmpdir,"tmp.zip"
       #puts "curl -Lk -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
@@ -106,7 +109,7 @@ class UploadTest < Test::Unit::TestCase
   def test_ruby_api
     ["BII-I-1.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
-      investigation = OpenTox::Investigation.create $toxbank_investigation[:uri], :file => file, :headers => {:content_type => "application/zip", :subjectid => @@subjectid}
+      investigation = OpenTox::Investigation.create $investigation[:uri], :file => file, :headers => {:content_type => "application/zip", :subjectid => @@subjectid}
       zip = File.join @tmpdir,"tmp.zip"
       #puts "curl -Lk -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
       `curl -Lk -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`

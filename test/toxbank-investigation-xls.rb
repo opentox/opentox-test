@@ -1,6 +1,6 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
-class UploadTest < Test::Unit::TestCase
+class ExcelUploadTest < Test::Unit::TestCase
 
   def setup
     @tmpdir = File.join(File.dirname(__FILE__),"tmp")
@@ -11,7 +11,7 @@ class UploadTest < Test::Unit::TestCase
   def test_01_invalid_xls_upload 
     # upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.xls"
-    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
+    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
@@ -22,11 +22,13 @@ class UploadTest < Test::Unit::TestCase
   def test_02_valid_xls_upload
     # upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/isa_TB_BII.xls"
-    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$toxbank_investigation[:uri]}`.chomp
+    response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
     t.wait
+    t.get
+    puts t.to_turtle
     assert_equal true, t.completed?
     uri = t.resultURI
     

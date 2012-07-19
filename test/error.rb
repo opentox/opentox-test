@@ -4,7 +4,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 class ErrorTest < Test::Unit::TestCase
 
   def test_bad_request
-    object = OpenTox::Feature.new "http://this-is-a/fantasy/url"
+    object = OpenTox::Feature.new 
     assert_raise OpenTox::NotFoundError do
       response = object.get
     end
