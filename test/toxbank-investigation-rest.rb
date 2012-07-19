@@ -83,7 +83,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_03b_put_published
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
-    #puts task_uri
+    puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
@@ -189,7 +189,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
-    #puts task_uri
+    puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
@@ -234,6 +234,24 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_31_check_policies
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
     assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
+  end
+
+  def test_40_multiple_upload
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    response = []; task_uri = []; task =[]
+    (0..2).each do |i|
+      response[i] = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+      task_uri[i] = response[i].chomp
+      puts task_uri[i]
+      task[i] = OpenTox::Task.new task_uri[i]
+    end
+    (0..2).each do |i|
+      task[i].wait
+      assert_equal true,  task[i].completed?
+      assert_equal "Completed", task[i].hasStatus
+      result = OpenTox::RestClientWrapper.delete task[i].resultURI.to_s, {}, {:subjectid => $pi[:subjectid]}
+      assert_equal 200, result.code
+    end
   end
 
   # check if uri is in uri-list
