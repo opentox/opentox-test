@@ -245,7 +245,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
     response = []; task_uri = []; task =[]
     (0..2).each do |i|
-      response[i] = OpenTox::RestClientWrapper.post $toxbank_investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+      response[i] = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
       task_uri[i] = response[i].chomp
       puts task_uri[i]
       task[i] = OpenTox::Task.new task_uri[i]
