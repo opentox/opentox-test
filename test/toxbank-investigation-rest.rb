@@ -29,21 +29,21 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   # check post to investigation service without file
   def test_01a_post_investigation_400_no_file
-    assert_raise OpenTox::RestCallError do
+    assert_raise OpenTox::BadRequestError do
       response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
 
   def test_01b_wrong_mime_type
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
-    assert_raise OpenTox::RestCallError do
+    assert_raise OpenTox::BadRequestError do
       response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     end
   end
 
   def test_01c_upload_empty_zip
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
-    assert_raise OpenTox::RestCallError do
+    assert_raise OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     end
   end
