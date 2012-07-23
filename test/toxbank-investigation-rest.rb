@@ -1,5 +1,12 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
+begin
+  puts "Service URI is: #{$investigation[:uri]}"
+rescue
+  puts "Configuration Error: $investigation[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
+
 class BasicTest < Test::Unit::TestCase
 
   # check response from service
