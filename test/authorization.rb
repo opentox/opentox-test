@@ -29,7 +29,17 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
   def test_05_list_policies
     assert_kind_of Array, OpenTox::Authorization.list_policies(@@subjectid)
   end
-  
+
+  def test_06_bad_login
+    assert_raise OpenTox::NotFoundError do
+      subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
+    end
+  end
+
+  def test_07_unauthorized
+     puts OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", @@subjectid).to_s
+  end
+
 end
 
 class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase

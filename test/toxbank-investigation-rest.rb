@@ -62,11 +62,11 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     #task_uri = `curl -k -X POST #{$investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -F "allowReadByUser=http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124" -H "subjectid:#{$pi[:subjectid]}"`
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
-    puts task_uri
+    #puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
-    puts uri
+    #puts uri
     @@uri = URI(uri)
     response = OpenTox::RestClientWrapper.get "#{uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert @@uri.host == URI($investigation[:uri]).host
@@ -91,7 +91,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_03b_put_published
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
-    puts task_uri
+    #puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
@@ -107,7 +107,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   def test_04a_check_summary_searchable_false
     data = OpenTox::RestClientWrapper.get($investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isSummarySearchable}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
-    puts data
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
     assert @g.first.object.value == "false"
@@ -160,7 +159,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_05b
     # accept:text/turtle
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
-    puts response.headers.inspect
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
@@ -200,7 +198,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
-    puts task_uri
+    #puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
@@ -254,7 +252,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     (0..2).each do |i|
       response[i] = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
       task_uri[i] = response[i].chomp
-      puts task_uri[i]
+      #puts task_uri[i]
       task[i] = OpenTox::Task.new task_uri[i]
     end
     (0..2).each do |i|
@@ -269,13 +267,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   # check if uri is in uri-list
   def test_98_get_investigation
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
-    puts "RESPONSE"
-    puts response.inspect
-    puts "URI"
-    puts @@uri.inspect
-    puts @@uri.to_s
-    assert_match @@uri.to_s, response
-    #assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
+    assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
 
   # delete investigation/{id}
