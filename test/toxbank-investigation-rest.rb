@@ -246,24 +246,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
 
-  def test_40_multiple_upload
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
-    response = []; task_uri = []; task =[]
-    (0..2).each do |i|
-      response[i] = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-      task_uri[i] = response[i].chomp
-      #puts task_uri[i]
-      task[i] = OpenTox::Task.new task_uri[i]
-    end
-    (0..2).each do |i|
-      task[i].wait
-      assert_equal true,  task[i].completed?
-      assert_equal "Completed", task[i].hasStatus
-      result = OpenTox::RestClientWrapper.delete task[i].resultURI.to_s, {}, {:subjectid => $pi[:subjectid]}
-      assert_equal 200, result.code
-    end
-  end
-
   # check if uri is in uri-list
   def test_98_get_investigation
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
