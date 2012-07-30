@@ -50,13 +50,10 @@ class StressTest < Test::Unit::TestCase
     puts task_uri[0]
     (1..2).each do |i|
       response[i] = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-      puts response[i].chomp
-      #end
       task_uri[i] = response[i].chomp
     end
     (1..2).each do |i|
       #assert_raise OpenTox::LockedError do
-        puts "No #{i}"
         task[i] = OpenTox::Task.new task_uri[i]
         task[i].wait
       #end

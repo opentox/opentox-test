@@ -12,7 +12,7 @@ class UploadTest < Test::Unit::TestCase
 
   def test_01_get_all
     puts $investigation.inspect
-    puts "curl -Lk -H \"Accept:text/uri-list\" -H \"subjectid:#{$pi[:subjectid]}\" -i #{$investigation[:uri]}"
+    #puts "curl -Lk -H \"Accept:text/uri-list\" -H \"subjectid:#{$pi[:subjectid]}\" -i #{$investigation[:uri]}"
     response = `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" -i #{$investigation[:uri]}`
     assert_match /200/, response
   end
@@ -31,7 +31,7 @@ class UploadTest < Test::Unit::TestCase
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
       assert_match /202/, response
       taskuri = response.split("\n")[-1]
-      puts taskuri
+      #puts taskuri
       t = OpenTox::Task.new taskuri
       t.wait
       t.get

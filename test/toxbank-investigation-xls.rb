@@ -28,7 +28,7 @@ class ExcelUploadTest < Test::Unit::TestCase
     t = OpenTox::Task.new(uri)
     t.wait
     t.get
-    puts t.to_turtle
+    #puts t.to_turtle
     assert_equal true, t.completed?
     uri = t.resultURI
     
