@@ -5,14 +5,14 @@ class ErrorTest < Test::Unit::TestCase
 
   def test_bad_request
     object = OpenTox::Feature.new 
-    assert_raise OpenTox::NotFoundError do
+    assert_raise OpenTox::ResourceNotFoundError do
       response = object.get
     end
   end
 
   def test_error_methods
-    assert_raise OpenTox::NotFoundError do
-      not_found_error "This is a test"
+    assert_raise OpenTox::ResourceNotFoundError do
+      resource_not_found_error "This is a test"
     end
   end
 

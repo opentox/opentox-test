@@ -74,15 +74,15 @@ class TaskTest < Test::Unit::TestCase
   def test_06_create_and_fail_with_not_found_error
     task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
       sleep 1
-      not_found_error "An OpenTox::NotFoundError occured",  "http://test.org/fake_creator"
+      resource_not_found_error "An OpenTox::ResourceNotFoundError occured",  "http://test.org/fake_creator"
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
     task.wait
     assert task.error?
     assert_equal "Error", task.hasStatus
-    assert_equal "An OpenTox::NotFoundError occured", task.error_report[RDF::OT.message]
-    assert_equal "OpenTox::NotFoundError", task.error_report[RDF::OT.errorCode]
+    assert_equal "An OpenTox::ResourceNotFoundError occured", task.error_report[RDF::OT.message]
+    assert_equal "OpenTox::ResourceNotFoundError", task.error_report[RDF::OT.errorCode]
     assert_not_empty task.error_report[RDF::OT.errorCause]
     assert_equal "404", task.error_report[RDF::OT.statusCode]
   end
@@ -118,7 +118,7 @@ class TaskTest < Test::Unit::TestCase
   def test_09_check_resultURIs
     resulturi = "http://resulturi/test/1"
     task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
-      sleep 30
+      sleep 1
       resulturi
     end
     assert_equal "Running", task.hasStatus
@@ -131,6 +131,16 @@ class TaskTest < Test::Unit::TestCase
     assert_equal 200, response.code
     assert_equal resulturi, response
     assert_equal resulturi, task.resultURI
+  end
+
+  def test_10_uri_with_credentials
+    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
+      sleep 1
+      resource_not_found_error "test", "http://username:password@test.org/fake_uri"
+    end
+    task.wait
+    task.get
+    assert_no_match %r{username|password},  task.error_report[RDF::OT.actor]
   end
 
 end
