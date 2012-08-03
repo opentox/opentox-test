@@ -19,6 +19,7 @@ class ExcelUploadTest < Test::Unit::TestCase
     assert_match t.hasStatus, "Error"
   end
   
+=begin
   def test_02_valid_xls_upload
     # upload
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/isa_TB_BII.xls"
@@ -62,5 +63,6 @@ class ExcelUploadTest < Test::Unit::TestCase
     response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
     assert_match /404/, response
   end
+=end
   
 end
