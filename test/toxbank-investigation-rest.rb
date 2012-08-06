@@ -12,6 +12,7 @@ class BasicTest < Test::Unit::TestCase
   # check response from service
   def test_01_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => @@subjectid
+    puts response.inspect
     assert_equal 200, response.code
   end
 

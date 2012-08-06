@@ -31,7 +31,7 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
   end
 
   def test_06_bad_login
-    assert_raise OpenTox::NotFoundError do
+    assert_raise OpenTox::ResourceNotFoundError do
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end

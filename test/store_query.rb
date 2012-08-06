@@ -75,7 +75,7 @@ class UploadTest < Test::Unit::TestCase
 =end
   def test_08_RestCalls
     # RestCallError_mime_type
-    assert OpenTox::RestCallError do
+    assert OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
       assert_match /application\/rdf\+xml is not a supported mime type for SELECT statements./, response
     end 
