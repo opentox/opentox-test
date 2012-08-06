@@ -68,7 +68,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     uri = task.resultURI
     #puts uri
     @@uri = URI(uri)
-    response = OpenTox::RestClientWrapper.get "#{uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert @@uri.host == URI($investigation[:uri]).host
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
