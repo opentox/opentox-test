@@ -16,3 +16,12 @@ rescue
   puts "Authorization error: #{$!.message}"
   exit
 end
+
+# build subjectid for testuser
+begin
+  $piGuest[:subjectid] = OpenTox::Authorization.authenticate($piGuest[:name], $piGuest[:password])
+  raise if !OpenTox::Authorization.authenticate($piGuest[:name], $piGuest[:password])
+rescue
+  puts "Authorization error: #{$!.message}"
+  exit
+end

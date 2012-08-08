@@ -1,7 +1,7 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
 class BasicTest < Test::Unit::TestCase
-
+  
   # check response from service
   def test_01_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => @@subjectid
@@ -26,7 +26,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
   RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
-
+  
   # check post to investigation service without file
   def test_01a_post_investigation_400_no_file
     assert_raise OpenTox::BadRequestError do
@@ -74,11 +74,17 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert result.grep(/user_policies/).size == 0
   end
 
+  def test_02b_get_investigation_sparl_results
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 2" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
+    puts response
+    assert_match /<\/sparql/, response
+  end
+
   def test_03a_check_published_false
-    data = OpenTox::RestClientWrapper.get($investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isPublished}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
-    assert @g.first.object.value == "false"
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
   end
 
   def test_03b_put_published
@@ -92,18 +98,17 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_03c_check_published_true
-    data = OpenTox::RestClientWrapper.get($investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isPublished}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
-    assert @g.first.object.value == "true"
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
   end
 
   def test_04a_check_summary_searchable_false
-    data = OpenTox::RestClientWrapper.get($investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isSummarySearchable}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
-    puts data
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
-    assert @g.first.object.value == "false"
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /false/}
   end
 
   def test_04b_put_summary_searchable
@@ -117,10 +122,10 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_04c_check_summary_searchable_true
-    data = OpenTox::RestClientWrapper.get($investigation[:uri], {:query => "CONSTRUCT { ?s ?p ?o.  } FROM <#{@@uri}> WHERE { ?s <#{RDF::TB.isSummarySearchable}> ?o. ?s ?p ?o .  } " }, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }).to_s
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(data){|r| r.each{|s| @g << s}}
-    assert @g.first.object.value == "true"
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
   end
 
   # get investigation/{id}/metadata in rdf and check content
@@ -181,7 +186,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal "text/tab-separated-values;charset=utf-8", result.headers[:content_type]
   end
 
-  # get investigation/{id} as application/sparql-results+json
+  # get investigation/{id} as application/rdf+xml
   def test_09_get_investigation_sparql
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal "application/rdf+xml", result.headers[:content_type]
@@ -193,14 +198,35 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
-    #puts task_uri
+    puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
+    # update is finished, check flags 
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_match /<\?xml/, response #PI can get
+
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    assert_not_match /<\?xml/, res #Guest get nothing
+    # update flags
+    OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_match /<\?xml/, response #PI can get
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    assert_match /<\?xml/, res #Guest can get if isSS
+    # check content
     @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
+    
+    # check investigation data still not reachable as GUEST
+    res = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    assert_not_match /<\?xml/, res
+    # update flag isP
+    OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{:subjectid => $pi[:subjectid]}
+    res = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    assert_match /<\?xml/, res #Guest can get if isP
   end
 
   # get investigation/{id}/metadata in rdf and check content
@@ -223,8 +249,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
     @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
