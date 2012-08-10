@@ -274,6 +274,24 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
 
+  def test_90_try_to_delete_id_as_guest
+    assert_raise OpenTox::BadRequestError do
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
+    end
+  end
+
+  def test_91_try_to_delete_id_file_as_guest
+    assert_raise OpenTox::BadRequestError do
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
+    end
+  end
+
+  def test_92_try_to_update_id_as_guest
+    assert_raise OpenTox::BadRequestError do
+      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{:subjectid => $piGuest[:subjectid]}
+    end
+  end
+  
   # check if uri is in uri-list
   def test_98_get_investigation
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
