@@ -1,5 +1,13 @@
 require 'test/unit'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+
+begin
+  puts "Service URI is: #{$feature[:uri]}"
+rescue
+  puts "Configuration Error: $feature[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
 
 class FeatureRestTest < Test::Unit::TestCase
 
@@ -79,8 +87,8 @@ class FeatureRestTest < Test::Unit::TestCase
   def test_06_delete_feature
     @@uris.each do |uri|
       OpenTox::RestClientWrapper.delete(uri)
-      assert_raise OpenTox::NotFoundError do
-      #assert_raise OpenTox::NotFoundError do
+      assert_raise OpenTox::ResourceNotFoundError do
+      #assert_raise OpenTox::ResourceNotFoundError do
         OpenTox::RestClientWrapper.get(uri)
       end
     end
