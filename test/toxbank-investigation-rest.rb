@@ -83,9 +83,35 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_02b_get_investigation_sparl_results
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 2" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
-    puts response
-    assert_match /<\/sparql/, response
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
+    puts "sparql-results+xml:\n#{response.split("\n")}"
+    assert_match /<sparql/, response.split("\n")[1]
+    assert_not_match /rdf:RDF/, response.split("\n")[1]
+    assert_not_match /#{@@uri.to_s}|@prefix dc/, response.split("\n").first
+  end
+
+  def test_02c_get_investigation_rdf_xml
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
+    puts "rdf+xml:\n#{response.split("\n")}"
+    assert_match /rdf:RDF/, response.split("\n")[1]
+    assert_not_match /<sparql/, response.split("\n")[1]
+    assert_not_match /#{@@uri.to_s}|@prefix dc/, response.split("\n").first
+  end
+
+  def test_02d_get_investigation_text_plain
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'text/plain', :subjectid => @@subjectid }
+    puts "text/plain:\n#{response.split("\n")}"
+    assert_match /#{@@uri.to_s}/, response.split("\n").first
+    assert_not_match /<sparql|rdf:RDF/, response.split("\n")[1]
+    assert_not_match /@prefix dc/, response.split.first
+  end
+
+  def test_02e_get_investigation_text_turtle
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'text/turtle', :subjectid => @@subjectid }
+    puts "text/turtle:\n#{response.split("\n")}"
+    assert_match /@prefix/, response.split("\n").first
+    assert_not_match /<sparql|rdf:RDF/, response.split("\n")[1]
+    assert_not_match /#{@@uri.to_s}/, response.split.first
   end
 
   def test_03a_check_published_false
@@ -275,19 +301,19 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_90_try_to_delete_id_as_guest
-    assert_raise OpenTox::BadRequestError do
+    assert_raise OpenTox::NotAuthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
     end
   end
 
   def test_91_try_to_delete_id_file_as_guest
-    assert_raise OpenTox::BadRequestError do
+    assert_raise OpenTox::NotAuthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
     end
   end
 
   def test_92_try_to_update_id_as_guest
-    assert_raise OpenTox::BadRequestError do
+    assert_raise OpenTox::NotAuthorizedError do
       OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{:subjectid => $piGuest[:subjectid]}
     end
   end
