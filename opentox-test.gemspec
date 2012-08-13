@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |gem|
+  gem.name          = "opentox-test"
   gem.authors       = ["Christoph Helma"]
   gem.email         = ["helma@in-silico.ch"]
   gem.description   = %q{Tests for OpenTox/ToxBank services}
