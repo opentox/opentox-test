@@ -11,23 +11,16 @@ class BasicTest < Test::Unit::TestCase
   
   # check response from service
   def test_01_get_investigations_200
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => @@subjectid
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
     puts response.inspect
     assert_equal 200, response.code
   end
 
   # check if default response header is text/uri-list
   def test_02_get_investigations_type
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => $pi[:subjectid] }
     assert_equal "text/uri-list", response.headers[:content_type]
   end
-
-  # check sparql query call to all investigations
-  def test_03_get_investigations_query
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
-    assert_equal 200, response.code
-  end
-
 end
 
 class BasicTestCRUDInvestigation < Test::Unit::TestCase
@@ -61,7 +54,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
     #task_uri = `curl -k -X POST #{$investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -F "allowReadByUser=http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124" -H "subjectid:#{$pi[:subjectid]}"`
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
+    #response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
     task = OpenTox::Task.new task_uri
@@ -80,38 +74,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
-  end
-
-  def test_02b_get_investigation_sparl_results
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
-    puts "sparql-results+xml:\n#{response.split("\n")}"
-    assert_match /<sparql/, response.split("\n")[1]
-    assert_not_match /rdf:RDF/, response.split("\n")[1]
-    assert_not_match /#{@@uri.to_s}|@prefix dc/, response.split("\n").first
-  end
-
-  def test_02c_get_investigation_rdf_xml
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
-    puts "rdf+xml:\n#{response.split("\n")}"
-    assert_match /rdf:RDF/, response.split("\n")[1]
-    assert_not_match /<sparql/, response.split("\n")[1]
-    assert_not_match /#{@@uri.to_s}|@prefix dc/, response.split("\n").first
-  end
-
-  def test_02d_get_investigation_text_plain
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'text/plain', :subjectid => @@subjectid }
-    puts "text/plain:\n#{response.split("\n")}"
-    assert_match /#{@@uri.to_s}/, response.split("\n").first
-    assert_not_match /<sparql|rdf:RDF/, response.split("\n")[1]
-    assert_not_match /@prefix dc/, response.split.first
-  end
-
-  def test_02e_get_investigation_text_turtle
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "CONSTRUCT {?s ?p ?o.} WHERE { ?s ?p ?o. } LIMIT 10" }, { :accept => 'text/turtle', :subjectid => @@subjectid }
-    puts "text/turtle:\n#{response.split("\n")}"
-    assert_match /@prefix/, response.split("\n").first
-    assert_not_match /<sparql|rdf:RDF/, response.split("\n")[1]
-    assert_not_match /#{@@uri.to_s}/, response.split.first
   end
 
   def test_03a_check_published_false
@@ -225,23 +187,28 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
 
-  def test_10_update_investigation
+  def test_10_a_update_investigation
     # PUT zip on existing id
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
-    response = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
-    puts task_uri
+    puts "update investigation:#{task_uri}"
     task = OpenTox::Task.new task_uri
     task.wait
     # update is finished, check flags 
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    puts response
     assert_match /<\?xml/, response #PI can get
-
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
-    assert_not_match /<\?xml/, res #Guest get nothing
+    assert_raise OpenTox::NotAuthorizedError do
+      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    end #Guest get nothing
     # update flags
-    OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    puts "update isSS:#{task_uri}"
+    task = OpenTox::Task.new task_uri
+    task.wait
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
     res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
@@ -251,14 +218,18 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
-    
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/} 
     # check investigation data still not reachable as GUEST
-    res = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
-    assert_not_match /<\?xml/, res
+    assert_raise OpenTox::NotAuthorizedError do
+      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    end
     # update flag isP
-    OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{:subjectid => $pi[:subjectid]}
-    res = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => $pi[:subjectid]}
+    task_uri = response.chomp
+    puts "isPublished:#{task_uri}"
+    task = OpenTox::Task.new task_uri
+    task.wait
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
     assert_match /<\?xml/, res #Guest can get if isP
   end
 
@@ -296,8 +267,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   def test_31_check_policies
-    assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).class
-    assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
+    assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).class
+    assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
   end
 
   def test_90_try_to_delete_id_as_guest
@@ -314,7 +285,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   def test_92_try_to_update_id_as_guest
     assert_raise OpenTox::NotAuthorizedError do
-      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{:subjectid => $piGuest[:subjectid]}
+      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => $piGuest[:subjectid]}
     end
   end
   
