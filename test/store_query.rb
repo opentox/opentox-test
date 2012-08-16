@@ -73,6 +73,7 @@ class UploadTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 =end
+=begin
   def test_08_RestCalls
     # RestCallError_mime_type
     assert OpenTox::BadRequestError do
@@ -92,4 +93,6 @@ class UploadTest < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid } 
     response.split("\n").each{|r| assert_match /#{$investigation[:uri]}/, r}
   end
+=end
 end
+
