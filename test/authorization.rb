@@ -35,11 +35,13 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end
-
+=begin
   def test_07_unauthorized
-     puts OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", @@subjectid).to_s
+    assert_raise OpenTox::UnauthorizedError do
+      result = OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", @@subjectid).to_s
+    end
   end
-
+=end
 end
 
 class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
@@ -75,7 +77,7 @@ class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
     assert res
     assert OpenTox::Authorization.uri_has_policy(TEST_URI, @@subjectid)
     owner_rights = {"GET" => true, "POST" => true, "PUT" => true, "DELETE" => true}
-    groupmember_rights = {"GET" => true, "POST" => nil, "PUT" => nil, "DELETE" => nil}
+    groupmember_rights = {"GET" => true, "POST" => false, "PUT" => false, "DELETE" => false}
     owner_rights.each do |request, right|
       assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request, @@subjectid), "#{$aa[:user]} requests #{request} to #{TEST_URI}"
     end
