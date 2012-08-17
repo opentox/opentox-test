@@ -45,7 +45,7 @@ echo
 install_with_bundler
 
 # config
-[ -f $OT_CONFIG_DIR/config/$SELF.rb ] || cp $OT_DEFAULT_CONF $OT_CONFIG_DIR/config/$SELF.rb
+[ -f $OT_CONFIG_DIR/config/test.rb ] || cp $OT_DEFAULT_CONF "$OT_CONFIG_DIR/config/test.rb"
 
 notify
 
