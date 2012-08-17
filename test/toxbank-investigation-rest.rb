@@ -200,7 +200,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
     assert_raise OpenTox::NotAuthorizedError do
-      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end #Guest get nothing
     # update flags
     response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
@@ -210,7 +210,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     task.wait
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert_match /<\?xml/, res #Guest can get if isSS
     # check content
     @g = RDF::Graph.new
@@ -220,7 +220,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/} 
     # check investigation data still not reachable as GUEST
     assert_raise OpenTox::NotAuthorizedError do
-      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end
     # update flag isP
     response = OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => $pi[:subjectid]}
@@ -228,7 +228,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     puts "isPublished:#{task_uri}"
     task = OpenTox::Task.new task_uri
     task.wait
-    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert_match /<\?xml/, res #Guest can get if isP
   end
 
@@ -272,19 +272,19 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
 
   def test_90_try_to_delete_id_as_guest
     assert_raise OpenTox::NotAuthorizedError do
-      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
   def test_91_try_to_delete_id_file_as_guest
     assert_raise OpenTox::NotAuthorizedError do
-      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $piGuest[:subjectid]}
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
   def test_92_try_to_update_id_as_guest
     assert_raise OpenTox::NotAuthorizedError do
-      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => $piGuest[:subjectid]}
+      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
     end
   end
   

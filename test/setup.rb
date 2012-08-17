@@ -13,7 +13,7 @@ end
 
 # build subjectid for testuser: guestguest
 begin
-  $piGuest[:subjectid] = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
+  @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
 rescue
   puts "Authorization error: #{$!.message}"
   exit
