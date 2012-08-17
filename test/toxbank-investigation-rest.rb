@@ -247,6 +247,33 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal 4, OpenTox::Authorization.list_uri_policies(@@uri.to_s, @@subjectid).size
   end
 
+  # check if the UI index responses with 200
+  def test_40_check_ui_index
+    puts @@uri.to_s
+    response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    assert_equal 200, response.code
+    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    puts response.to_s
+    assert_equal 200, response.code
+    n=0
+    begin
+      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+      n+=1
+      sleep 1
+    end while response.to_s != @@uri.to_s && n < 10
+    puts response.to_s
+    assert_equal 200, response.code
+    assert_equal @@uri.to_s, response.to_s
+    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    puts response.to_s
+    assert_equal 200, response.code
+  end
+
+  # check if @@uri is indexed
+  def test_41_investigation_in_index
+    #OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+  end
+
   # check if uri is in uri-list
   def test_98_get_investigation
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
