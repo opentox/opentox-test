@@ -46,7 +46,6 @@ class UploadTest < Test::Unit::TestCase
       files = `unzip -l #{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid",f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
       files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
       # get isatab files
-      #urilist = `curl -Lk -H "subjectid:#{@@subjectid}" -H "Accept:text/uri-list" #{$investigation[:uri]}`.split("\n")
       urilist = `curl -Lk -H "subjectid:#{$pi[:subjectid]}" -H "Accept:text/uri-list" #{uri}`.split("\n")
       urilist.each do |u|
         unless u.match(/[n3|zip]$/)
@@ -73,37 +72,6 @@ class UploadTest < Test::Unit::TestCase
     assert_match t.hasStatus, "Error"
     # TODO: test errorReport, rdf output of tasks has to be fixed for that purpose
   end
-
-=begin
-
-  def test_rest_client_wrapper
-    ["BII-I-1.zip"].each do |f|
-      file = File.join File.dirname(__FILE__), "toxbank-investigation","data/toxbank-investigation/valid", f
-      investigation_uri = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.read(file),:name => file}, {:content_type => "application/zip", :subjectid => @@subjectid}
-      puts investigation_uri
-      zip = File.join @tmpdir,"tmp.zip"
-      #puts "curl -Lk -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
-      `curl -Lk -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
-      `unzip -o #{zip} -d #{@tmpdir}`
-      files = `unzip -l toxbank-investigation/data/toxbank-investigation/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
-      files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
-
-      # get isatab files
-      `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
-        unless u.match(/n3$/)
-          response = `curl -Lk -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{u}`
-          assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
-        end
-      end
-
-      # delete
-      response = `curl -Lk -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
-      assert_match /200/, response
-      response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
-      assert_match /404/, response
-    end
-  end
-=end
 
 =begin
   def test_ruby_api

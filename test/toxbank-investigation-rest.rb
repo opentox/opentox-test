@@ -11,9 +11,9 @@ class BasicTest < Test::Unit::TestCase
   
   # check response from service
   def test_01_get_investigations_200
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
-    puts response.inspect
-    assert_equal 200, response.code
+    assert_raise OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
+    end
   end
 
   # check if default response header is text/uri-list
@@ -198,7 +198,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     task.wait
     # update is finished, check flags 
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    puts response
     assert_match /<\?xml/, response #PI can get
     assert_raise OpenTox::NotAuthorizedError do
       res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $piGuest[:subjectid]}
