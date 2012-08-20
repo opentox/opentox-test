@@ -1,7 +1,6 @@
 require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 $algorithm = {:uri => "http://webservices.in-silico.ch/algorithm"}
-
+require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 class AlgorithmTest < Test::Unit::TestCase
 
   def test_01_set_parameters
