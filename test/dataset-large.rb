@@ -16,7 +16,6 @@ class DatasetLargeTest < Test::Unit::TestCase
     f = File.join DATA_DIR, "EPAFHM.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
-    puts d.uri
     d.get
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
@@ -31,6 +30,7 @@ class DatasetLargeTest < Test::Unit::TestCase
     d.upload f
     puts d.uri
     d.get
+    puts "get finished"
     csv = CSV.read f
     assert_equal csv.size-4, d.compounds.size
     assert_equal csv.first.size-1, d.features.size

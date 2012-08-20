@@ -120,7 +120,8 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal 6, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
     assert_equal [["1", 1.0, "true", "true", "test"], ["1", 2.0, "false", "7.5", "test"], ["1", 3.0, "true", "5", "test"], ["0", 4.0, "false", "false", "test"], ["1", 2.0, "true", "4", "test_2"],["1", nil, "false", nil, nil]], d.data_entries
-    assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
+    assert_equal "c1cc[nH]c1,1,,false,,", d.to_csv.split("\n")[6]
+    #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.each_with_index do |row,i|
