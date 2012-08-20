@@ -120,7 +120,8 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal 6, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
     assert_equal [["1", 1.0, "true", "true", "test"], ["1", 2.0, "false", "7.5", "test"], ["1", 3.0, "true", "5", "test"], ["0", 4.0, "false", "false", "test"], ["1", 2.0, "true", "4", "test_2"],["1", nil, "false", nil, nil]], d.data_entries
-    assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
+    assert_equal "c1cc[nH]c1,1,,false,,", d.to_csv.split("\n")[6]
+    #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.each_with_index do |row,i|
@@ -161,3 +162,38 @@ class DatasetTest < Test::Unit::TestCase
   end
 
 end
+
+=begin
+class DatasetRestTest < Test::Unit::TestCase
+
+  def test_01_get_uri_list
+    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    assert_equal 200, result.code
+  end
+
+  # check if default response header is text/uri-list
+  def test_02_get_datasetlist_type
+    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    assert_equal "text/uri-list", result.headers[:content_type]
+  end
+
+  # check post to investigation service without file
+  def test_10_post_dataset_400_no_file
+    #result =  OpenTox::RestClientWrapper.post $dataset[:uri], {}, { :subjectid => $pi[:subjectid] }
+    #assert_equal 200, result.code
+  end
+
+  def test_11_post_dataset
+    response =  OpenTox::RestClientWrapper.post $dataset[:uri], {:file => File.join(File.dirname(__FILE__), "data", "hamster_carcinogenicity.csv") }, { :content_type => "text/csv", :subjectid => $pi[:subjectid] }
+    assert_equal 200, response.code
+    task_uri = response.chomp
+    puts task_uri
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    puts uri
+    @@uri = URI(uri)
+  end
+
+end
+=end

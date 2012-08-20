@@ -73,33 +73,4 @@ class UploadTest < Test::Unit::TestCase
     # TODO: test errorReport, rdf output of tasks has to be fixed for that purpose
   end
 
-=begin
-  def test_ruby_api
-    ["BII-I-1.zip"].each do |f|
-      file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
-      investigation = OpenTox::Investigation.create $investigation[:uri], :file => file, :headers => {:content_type => "application/zip", :subjectid => @@subjectid}
-      zip = File.join @tmpdir,"tmp.zip"
-      #puts "curl -Lk -H 'Accept:application/zip' -H 'subjectid:#{@@subjectid}' #{uri} > #{zip}"
-      `curl -Lk -H "Accept:application/zip" -H "subjectid:#{@@subjectid}" #{uri} > #{zip}`
-      `unzip -o #{zip} -d #{@tmpdir}`
-      files = `unzip -l data/toxbank-investigation/valid/#{f}|grep txt|cut -c 31- | sed 's#^.*/##'`.split("\n")
-      files.each{|f| assert_equal true, File.exists?(File.join(File.expand_path(@tmpdir),f)) }
-
-      # get isatab files
-      `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`.split("\n").each do |u|
-        unless u.match(/n3$/)
-          response = `curl -Lk -i -H Accept:text/tab-separated-values -H "subjectid:#{@@subjectid}" #{u}`
-          assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
-        end
-      end
-
-      # delete
-      response = `curl -Lk -i -X DELETE -H "subjectid:#{@@subjectid}" #{uri}`
-      assert_match /200/, response
-      response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{@@subjectid}" #{uri}`
-      assert_match /404/, response
-    end
-  end
-=end
-
 end

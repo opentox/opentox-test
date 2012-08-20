@@ -13,7 +13,10 @@ end
 
 # build subjectid for testuser: guestguest
 begin
-  @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
+  unless $aa[:uri].to_s == ""
+    @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
+    raise if !OpenTox::Authorization.is_token_valid(@@subjectid)
+  end
 rescue
   puts "Authorization error: #{$!.message}"
   exit

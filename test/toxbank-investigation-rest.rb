@@ -199,7 +199,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     # update is finished, check flags 
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
-    assert_raise OpenTox::NotAuthorizedError do
+    assert_raise OpenTox::UnauthorizedError do
       res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end #Guest get nothing
     # update flags
@@ -219,7 +219,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/} 
     # check investigation data still not reachable as GUEST
-    assert_raise OpenTox::NotAuthorizedError do
+    assert_raise OpenTox::UnauthorizedError do
       res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end
     # update flag isP
@@ -270,20 +270,47 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
   end
 
+  # check if the UI index responses with 200
+  def test_40_check_ui_index
+    puts @@uri.to_s
+    response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    assert_equal 200, response.code
+    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    puts response.to_s
+    assert_equal 200, response.code
+    n=0
+    begin
+      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+      n+=1
+      sleep 1
+    end while response.to_s != @@uri.to_s && n < 10
+    puts response.to_s
+    assert_equal 200, response.code
+    assert_equal @@uri.to_s, response.to_s
+    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    puts response.to_s
+    assert_equal 200, response.code
+  end
+
+  # check if @@uri is indexed
+  def test_41_investigation_in_index
+    #OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+  end
+
   def test_90_try_to_delete_id_as_guest
-    assert_raise OpenTox::NotAuthorizedError do
+    assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
   def test_91_try_to_delete_id_file_as_guest
-    assert_raise OpenTox::NotAuthorizedError do
+    assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
   def test_92_try_to_update_id_as_guest
-    assert_raise OpenTox::NotAuthorizedError do
+    assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
     end
   end

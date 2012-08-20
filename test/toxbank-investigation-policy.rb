@@ -1,5 +1,5 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-require File.join(ENV["HOME"],"toxbank-investigation","tbaccount.rb")
+require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","toxbank-investigation","tbaccount.rb")
 
 class TBAccountBasicTest < Test::Unit::TestCase
   @@accounts = {"mrautenberg" => "http://toxbanktest1.opentox.org:8080/toxbank/user/U124", "guest" => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", "member" => "http://toxbanktest1.opentox.org:8080/toxbank/organisation/G176"}

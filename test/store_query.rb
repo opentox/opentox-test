@@ -73,7 +73,6 @@ class UploadTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 =end
-=begin
   def test_08_RestCalls
     # RestCallError_mime_type
     assert OpenTox::BadRequestError do
@@ -82,6 +81,7 @@ class UploadTest < Test::Unit::TestCase
     end 
   end
 
+=begin
   def test_09
     # sparql-results+xml
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
