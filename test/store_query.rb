@@ -72,16 +72,14 @@ class UploadTest < Test::Unit::TestCase
     end
     threads.each {|aThread| aThread.join}
   end
-=end
+
   def test_08_RestCalls
-    # RestCallError_mime_type
+    # RestCallError
     assert OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
-      assert_match /application\/rdf\+xml is not a supported mime type for SELECT statements./, response
     end 
   end
 
-=begin
   def test_09
     # sparql-results+xml
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
