@@ -55,9 +55,9 @@ class TBAccountBasicTest < Test::Unit::TestCase
     guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/user/U2", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri)
     assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
     test_98_delete_policies
   end
@@ -65,9 +65,9 @@ class TBAccountBasicTest < Test::Unit::TestCase
   def test_11_create_membergroup_policy
     guest = OpenTox::TBAccount.new("http://toxbanktest1.opentox.org:8080/toxbank/organisation/G176", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
     test_98_delete_policies
   end
@@ -98,7 +98,7 @@ class TBAccountBasicTest < Test::Unit::TestCase
     assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal nil, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
     test_98_delete_policies
   end
