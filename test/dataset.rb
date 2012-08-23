@@ -45,8 +45,11 @@ class DatasetTest < Test::Unit::TestCase
 =end
 
   def test_all
+    d1 = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid), @@subjectid
+    d1.put
     datasets = OpenTox::Dataset.all $dataset[:uri], @@subjectid
     assert_equal OpenTox::Dataset, datasets.first.class
+    d1.delete
   end
 
   def test_create_empty
