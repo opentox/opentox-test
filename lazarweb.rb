@@ -10,8 +10,14 @@ Capybara.run_server = false
 
 class LazarWebTest < Test::Unit::TestCase
   include Capybara::DSL
-  
+
+
   @@uri = "http://lazar.in-silico.ch"
+
+  def insert_to_post
+    visit(@@uri)
+    page.fill_in('identifier', :with => "NNc1ccccc1")
+  end
   
   def test_00_start
     `Xvfb :1 -screen 0 1024x768x16 -nolisten inet6 &`
@@ -47,18 +53,98 @@ class LazarWebTest < Test::Unit::TestCase
     links.each{|l| assert page.has_link?(l)}
   end
 
-  def test_02_workflow
-    visit(@@uri)
-    page.fill_in('identifier', :with => "NNc1ccccc1")
+  def test_02_EPA
+    insert_to_post
     check('model37')
     click_on 'Predict'
     assert page.has_content?('Prediction')
     assert page.has_content?('0.762')
     assert page.has_content?('Confidence')
     assert page.has_content?('0.452')
+    assert page.has_no_link?('Measured activity')
     click_on 'Details'
     assert page.has_content?('LC50_mmol')
     assert page.has_content?('Neighbors')
+  end
+
+  def test_03_Hamster
+    insert_to_post
+    check('model31')
+    click_on 'Predict'
+    assert page.has_content?('non-carcinogen')
+    assert page.has_content?('Confidence')
+    assert page.has_content?('0.33')
+    assert page.has_no_link?('Measured activity')
+  end
+
+  def test_04_Mouse
+    insert_to_post
+    check('model32')
+    click_on 'Predict'
+    assert page.has_content?('non-carcinogen')
+    assert page.has_link?('Measured activity')
+  end
+
+  def test_05_MultiCellcall
+    insert_to_post
+    check('model33')
+    click_on 'Predict'
+    assert page.has_content?('carcinogen')
+    assert page.has_content?('Confidence')
+    assert page.has_content?('0.482')
+    assert page.has_no_link?('Measured activity')
+  end
+
+  def test_06_Rat
+    insert_to_post
+    check('model35')
+    click_on 'Predict'
+    assert page.has_content?('carcinogen')
+    assert page.has_content?('Confidence')
+    assert page.has_content?('0.0629')
+    assert page.has_no_link?('Measured activity')
+  end
+
+  def test_07_SingleCellCall
+    insert_to_post
+    check('model36')
+    click_on 'Predict'
+    assert page.has_content?('non-carcinogen')
+    assert page.has_link?('Measured activity')
+  end
+
+  def test_08_Canc
+    insert_to_post
+    check('model38')
+    click_on 'Predict'
+    assert page.has_content?('carcinogen')
+    assert page.has_link?('Measured activity')
+  end
+
+  def test_09_Mutagenicity
+    insert_to_post
+    check('model34')
+    click_on 'Predict'
+    assert page.has_content?('mutagenic')
+    assert page.has_link?('Measured activity')
+  end
+
+  def test_10_KaziusBursi
+    insert_to_post
+    check('model13')
+    click_on 'Predict'
+    assert page.has_content?('mutagenic')
+    assert page.has_link?('Measured activity')
+  end
+
+  def test_11_FDA
+    insert_to_post
+    check('model24')
+    click_on 'Predict'
+    assert page.has_content?('0.165')
+    assert page.has_content?('Confidence')
+    assert page.has_content?('0.0834')
+    assert page.has_no_link?('Measured activity')
   end
 
   def test_99_kill
