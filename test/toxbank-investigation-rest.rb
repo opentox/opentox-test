@@ -34,7 +34,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
       response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
-
+  
+  # post with wrong mime type and expect OpenTox::BadRequestError
   def test_01b_wrong_mime_type
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
     assert_raise OpenTox::BadRequestError do
@@ -42,6 +43,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     end
   end
 
+  # post an empty zip and expect OpenTox::BadRequestError
   def test_01c_upload_empty_zip
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
     assert_raise OpenTox::BadRequestError do
@@ -49,11 +51,12 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     end
   end
 
-  # create an investigation by uploading a zip file
+  # create an investigation by uploading a zip file,
+  # get metadata as application/rdf+xml,
+  # check for title/AccessionID "BII-I-1b"
   def test_02_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
-    #task_uri = `curl -k -X POST #{$investigation[:uri]} -H "Content-Type: multipart/form-data" -F "file=@#{file};type=application/zip" -F "allowReadByUser=http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124" -H "subjectid:#{$pi[:subjectid]}"`
     #response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
@@ -71,11 +74,14 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1b/}
   end
 
+  # check that policy files not listed in uri-list 
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
   end
 
+  # check for flag "isPublished" is false,
+  # default behaviour on new investigations
   def test_03a_check_published_false
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
@@ -83,7 +89,13 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
   end
 
+  # update flag "isPublished" to true,
+  # try to update with other string than "true" and expect Error,
+  # update policy to allow read by group "G2",
+  # try to give inexisting group read policy
   def test_03b_put_published
+    # TODO try to update with other string than "true" and expect Error
+    # TODO try to give inexisting group read policy
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
@@ -93,6 +105,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal uri, @@uri.to_s
   end
 
+  # check update of flag "isPublished" was successfull by reading flag node in metadata
   def test_03c_check_published_true
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
@@ -100,6 +113,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
   end
 
+  # check flag "isSummarySearchable" is false,
+  # default behaviour on new investigation
   def test_04a_check_summary_searchable_false
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
@@ -107,7 +122,10 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /false/}
   end
 
+  # update flag "isSummarySearchable" to "true",
+  # try to update with other string than "true" and expect Error
   def test_04b_put_summary_searchable
+    # TODO try to update with other string than "true" and expect Error
     response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
@@ -117,6 +135,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal uri, @@uri.to_s
   end
 
+  # check update of flag "isSummarySearchable" was successfull by reading flag node in metadata
   def test_04c_check_summary_searchable_true
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
@@ -124,7 +143,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
   end
 
-  # get investigation/{id}/metadata in rdf and check content
+  # get investigation/{id}/metadata in rdf+xml and check nodes and content: title, abstract, 
+  # hasKeyword, hasOwner, isPublished, hasAccessionID, hasOrganisation
   def test_05a_check_metadata
     # accept:application/rdf+xml
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
@@ -151,12 +171,13 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # get metadata as text/turtle
   def test_05b
-    # accept:text/turtle
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
+  # get metadata as text/plain
   def test_05c
     # accept:text/plain
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
@@ -187,8 +208,11 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
 
+  # update existing investigation with zip, check flags are "false" and update them to "true",
+  # update existing investigation with single files
   def test_10_a_update_investigation
     # PUT zip on existing id
+    # TODO update investigation with single file
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
     response = OpenTox::RestClientWrapper.put @@uri.to_s, {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
@@ -258,6 +282,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # check the investigation owner's policy
   def test_30_check_owner_policy
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", $pi[:subjectid])
@@ -265,6 +290,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
   end
 
+  # check how many policies,
+  # expect two for owner
   def test_31_check_policies
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).class
     assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
@@ -297,18 +324,25 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     #OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
   end
 
+  # try to delete investigation as "guest",
+  # expect OpenTox::UnauthorizedError
   def test_90_try_to_delete_id_as_guest
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
+  # try to delete single file of investigation as "guest",
+  # expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
+    # TODO insert pat to single file
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
 
+  # try to update an investigation as "guest",
+  # expect OpenTox::UnauthorizedError
   def test_92_try_to_update_id_as_guest
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
@@ -329,6 +363,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
   end
 
+  # check that deleted uri is no longer in uri-list
   def test_99_b_check_urilist
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_no_match /#{@@uri.to_s}/, response
