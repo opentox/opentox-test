@@ -61,13 +61,26 @@ class LazarWebTest < Test::Unit::TestCase
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
 
-  def test_02_check_all_links_exists
+  def test_02_a_insert_wrong_smiles
+    visit(@@uri)
+    page.fill_in 'identifier', :with => "blahblah"
+    check('model6')
+    click_on 'Predict'
+    assert page.has_content?('OpenTox::RestCallError'), "true"
+    visit(@@uri)
+    page.fill_in 'identifier', :with => "N9N7N8"
+    check('model6')
+    click_on 'Predict'
+    assert page.has_content?('OpenTox::RestCallError'), "true"
+  end
+  
+  def test_02_b_check_all_links_exists
     visit(@@uri)
     links = ['Prediction', '(help)', 'JME Editor', 'SMILES', 'in silico toxicology gmbh', 'Validation']
     links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
   end
 
-  def test_02_MOU
+  def test_03_MOU
     insert_to_post
     check('model6')
     click_on 'Predict'
@@ -80,7 +93,7 @@ class LazarWebTest < Test::Unit::TestCase
     assert page.has_content?('Experimental result(s) from the training dataset.'), "true"
   end
 
-  def test_03_RAT
+  def test_04_RAT
     insert_to_post
     check('model9')
     click_on 'Predict'
@@ -187,7 +200,7 @@ class LazarWebTest < Test::Unit::TestCase
     end
   end
 
-  def test_04_prediction_on_four_models_parallel
+  def test_05_prediction_on_four_models_parallel
     insert_to_post
     check('model6')
     check('model9')
@@ -238,7 +251,7 @@ class LazarWebTest < Test::Unit::TestCase
     end
   end
 
-  def test_05_multithread_visit_and_predict
+  def test_06_multithread_visit_and_predict
     threads = []
     5.times do |t|
       threads << Thread.new(t) do |up|
@@ -262,7 +275,7 @@ class LazarWebTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 
-  def test_06_validation
+  def test_07_validation
     visit(@@uri)
     click_on 'Validation'
     models = ['//*[@id="model_11"]', '//*[@id="model_10"]', '//*[@id="model_9"]', '//*[@id="model_6"]']
