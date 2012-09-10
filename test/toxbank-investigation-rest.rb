@@ -61,6 +61,7 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}."
     #puts uri
     @@uri = URI(uri)
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
