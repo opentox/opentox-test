@@ -90,12 +90,22 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
   end
 
-  # update flag "isPublished" to true,
-  # try to update with other string than "true" and expect Error,
+  # update flag "isPublished",
+  # try to update with other value than "true" and expect flag value "false",
+  # try to update with value "true" and expect flag value "true",
   # update policy to allow read by group "G2",
   # try to give inexisting group read policy
   def test_03b_put_published
-    # TODO try to update with other string than "true" and expect Error
+    res = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "yes"}, { :subjectid => $pi[:subjectid] }
+    task_uri = res.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
+    result = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
     # TODO try to give inexisting group read policy
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
@@ -104,10 +114,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     task.wait
     uri = task.resultURI
     assert_equal uri, @@uri.to_s
-  end
-
-  # check update of flag "isPublished" was successfull by reading flag node in metadata
-  def test_03c_check_published_true
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
