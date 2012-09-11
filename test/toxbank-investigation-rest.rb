@@ -109,7 +109,6 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     # TODO try to give inexisting group read policy
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
-    #puts task_uri
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
@@ -130,20 +129,25 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   # update flag "isSummarySearchable" to "true",
-  # try to update with other string than "true" and expect Error
+  # try to update with other value than "true" and expect flag value "false",
+  # try to update with value "true" and expect flag value "true",
   def test_04b_put_summary_searchable
-    # TODO try to update with other string than "true" and expect Error
-    response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
-    task_uri = response.chomp
-    #puts task_uri
+    res = OpenTox::RestClientWrapper.put @@uri.to_s, { :summarySearchable => "yes"}, { :subjectid => $pi[:subjectid] }
+    task_uri = res.chomp
     task = OpenTox::Task.new task_uri
     task.wait
     uri = task.resultURI
     assert_equal uri, @@uri.to_s
-  end
-
-  # check update of flag "isSummarySearchable" was successfull by reading flag node in metadata
-  def test_04c_check_summary_searchable_true
+    result = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isSummarySearchabel){|r| assert_match r[2].to_s, /false/}
+    response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
