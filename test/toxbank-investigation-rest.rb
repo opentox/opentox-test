@@ -7,35 +7,44 @@ rescue
   exit
 end
 
-class BasicTest < Test::Unit::TestCase
+class TBInvestigationBasic < Test::Unit::TestCase
   
-  # check response from service
-  def test_01_get_investigations_200
+  # check response from service without header,
+  # TODO or wrong header,
+  # expect OpenTox::BadRequestError
+  def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
     end
   end
 
-  # check if default response header is text/uri-list
-  def test_02_get_investigations_type
+  # check response from service with header text/uri-list
+  # TODO with header text/plain
+  # TODO with header text/turtle
+  # TODO with header application/rdf+xml
+  # expect code 200
+  def test_02_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => $pi[:subjectid] }
     assert_equal "text/uri-list", response.headers[:content_type]
   end
+
 end
 
-class BasicTestCRUDInvestigation < Test::Unit::TestCase
+class TBInvestigationREST < Test::Unit::TestCase
 
   RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
   RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
   
-  # check post to investigation service without file
+  # check post to investigation service without file,
+  # expect OpenTox::BadRequestError
   def test_01a_post_investigation_400_no_file
     assert_raise OpenTox::BadRequestError do
       response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
   
-  # post with wrong mime type and expect OpenTox::BadRequestError
+  # post with wrong mime type,
+  # expect OpenTox::BadRequestError
   def test_01b_wrong_mime_type
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
     assert_raise OpenTox::BadRequestError do
@@ -43,7 +52,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
     end
   end
 
-  # post an empty zip and expect OpenTox::BadRequestError
+  # post an empty zip,
+  # expect OpenTox::BadRequestError
   def test_01c_upload_empty_zip
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
     assert_raise OpenTox::BadRequestError do
@@ -52,6 +62,8 @@ class BasicTestCRUDInvestigation < Test::Unit::TestCase
   end
 
   # create an investigation by uploading a zip file,
+  # TODO create by uploading text/tab-separated-values
+  # TODO create by uploading application/vnd.ms-excel
   # get metadata as application/rdf+xml,
   # check for title/AccessionID "BII-I-1b"
   def test_02_post_investigation
