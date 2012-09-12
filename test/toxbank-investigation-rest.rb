@@ -10,7 +10,7 @@ end
 class TBInvestigationBasic < Test::Unit::TestCase
   
   # check response from service without header,
-  # TODO or wrong header,
+  #@todo TODO or wrong header,
   # expect OpenTox::BadRequestError
   def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
@@ -34,6 +34,14 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
   RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
+
+
+  # check if the userservice is available
+  # expect the guest user URI
+  def test_00_pre_get_user_from_userservice
+    guesturi = OpenTox::RestClientWrapper.get("http://toxbanktest1.opentox.org:8080/toxbank/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
+    assert_equal "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", guesturi
+  end
   
   # check post to investigation service without file,
   # expect OpenTox::BadRequestError
