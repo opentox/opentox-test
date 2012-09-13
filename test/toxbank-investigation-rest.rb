@@ -10,8 +10,8 @@ end
 class TBInvestigationBasic < Test::Unit::TestCase
   
   # check response from service without header,
-  #@todo TODO or wrong header,
-  # expect OpenTox::BadRequestError
+  # @todo TODO or wrong header,
+  # @note expect OpenTox::BadRequestError
   def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
@@ -19,10 +19,10 @@ class TBInvestigationBasic < Test::Unit::TestCase
   end
 
   # check response from service with header text/uri-list
-  #@todo TODO with header text/plain
-  #@todo TODO with header text/turtle
-  #@todo TODO with header application/rdf+xml
-  # expect code 200
+  # @todo TODO with header text/plain
+  # @todo TODO with header text/turtle
+  # @todo TODO with header application/rdf+xml
+  # @note expect code 200
   def test_02_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => $pi[:subjectid] }
     assert_equal "text/uri-list", response.headers[:content_type]
@@ -296,6 +296,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note expect title after update is "BII-I-1"
   def test_10_d_check_if_title_has_changed_by_update
     # check content
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
