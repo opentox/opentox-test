@@ -322,8 +322,25 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
 
-  # expect Guest user can get investigation data after update
-  def test_10_g_guest_can_get
+  # @note expect data is still not reachable without policy
+  def test_10_g_guest_can_not_get
+    assert_raise OpenTox::UnauthorizedError do
+      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    end
+  end
+
+  # update policy 
+  def test_10_h_update_guest_policy
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"},{:subjectid => $pi[:subjectid]}
+    task_uri = response.chomp
+    puts "update Policy: #{task_uri}"
+    task = OpenTox::Task.new task_uri
+    task.wait
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+  end
+
+  # @note data is available with policy
+  def test_10_i_guest_can_get
     res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     assert_match /<\?xml/, res
   end
@@ -363,6 +380,8 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "PUT", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
+    # check for guest policy
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", @@subjectid)
   end
 
   # check how many policies,
@@ -370,27 +389,27 @@ class TBInvestigationREST < Test::Unit::TestCase
   #   one for owner, one for group
   def test_31_check_policies
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).class
-    assert_equal 2, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
+    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
   end
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
     puts @@uri.to_s
-    response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
-    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     puts response.to_s
     assert_equal 200, response.code
     n=0
     begin
-      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
       n+=1
       sleep 1
     end while response.to_s != @@uri.to_s && n < 10
     puts response.to_s
     assert_equal 200, response.code
     #assert_equal @@uri.to_s, response.to_s
-    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@subjectid}
+    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     puts response.to_s
     assert_equal 200, response.code
   end
