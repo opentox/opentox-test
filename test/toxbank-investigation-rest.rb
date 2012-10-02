@@ -320,6 +320,9 @@ class TBInvestigationREST < Test::Unit::TestCase
     task = OpenTox::Task.new task_uri
     task.wait
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    # check owner can get
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_match /<\?xml/, res
   end
 
   # @note expect data is still not reachable without policy
