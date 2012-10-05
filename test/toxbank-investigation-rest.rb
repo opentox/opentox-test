@@ -1,4 +1,5 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require File.join(File.expand_path(File.dirname(__FILE__)),".." ,".." ,"toxbank-investigation", "util.rb")
 
 begin
   puts "Service URI is: #{$investigation[:uri]}"
@@ -397,24 +398,26 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    puts @@uri.to_s
-    response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+    #puts @@uri.to_s
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     assert_equal 200, response.code
-    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+=begin
+    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s + $pi[:subjectid])}",{},{}
     puts response.to_s
     assert_equal 200, response.code
     n=0
     begin
-      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s + $pi[:subjectid])}",{},{:subjectid => $pi[:subjectid]}
       n+=1
       sleep 1
     end while response.to_s != @@uri.to_s && n < 10
     puts response.to_s
     assert_equal 200, response.code
     #assert_equal @@uri.to_s, response.to_s
-    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s) + $pi[:subjectid]}",{},{:subjectid => $pi[:subjectid]}
     puts response.to_s
     assert_equal 200, response.code
+=end
   end
 
   # check if @@uri is indexed
