@@ -399,20 +399,20 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check if the UI index responses with 200
   def test_40_check_ui_index
     #puts @@uri.to_s
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri.to_s}", "get", $pi[:subjectid]
     assert_match "200", response.code
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}","put" ,$pi[:subjectid]
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri.to_s}","put" ,$pi[:subjectid]
     assert_match "200", response.code
     n=0
     begin
-      @response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      @response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri.to_s}", "get", $pi[:subjectid]
       n+=1
       puts "\nget uri from index:#{@response.body}"
       sleep 1
-    end while @response.to_s != @@uri.to_s && n < 10
+    end while @response.body != @@uri.to_s && n < 10
     assert_match "200", response.code
-    #assert_match @@uri.to_s, @response.body
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
+    assert_match @@uri.to_s, @response.body
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri.to_s}", "delete", $pi[:subjectid]
     assert_match "200", response.code
   end
 
