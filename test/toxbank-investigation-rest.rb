@@ -401,23 +401,19 @@ class TBInvestigationREST < Test::Unit::TestCase
     #puts @@uri.to_s
     response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     assert_match "200", response.code
-=begin
-    response = OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s + $pi[:subjectid])}",{},{}
-    puts response.to_s
-    assert_equal 200, response.code
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}","put" ,$pi[:subjectid]
+    assert_match "200", response.code
     n=0
     begin
-      response = OpenTox::RestClientWrapper.get "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s + $pi[:subjectid])}",{},{:subjectid => $pi[:subjectid]}
+      @response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
       n+=1
+      puts "\nget uri from index:#{@response.body}"
       sleep 1
-    end while response.to_s != @@uri.to_s && n < 10
-    puts response.to_s
-    assert_equal 200, response.code
-    #assert_equal @@uri.to_s, response.to_s
-    response = OpenTox::RestClientWrapper.delete "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s) + $pi[:subjectid]}",{},{:subjectid => $pi[:subjectid]}
-    puts response.to_s
-    assert_equal 200, response.code
-=end
+    end while @response.to_s != @@uri.to_s && n < 10
+    assert_match "200", response.code
+    #assert_match @@uri.to_s, @response.body
+    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
+    assert_match "200", response.code
   end
 
   # check if @@uri is indexed
