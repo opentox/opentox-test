@@ -15,7 +15,7 @@ class TBInvestigationBasic < Test::Unit::TestCase
   # @note expect OpenTox::BadRequestError
   def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
 
@@ -100,6 +100,41 @@ class TBInvestigationREST < Test::Unit::TestCase
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
+  end
+
+  # check for uri-list as text/uri-list
+  # @note returns all listet investigations in service
+  def test_02b_check_for_text_uri_list
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list as application/rdf+xml
+  # @note returns all listet investigations in service
+  def test_02c_check_for_rdf_uri_list
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of a given user as application/rdf+xml
+  # @note returns all listet investigations from a given user
+  def test_02d_check_for_users_investigations
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of an inexisting user
+  # @note returns nothing if inexisting user
+  def test_02e_check_with_inexisting_user
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_not_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of an guest user
+  # @note returns nothing because there are no investigations of this user
+  def test_02f_check_for_guestuser_uris
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_not_match /#{@@uri}/, result.to_s
   end
 
   # check for flag "isPublished" is false,
@@ -208,16 +243,23 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # get related protocol uris
+  # @note returns related protocol uri of a study
+  def test_05_b
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_match /SEURAT\-Protocol\-245\-1/, response.to_s
+  end
+  
   # get metadata 
   # @note accept:text/turtle
-  def test_05b
+  def test_05c
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
   # get metadata
   # @note accept:text/plain
-  def test_05c
+  def test_05d
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     assert_match  /^text\/plain/ , response.headers[:content_type]
   end
@@ -402,14 +444,14 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_equal "200", response.code
     response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}","put" ,$pi[:subjectid]
     assert_equal "200", response.code
-    n=0
-    begin
-      @response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
-      n+=1
-      puts "\nget uri from index:#{@response.body}"
-      sleep 1
-    end while @response.body != @@uri.to_s && n < 10
-    assert_equal "200", response.code
+    #n=0
+    #begin
+      #@response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
+      #n+=1
+      #puts "\nget uri from index:#{@response.body}"
+      #sleep 1
+    #end while @response.body != @@uri.to_s && n < 10
+    #assert_equal "200", response.code
     #assert_equal @@uri.to_s, @response.body
     response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "delete", $pi[:subjectid]
     assert_equal "200", response.code
