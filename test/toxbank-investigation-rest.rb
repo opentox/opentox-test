@@ -133,7 +133,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check for uri-list of an guest user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_guestuser_uris
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
@@ -264,6 +264,21 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_match  /^text\/plain/ , response.headers[:content_type]
   end
 
+  # get a resource as owner
+  # @note expect result 
+  def test_05e
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/S192", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    assert_match  /Comprehensive high-throughput analyses at the levels of mRNAs|hasProtocol|hasAssay/, response
+  end
+
+  # get a resource as guest
+  # @note expect no result until investigation is published
+  def test_05f
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/S192", {}, {:accept => "text/plain", :subjectid => @@subjectid}
+    end
+  end
+
   # get investigation/{id}
   # @note accept:text/uri-list
   def test_06_get_investigation_uri_list
@@ -287,7 +302,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # get investigation/{id}
   # @note accept:application/rdf+xml
-  def test_09_get_investigation_sparql
+  def test_09_get_investigation_check_accept_headers
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
