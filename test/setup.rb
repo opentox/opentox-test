@@ -4,12 +4,12 @@ Bundler.require
 require 'opentox-client'
 require File.join(ENV["HOME"],".opentox","config","test.rb")
 
-#begin
-#  $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
-#rescue
-#  puts "Authorization error: #{$!.message}"
-#  exit
-#end
+begin
+  $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
+rescue
+  puts "Authorization error: #{$!.message}"
+  exit
+end
 
 # build subjectid for testuser: guestguest
 begin
