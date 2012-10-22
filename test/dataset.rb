@@ -114,10 +114,9 @@ class DatasetTest < Test::Unit::TestCase
   def test_multicolumn_csv
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload "#{DATA_DIR}/multicolumn.csv"
-    #puts d.uri
     d.get
     assert_not_nil d[RDF::OT.Warnings]
-    assert_match /Duplicated compound/,  d[RDF::OT.Warnings]
+    assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
     assert_match /3, 5/,  d[RDF::OT.Warnings]
     assert_equal 5, d.features.size
     assert_equal 6, d.compounds.size
@@ -127,11 +126,14 @@ class DatasetTest < Test::Unit::TestCase
     #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
+    csv.shift
+    original_csv.shift
     csv.each_with_index do |row,i|
-      compound = OpenTox::Compound.from_smiles $compound[:uri], row.shift
+      compound = OpenTox::Compound.from_inchi $compound[:uri], row.shift
       original_compound = OpenTox::Compound.from_smiles $compound[:uri], original_csv[i].shift
       assert_equal original_compound.uri, compound.uri
-      assert_equal original_csv[i].collect{|v| v.to_s.strip}, row
+      # AM: multicol does not parse correctly NA into nil
+      assert_equal original_csv[i].collect{|v| (v.class == String) ? ((v.strip == "") ? nil : v.strip) : v}, row
     end
     d.delete 
     assert_equal false, URI.accessible?(d.uri)
