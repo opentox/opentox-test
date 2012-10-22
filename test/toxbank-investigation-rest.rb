@@ -267,7 +267,13 @@ class TBInvestigationREST < Test::Unit::TestCase
   # get a resource as owner
   # @note expect result 
   def test_05e
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/S192", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    metadata = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    @@resource = ""
+    RDF::Reader.for(:rdfxml).new(metadata.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| @@resource = r[2].to_s.split("/").last}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    puts "\nresource: #{@@resource}"
     assert_match  /Comprehensive high-throughput analyses at the levels of mRNAs|hasProtocol|hasAssay/, response
   end
 
@@ -275,7 +281,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note expect no result until investigation is published
   def test_05f
     assert_raise OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.get "#{@@uri}/S192", {}, {:accept => "text/plain", :subjectid => @@subjectid}
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => @@subjectid}
     end
   end
 
