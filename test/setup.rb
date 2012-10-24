@@ -14,6 +14,7 @@ end
 
 # build subjectid for testuser: guestguest
 begin
+  @@subjectid = nil
   unless $aa[:uri].to_s == ""
     @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
     raise if !OpenTox::Authorization.is_token_valid(@@subjectid)

@@ -6,13 +6,20 @@
 SELF=$(basename $0 -install)
 [ "`id -u`" = "0" ] && echo "This script must be run as non-root." 1>&2 && exit 1
 
-# Adjust ruby version here!
-RUBY_NUM_VER="1.9.3-p194"
+SILENT=false
+if [ -n "$1" ]
+then
+    if [ "$1" = "silent" ]
+    then
+        SILENT=true
+    fi
+fi
 
-echo
-echo "Welcome to service installation (<Return> to continue)."
-read delete_me
-
+if [ $SILENT = false ]; then
+  echo
+  echo "Welcome to service installation (<Return> to continue)."
+  read delete_me
+fi
 
 # check wd is root of service
 DIR=`pwd`
@@ -37,6 +44,9 @@ if [ "$OT_BRANCH" = "development" ]; then
   cmd="test -d $OT_PREFIX/opentox-client" && run_cmd "$cmd" "Opentox-client"
 fi
 
+# Adjust ruby version here!
+RUBY_NUM_VER="1.9.3-p194"
+
 # ruby
 install_ruby
 
@@ -47,7 +57,9 @@ install_with_bundler
 # config
 [ -f $OT_CONFIG_DIR/config/test.rb ] || cp $OT_DEFAULT_CONF "$OT_CONFIG_DIR/config/test.rb"
 
-notify
+if [ $SILENT = false ]; then
+  notify
+fi
 
 # return to wd
 cd "$DIR"
