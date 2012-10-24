@@ -456,7 +456,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     puts "secondpi-> uri: #{uri}"
     puts "pi-> uri: #{@@uri}"
     # pi get uris as rdf of secondpi
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => 'http://toxbanktest1.opentox.org:8080/toxbank/user/U296', :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => 'http://toxbanktest1.opentox.org:8080/toxbank/user/U479', :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_not_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
