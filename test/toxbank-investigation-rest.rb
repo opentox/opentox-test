@@ -441,6 +441,28 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # upload a investigation as secondpi
+  # @note expect only secondpi uris in uri-list
+  def test_20_a_post_data
+    uri = ""
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $secondpi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    u = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    uri = URI(u)
+    puts "secondpi-> uri: #{uri}"
+    puts "pi-> uri: #{@@uri}"
+    # pi get uris as rdf of secondpi
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => 'http://toxbanktest1.opentox.org:8080/toxbank/user/U479', :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_not_match /#{@@uri}/, response
+    assert_match /#{uri}/, response
+    result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
+    assert_equal 200, result.code
+  end
+
   # check the investigation owner's policy
   def test_30_check_owner_policy
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", $pi[:subjectid])
