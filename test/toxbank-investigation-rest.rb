@@ -11,7 +11,6 @@ end
 class TBInvestigationBasic < Test::Unit::TestCase
   
   # check response from service without header,
-  # @todo TODO or wrong header,
   # @note expect OpenTox::BadRequestError
   def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
@@ -19,14 +18,33 @@ class TBInvestigationBasic < Test::Unit::TestCase
     end
   end
 
-  # check response from service with header text/uri-list
-  # @todo TODO with header text/plain
-  # @todo TODO with header text/turtle
-  # @todo TODO with header application/rdf+xml
+  # give wrong header
+  # @note expect OpenTox::BadRequestError
+  def test_01_b_wrong_header
+    assert_raise OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {:accept => "text/text"}, { :subjectid => $pi[:subjectid] }
+    end
+  end
+
+  # check response from service with header text/uri-list, application/rdf+xml
   # @note expect code 200
   def test_02_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => $pi[:subjectid] }
     assert_equal "text/uri-list", response.headers[:content_type]
+    assert_equal 200, response.code
+  end
+
+  def test_02b_get_investigations_200
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }
+    assert_equal "application/rdf+xml", response.headers[:content_type]
+    assert_equal 200, response.code
+  end
+
+  # check header from service without accept + subjectid
+  # @note expect 200
+  def test_03_get_service_header
+    response = OpenTox::RestClientWrapper.head($investigation[:uri])
+    assert_equal 200, response.code
   end
 
 end
@@ -516,7 +534,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to delete single file of investigation as "guest",
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
-    # TODO insert pat to single file
+    # TODO insert path to single file
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
