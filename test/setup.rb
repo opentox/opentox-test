@@ -5,8 +5,10 @@ require 'opentox-client'
 require File.join(ENV["HOME"],".opentox","config","test.rb")
 
 begin
-  $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
-  $secondpi[:subjectid] = OpenTox::Authorization.authenticate($secondpi[:name], $secondpi[:password])
+  unless $aa[:uri].to_s == ""
+    $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
+    $secondpi[:subjectid] = OpenTox::Authorization.authenticate($secondpi[:name], $secondpi[:password])
+  end
 rescue
   puts "Authorization error: #{$!.message}"
   exit
