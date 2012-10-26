@@ -111,33 +111,33 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal false, URI.accessible?(d.uri)
   end
 
-  def test_multicolumn_csv
-    d = OpenTox::Dataset.new nil, @@subjectid
-    d.upload "#{DATA_DIR}/multicolumn.csv"
-    d.get
-    assert_not_nil d[RDF::OT.Warnings]
-    assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
-    assert_match /3, 5/,  d[RDF::OT.Warnings]
-    assert_equal 5, d.features.size
-    assert_equal 6, d.compounds.size
-    assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
-    assert_equal [[1.0, 1.0, "true", "true", "test"], [1.0, 2.0, "false", "7.5", "test"], [1.0, 3.0, "true", "5", "test"], [0.0, 4.0, "false", "false", "test"], [1.0, 2.0, "true", "4", "test_2"],[1.0, nil, "false", nil, nil]], d.data_entries
-    assert_equal "c1cc[nH]c1,1.0,,false,,", d.to_csv.split("\n")[6]
-    #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
-    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
-    original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
-    csv.shift
-    original_csv.shift
-    csv.each_with_index do |row,i|
-      compound = OpenTox::Compound.from_inchi $compound[:uri], row.shift
-      original_compound = OpenTox::Compound.from_smiles $compound[:uri], original_csv[i].shift
-      assert_equal original_compound.uri, compound.uri
-      # AM: multicol does not parse correctly NA into nil
-      assert_equal original_csv[i].collect{|v| (v.class == String) ? ((v.strip == "") ? nil : v.strip) : v}, row
-    end
-    d.delete 
-    assert_equal false, URI.accessible?(d.uri)
-  end
+#  def test_multicolumn_csv
+#    d = OpenTox::Dataset.new nil, @@subjectid
+#    d.upload "#{DATA_DIR}/multicolumn.csv"
+#    d.get
+#    assert_not_nil d[RDF::OT.Warnings]
+#    assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
+#    assert_match /3, 5/,  d[RDF::OT.Warnings]
+#    assert_equal 5, d.features.size
+#    assert_equal 6, d.compounds.size
+#    assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
+#    assert_equal [[1.0, 1.0, "true", "true", "test"], [1.0, 2.0, "false", "7.5", "test"], [1.0, 3.0, "true", "5", "test"], [0.0, 4.0, "false", "false", "test"], [1.0, 2.0, "true", "4", "test_2"],[1.0, nil, "false", nil, nil]], d.data_entries
+#    assert_equal "c1cc[nH]c1,1.0,,false,,", d.to_csv.split("\n")[6]
+#    #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
+#    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
+#    original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
+#    csv.shift
+#    original_csv.shift
+#    csv.each_with_index do |row,i|
+#      compound = OpenTox::Compound.from_inchi $compound[:uri], row.shift
+#      original_compound = OpenTox::Compound.from_smiles $compound[:uri], original_csv[i].shift
+#      assert_equal original_compound.uri, compound.uri
+#      # AM: multicol does not parse correctly NA into nil
+#      assert_equal original_csv[i].collect{|v| (v.class == String) ? ((v.strip == "") ? nil : v.strip) : v}, row
+#    end
+#    d.delete 
+#    assert_equal false, URI.accessible?(d.uri)
+#  end
 
   def test_from_csv
     d = OpenTox::Dataset.new nil, @@subjectid
