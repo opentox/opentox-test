@@ -11,22 +11,40 @@ end
 class TBInvestigationBasic < Test::Unit::TestCase
   
   # check response from service without header,
-  # @todo TODO or wrong header,
   # @note expect OpenTox::BadRequestError
   def test_01_get_investigations_400
     assert_raise OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, :subjectid => $pi[:subjectid]
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
 
-  # check response from service with header text/uri-list
-  # @todo TODO with header text/plain
-  # @todo TODO with header text/turtle
-  # @todo TODO with header application/rdf+xml
+  # give wrong header
+  # @note expect OpenTox::BadRequestError
+  def test_01_b_wrong_header
+    assert_raise OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get $investigation[:uri], {:accept => "text/text"}, { :subjectid => $pi[:subjectid] }
+    end
+  end
+
+  # check response from service with header text/uri-list, application/rdf+xml
   # @note expect code 200
   def test_02_get_investigations_200
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => $pi[:subjectid] }
     assert_equal "text/uri-list", response.headers[:content_type]
+    assert_equal 200, response.code
+  end
+
+  def test_02b_get_investigations_200
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'application/rdf+xml', :subjectid => $pi[:subjectid] }
+    assert_equal "application/rdf+xml", response.headers[:content_type]
+    assert_equal 200, response.code
+  end
+
+  # check header from service without accept + subjectid
+  # @note expect 200
+  def test_03_get_service_header
+    response = OpenTox::RestClientWrapper.head($investigation[:uri])
+    assert_equal 200, response.code
   end
 
 end
@@ -100,6 +118,41 @@ class TBInvestigationREST < Test::Unit::TestCase
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
+  end
+
+  # check for uri-list as text/uri-list
+  # @note returns all listet investigations in service
+  def test_02b_check_for_text_uri_list
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list as application/rdf+xml
+  # @note returns all listet investigations in service
+  def test_02c_check_for_rdf_uri_list
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of a given user as application/rdf+xml
+  # @note returns all listet investigations from a given user
+  def test_02d_check_for_users_investigations
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of an inexisting user
+  # @note returns nothing if inexisting user
+  def test_02e_check_with_inexisting_user
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_not_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list of an guest user
+  # @note returns nothing because there are no investigations of this user
+  def test_02f_check_for_guestuser_uris
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
+    assert_not_match /#{@@uri}/, result.to_s
   end
 
   # check for flag "isPublished" is false,
@@ -208,18 +261,46 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # get related protocol uris
+  # @note returns related protocol uri of a study
+  def test_05_b
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_match /SEURAT\-Protocol\-245\-1/, response.to_s
+  end
+  
   # get metadata 
   # @note accept:text/turtle
-  def test_05b
+  def test_05c
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/turtle", :subjectid => $pi[:subjectid]}
     assert_equal "text/turtle", response.headers[:content_type]
   end
 
   # get metadata
   # @note accept:text/plain
-  def test_05c
+  def test_05d
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
     assert_match  /^text\/plain/ , response.headers[:content_type]
+  end
+
+  # get a resource as owner
+  # @note expect result 
+  def test_05e
+    metadata = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    @g = RDF::Graph.new
+    @@resource = ""
+    RDF::Reader.for(:rdfxml).new(metadata.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| @@resource = r[2].to_s.split("/").last}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => $pi[:subjectid]}
+    puts "\nresource: #{@@resource}"
+    assert_match  /Comprehensive high-throughput analyses at the levels of mRNAs|hasProtocol|hasAssay/, response
+  end
+
+  # get a resource as guest
+  # @note expect no result until investigation is published
+  def test_05f
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => @@subjectid}
+    end
   end
 
   # get investigation/{id}
@@ -245,7 +326,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # get investigation/{id}
   # @note accept:application/rdf+xml
-  def test_09_get_investigation_sparql
+  def test_09_get_investigation_check_accept_headers
     result = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal "application/rdf+xml", result.headers[:content_type]
   end
@@ -378,6 +459,28 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
   end
 
+  # upload a investigation as secondpi
+  # @note expect only secondpi uris in uri-list
+  def test_20_a_post_data
+    uri = ""
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $secondpi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    u = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    uri = URI(u)
+    puts "secondpi-> uri: #{uri}"
+    puts "pi-> uri: #{@@uri}"
+    # pi get uris as rdf of secondpi
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => 'http://toxbanktest1.opentox.org:8080/toxbank/user/U479', :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_not_match /#{@@uri}/, response
+    assert_match /#{uri}/, response
+    result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
+    assert_equal 200, result.code
+  end
+
   # check the investigation owner's policy
   def test_30_check_owner_policy
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "POST", $pi[:subjectid])
@@ -402,14 +505,14 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_equal "200", response.code
     response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}","put" ,$pi[:subjectid]
     assert_equal "200", response.code
-    n=0
-    begin
-      @response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
-      n+=1
-      puts "\nget uri from index:#{@response.body}"
-      sleep 1
-    end while @response.body != @@uri.to_s && n < 10
-    assert_equal "200", response.code
+    #n=0
+    #begin
+      #@response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
+      #n+=1
+      #puts "\nget uri from index:#{@response.body}"
+      #sleep 1
+    #end while @response.body != @@uri.to_s && n < 10
+    #assert_equal "200", response.code
     #assert_equal @@uri.to_s, @response.body
     response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "delete", $pi[:subjectid]
     assert_equal "200", response.code
@@ -431,7 +534,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to delete single file of investigation as "guest",
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
-    # TODO insert pat to single file
+    # TODO insert path to single file
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
