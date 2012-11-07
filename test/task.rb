@@ -21,6 +21,8 @@ class TaskTest < Test::Unit::TestCase
     assert_equal true,  task.completed?
     assert_equal "Completed", task.hasStatus
     assert_equal $task[:uri], task.resultURI
+    assert_not_empty task.created_at
+    assert_not_empty task.finished_at
   end
 
   def test_02_all
@@ -39,6 +41,8 @@ class TaskTest < Test::Unit::TestCase
     assert_equal true, task.running?
     task.cancel
     assert_equal true,task.cancelled?
+    assert_not_empty task.created_at
+    assert_not_empty task.finished_at
   end
 
   def test_04_create_and_fail
@@ -54,6 +58,8 @@ class TaskTest < Test::Unit::TestCase
     assert_equal "A runtime error occured", task.error_report[RDF::OT.message]
     assert_equal "500", task.error_report[RDF::OT.statusCode]
     assert_not_empty task.error_report[RDF::OT.errorCause]
+    assert_not_empty task.created_at
+    assert_not_empty task.finished_at
   end
 
   def test_05_create_and_fail_with_opentox_error

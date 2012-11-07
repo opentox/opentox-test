@@ -21,7 +21,8 @@ class DatasetLargeTest < Test::Unit::TestCase
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
-    #d.delete
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_02_upload_multicell
@@ -36,7 +37,8 @@ class DatasetLargeTest < Test::Unit::TestCase
     assert_equal csv.first.size-1, d.features.size
     assert_equal true, d.features.first[RDF.type].include?(RDF::OT.NominalFeature)
     assert_equal 1063, d.data_entries.size
-    #d.delete
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_03_upload_isscan
@@ -49,7 +51,8 @@ class DatasetLargeTest < Test::Unit::TestCase
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
-    #d.delete
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_04_simultanous_upload
@@ -73,8 +76,6 @@ class DatasetLargeTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 
-=begin
-  # TODO: segfaults during csv parsing
   def test_05_upload_kazius
     f = File.join DATA_DIR, "kazius.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
@@ -88,8 +89,8 @@ class DatasetLargeTest < Test::Unit::TestCase
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
-    #d.delete
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
   end
-=end
 
 end
