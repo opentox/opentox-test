@@ -13,14 +13,16 @@ SUBJECT_NAME = "test_subject_#{rand(100000)}"
 
 class PolicyTest < Test::Unit::TestCase
 
+  # Test base class and attributes
   def test_01_class
     policies = OpenTox::Policies.new()
     assert_equal(policies.class, OpenTox::Policies)
     assert_kind_of Array, policies.names
     assert_kind_of Array, policies.uris
-    assert_kind_of Array, policies.names
+    assert_kind_of Hash, policies.policies
   end
 
+  # Test subclasses
   def test_02_subclasses
     policies = OpenTox::Policies.new()
     policies.new_policy(POLICY_NAME)
@@ -44,6 +46,7 @@ class PolicyTest < Test::Unit::TestCase
     assert_equal(policy.value, USER_VALUE)
   end
 
+  # Test methods read and readwrite
   def test_03_read_readwrite
     policies = OpenTox::Policies.new()
     policies.new_policy(POLICY_NAME)
