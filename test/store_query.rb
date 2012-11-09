@@ -31,7 +31,7 @@ class UploadTest < Test::Unit::TestCase
     assert_match /200/, response
     assert_match /rdf\:RDF/, response
     assert_match /rdf\:Description/, response
-    #assert_match /ns0\:hasMember/, response
+    assert_match /RuntimeError/, response
   end
   
   def test_04_query_sparqle
@@ -41,14 +41,14 @@ class UploadTest < Test::Unit::TestCase
     assert_match /200/, response
     assert_match /rdf\:RDF/, response
     assert_match /rdf\:Description/, response
-    #assert_match /ns0\:hasMember/, response
+    assert_match /investigation/, response
   end
   
   def test_98_delete_data
     response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1.n3'`.chomp
     assert_match /200/, response
   end
-=begin
+
   def test_06_simultaneous_uploads 
     threads = []
     5.times do |t|
@@ -73,24 +73,5 @@ class UploadTest < Test::Unit::TestCase
     threads.each {|aThread| aThread.join}
   end
 
-  def test_08_RestCalls
-    # RestCallError
-    assert OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/rdf+xml', :subjectid => @@subjectid }
-    end 
-  end
-
-  def test_09
-    # sparql-results+xml
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {:query => "SELECT ?s WHERE { ?s ?p ?o } LIMIT 5" }, { :accept => 'application/sparql-results+xml', :subjectid => @@subjectid }
-    assert_match /200/, response.headers[:status]
-  end
-
-  def test_10
-    # get uri-list
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid } 
-    response.split("\n").each{|r| assert_match /#{$investigation[:uri]}/, r}
-  end
-=end
 end
 
