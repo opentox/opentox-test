@@ -1,5 +1,5 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","investigation","tbaccount.rb")
+require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","toxbank-investigation","tbaccount.rb")
 
 class TBAccountBasicTest < Test::Unit::TestCase
 
