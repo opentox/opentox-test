@@ -501,26 +501,26 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
+    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "get", $pi[:subjectid]
     assert_equal "200", response.code
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}","put" ,$pi[:subjectid]
+    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "put" ,$pi[:subjectid]
     assert_equal "200", response.code
     #n=0
     #begin
-      #@response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "get", $pi[:subjectid]
+      #@response = request_ssl3 "https://www.services.toxbank.net/toxbank-search/search/index?#{@@uri}", "get", $pi[:subjectid]
       #n+=1
       #puts "\nget uri from index:#{@response.body}"
       #sleep 1
     #end while @response.body != @@uri.to_s && n < 10
     #assert_equal "200", response.code
     #assert_equal @@uri.to_s, @response.body
-    response = request_ssl3 "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{@@uri}", "delete", $pi[:subjectid]
+    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "delete", $pi[:subjectid]
     assert_equal "200", response.code
   end
 
   # check if @@uri is indexed
   def test_41_investigation_in_index
-    #OpenTox::RestClientWrapper.put "https://www.leadscope.com/dev-toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+    #OpenTox::RestClientWrapper.put "https://www.services.toxbank.net/toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
   end
 
   # try to delete investigation as "guest",
