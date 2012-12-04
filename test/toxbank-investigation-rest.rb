@@ -501,20 +501,21 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "get", $pi[:subjectid]
+    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index", "get", $pi[:subjectid]
+    puts response.inspect
     assert_equal "200", response.code
-    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "put" ,$pi[:subjectid]
+    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
     assert_equal "200", response.code
-    #n=0
-    #begin
-      #@response = request_ssl3 "https://www.services.toxbank.net/toxbank-search/search/index?#{@@uri}", "get", $pi[:subjectid]
-      #n+=1
-      #puts "\nget uri from index:#{@response.body}"
-      #sleep 1
-    #end while @response.body != @@uri.to_s && n < 10
-    #assert_equal "200", response.code
-    #assert_equal @@uri.to_s, @response.body
-    response = request_ssl3 "https://services.toxbank.net:8080/toxbank-search/search/index?#{@@uri}", "delete", $pi[:subjectid]
+    n=0
+    begin
+      @response = request_ssl3 "https://www.services.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      n+=1
+      puts "\nget uri from index:#{@response.body}"
+      sleep 1
+    end while @response.body != @@uri.to_s && n < 10
+    assert_equal "200", response.code
+    assert_equal @@uri.to_s, @response.body
+    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
     assert_equal "200", response.code
   end
 
