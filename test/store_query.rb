@@ -31,7 +31,6 @@ class UploadTest < Test::Unit::TestCase
     assert_match /200/, response
     assert_match /rdf\:RDF/, response
     assert_match /rdf\:Description/, response
-    assert_match /RuntimeError/, response
   end
   
   def test_04_query_sparqle
