@@ -48,7 +48,11 @@ class CompoundTest < Test::Unit::TestCase
 
   def test_compound_image
     c = OpenTox::Compound.from_inchi $compound[:uri], "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
-    assert_match /^\x89PNG/, c.png
+    testbild = "/tmp/testbild.png"
+    f = File.open(testbild, "w").puts c.png
+    assert_match "image/png", `file -b --mime-type /tmp/testbild.png`
+    File.unlink(testbild)
+    #assert_match /^\x89PNG/, c.png #32bit only?
   end
 
 =begin
