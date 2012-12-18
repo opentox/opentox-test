@@ -4,6 +4,10 @@ Bundler.require
 require 'opentox-client'
 require File.join(ENV["HOME"],".opentox","config","test.rb")
 
+ENV['ALGORITHM']=$algorithm[:uri]
+ENV['COMPOUND']=$compound[:uri]
+ENV['DATASET']=$dataset[:uri]
+
 begin
   unless $aa[:uri].to_s == ""
     $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])

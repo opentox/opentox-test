@@ -4,7 +4,7 @@
 cd
 task=`curl -X POST \
 -F "file=@opentox-ruby/opentox-test/test/data/EPAFHM.mini.csv;type=text/csv" \
-$lh:8083/dataset`
+$DATASET`
 mini=`get_result $task`
 task=`curl -X POST \
 --data-urlencode "dataset_uri=$mini" \
