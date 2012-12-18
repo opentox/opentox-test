@@ -1,6 +1,14 @@
 require 'test/unit'
-$algorithm = {:uri => "http://webservices.in-silico.ch/algorithm"}
+#$algorithm = {:uri => "http://webservices.in-silico.ch/algorithm"}
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+
+begin
+  puts "Service URI is: #{$algorithm[:uri]}"
+rescue
+  puts "Configuration Error: $algorithm[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
+
 class AlgorithmTest < Test::Unit::TestCase
 
   def test_01_set_parameters

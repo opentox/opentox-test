@@ -1,6 +1,13 @@
 require 'test/unit'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
+begin
+  puts "Service URI is: #{$model[:uri]}"
+rescue
+  puts "Configuration Error: $model[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
+
 class ModelTest < Test::Unit::TestCase
 
   def test_01_create_and_set_parameters
