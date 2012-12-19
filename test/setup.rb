@@ -4,9 +4,9 @@ Bundler.require
 require 'opentox-client'
 require File.join(ENV["HOME"],".opentox","config","test.rb")
 
-ENV['ALGORITHM']=$algorithm[:uri]
-ENV['COMPOUND']=$compound[:uri]
-ENV['DATASET']=$dataset[:uri]
+ENV['ALGORITHM']=$algorithm[:uri] if $algorithm[:uri]
+ENV['COMPOUND']=$compound[:uri] if $compound[:uri]
+ENV['DATASET']=$dataset[:uri] if $dataset[:uri]
 
 begin
   unless $aa[:uri].to_s == ""
