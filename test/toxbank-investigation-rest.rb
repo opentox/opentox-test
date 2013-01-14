@@ -58,8 +58,8 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check if the userservice is available
   # @note return the guest user URI
   def test_00_pre_get_user_from_userservice
-    guesturi = OpenTox::RestClientWrapper.get("#{$user_service[:uri]}/toxbank/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
-    assert_equal "#{$user_service[:uri]}/toxbank/user/U2", guesturi
+    guesturi = OpenTox::RestClientWrapper.get("#{$user_service[:uri]}/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
+    assert_equal "#{$user_service[:uri]}/user/U2", guesturi
   end
   
   # check post to investigation service without file,
@@ -136,21 +136,21 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check for uri-list of a given user as application/rdf+xml
   # @note returns all listet investigations from a given user
   def test_02d_check_for_users_investigations
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/toxbank/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of an inexisting user
   # @note returns nothing if inexisting user
   def test_02e_check_with_inexisting_user
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of an guest user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_guestuser_uris
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/toxbank/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
@@ -181,7 +181,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "#{$user_service[:uri]}/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "#{$user_service[:uri]}/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -415,7 +415,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # update policy 
   def test_10_h_update_guest_policy
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "#{$user_service[:uri]}/toxbank/user/U2"},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "#{$user_service[:uri]}/user/U2"},{:subjectid => $pi[:subjectid]}
     task_uri = response.chomp
     puts "update Policy: #{task_uri}"
     task = OpenTox::Task.new task_uri
@@ -473,7 +473,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     puts "secondpi-> uri: #{uri}"
     puts "pi-> uri: #{@@uri}"
     # pi get uris as rdf of secondpi
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/toxbank/user/U479", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_not_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
