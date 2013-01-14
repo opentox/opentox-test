@@ -1,6 +1,3 @@
-# configure
-lh="http://localhost"
-
 # util 
 function get_result {
   task=$1
