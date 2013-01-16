@@ -247,6 +247,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     assert @g.has_predicate?(RDF::TB.hasProject)
     assert @g.has_predicate?(RDF::TB.hasOrganisation)
+    assert @g.has_predicate?(RDF::DC.modified)
     @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
@@ -258,6 +259,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::DC.modified){|r| @@modified_time = r[2].to_s}
   end
 
   # get related protocol uris
@@ -456,6 +458,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::DC.modified){|r| assert r[2] > @@modified_time.to_s; puts "\nfirst mod: #{@@modified_time} \nsecond mod: #{r[2]}"}
   end
 
   # upload a investigation as secondpi
