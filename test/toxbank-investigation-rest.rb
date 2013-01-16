@@ -96,7 +96,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   #   check for title/AccessionID "BII-I-1b"
   def test_02_post_investigation
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
