@@ -59,7 +59,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note return the guest user URI
   def test_00_pre_get_user_from_userservice
     #guesturi = OpenTox::RestClientWrapper.get("#{$user_service[:uri]}/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
-    guesturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{pi[:subjectid]}" #{$user_service[:uri]}/user?username=guest`.chomp.sub("\n","")
+    guesturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/user?username=guest`.chomp.sub("\n","")
     assert_equal "#{$user_service[:uri]}/user/U2", guesturi
   end
   

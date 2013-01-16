@@ -46,7 +46,7 @@ class TBAccountBasicTest < Test::Unit::TestCase
     @@accounts.each do |name, uri|
       if uri.match(RDF::TBU.to_s)
         #accounturi = OpenTox::RestClientWrapper.get("#{RDF::TBU}?username=#{name}", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
-        accounturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{pi[:subjectid]}" #{$user_service[:uri]}/user?username=#{name}`.chomp.sub("\n","")
+        accounturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/user?username=#{name}`.chomp.sub("\n","")
         account = OpenTox::TBAccount.new(accounturi, $pi[:subjectid])
         assert_equal name, account.account
         assert_equal accounturi, account.uri
