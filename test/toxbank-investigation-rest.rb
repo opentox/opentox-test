@@ -337,7 +337,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note check flags are "false" and update them to "true"
   # @todo TODO update existing investigation with single files
   def test_10_a_update_investigation
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2.zip"
     response = OpenTox::RestClientWrapper.put @@uri.to_s, {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
@@ -466,7 +466,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note expect only secondpi uris in uri-list
   def test_20_a_post_data
     uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $secondpi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
