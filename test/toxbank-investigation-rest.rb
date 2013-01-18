@@ -567,7 +567,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   def test_99_b_investigation_not_in_index
     response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     assert_equal "200", response.code
-    assert_no_matchl /#{@@uri.to_s}/, response
+    assert_no_match /#{@@uri.to_s}/, response
   end
 
   # check that deleted uri is no longer in uri-list
