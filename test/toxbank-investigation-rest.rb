@@ -504,27 +504,22 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index", "get", $pi[:subjectid]
+    response = request_ssl3 "#{$search_service[:uri]}/search/index", "get", $pi[:subjectid]
     puts response.inspect
     assert_equal "200", response.code
-    response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
-    assert_equal "200", response.code
+    #response = request_ssl3 "#{$search_service[:uri]}/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
+    #assert_equal "200", response.code
     n=0
     begin
-      @response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      @response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
       n+=1
       puts "\nget uri from index:#{@response.body}"
       sleep 1
     end while @response.body != @@uri.to_s && n < 10
     assert_equal "200", response.code
     assert_equal @@uri.to_s, @response.body
-    response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
-    assert_equal "200", response.code
-  end
-
-  # check if @@uri is indexed
-  def test_41_investigation_in_index
-    #OpenTox::RestClientWrapper.put "https://www.services.toxbank.net/toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+    #response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
+    #assert_equal "200", response.code
   end
 
   # try to delete investigation as "guest",
@@ -558,7 +553,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
-=begin
+
   # delete investigation/{id}
   # @note expect code 200
   def test_99_a_delete_investigation
@@ -568,13 +563,20 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
   end
 
+  # check if @@uri is indexed
+  def test_99_b_investigation_not_in_index
+    OpenTox::RestClientWrapper.get "https://www.services.toxbank.net/toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+    assert_equal "200", response.code
+    assert_no_matchl /#{@@uri.to_s}/, @response
+  end
+
   # check that deleted uri is no longer in uri-list
   # @note expect investigation uri not in uri-list
-  def test_99_b_check_urilist
+  def test_99_c_check_urilist
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert_no_match /#{@@uri.to_s}/, response
   end
-=end
+
 end
 
 
