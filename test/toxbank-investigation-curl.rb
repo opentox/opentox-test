@@ -1,5 +1,12 @@
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 
+begin
+  puts "Service URI is: #{$investigation[:uri]}"
+rescue
+  puts "Configuration Error: $investigation[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
+
 #TODO: check 4store entries/errors
 
 class UploadTest < Test::Unit::TestCase
@@ -11,7 +18,6 @@ class UploadTest < Test::Unit::TestCase
   end
 
   def test_01_get_all
-    puts $investigation.inspect
     #puts "curl -Lk -H \"Accept:text/uri-list\" -H \"subjectid:#{$pi[:subjectid]}\" -i #{$investigation[:uri]}"
     response = `curl -Lk -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" -i #{$investigation[:uri]}`
     assert_match /200/, response
