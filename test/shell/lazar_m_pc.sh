@@ -1,4 +1,5 @@
-. $(cd "$(dirname "$0")"; pwd)/setup.sh
+dir=`dirname -z "$0"`
+. $dir/setup.sh
 
 # create lazar m w/ bbrc
 task=`curl -X POST \

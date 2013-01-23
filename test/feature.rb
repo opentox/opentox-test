@@ -43,14 +43,19 @@ class FeatureRestTest < Test::Unit::TestCase
     
     @@formats.each do |f|
       @@uris << subject.to_s
+      #OpenTox::RestClientWrapper.post(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]})
       OpenTox::RestClientWrapper.put(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
       assert_equal true, URI.accessible?(@@uris.last, @@subjectid)
     end
   end
 
+
   def test_02_list_features
-    r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list")#.split("\n")
-    @@uris.each{ |uri| assert_equal true, r.include?(uri) }
+    r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list").split("\n")
+    @@uris.each{ |uri|
+      assert_equal true, URI.accessible?(uri, @@subjectid)
+      assert_equal true, r.include?(uri)
+    }
   end
 
   def test_03_get_feature
@@ -88,7 +93,6 @@ class FeatureRestTest < Test::Unit::TestCase
     @@uris.each do |uri|
       OpenTox::RestClientWrapper.delete(uri)
       assert_raise OpenTox::ResourceNotFoundError do
-      #assert_raise OpenTox::ResourceNotFoundError do
         OpenTox::RestClientWrapper.get(uri)
       end
     end
@@ -125,9 +129,6 @@ class FeatureRestTest < Test::Unit::TestCase
   end
 
 end
-=begin
-=end
-
 
 =begin
   def test_ambit_feature

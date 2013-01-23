@@ -1,4 +1,5 @@
-. $(cd "$(dirname "$0")"; pwd)/setup.sh
+dir=`dirname -z "$0"`
+. $dir/setup.sh
 
 task=`curl \
 --data-urlencode "pc_type=geometrical"  \

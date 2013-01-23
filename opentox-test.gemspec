@@ -2,6 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = "opentox-test"
+  gem.version     = File.read("./VERSION")
   gem.authors       = ["Christoph Helma"]
   gem.email         = ["helma@in-silico.ch"]
   gem.description   = %q{Tests for OpenTox/ToxBank services}
@@ -13,8 +14,9 @@ Gem::Specification.new do |gem|
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.name          = "opentox-test"
   gem.require_paths = ["test"]
-  gem.version         = "0.0.1pre"
+  gem.required_ruby_version = '>= 1.9.2'
 
   gem.add_runtime_dependency "opentox-client"
+  gem.post_install_message = "Please configure test in ~/.opentox/config/test.rb"
 
 end

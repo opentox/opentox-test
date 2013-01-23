@@ -1,9 +1,9 @@
-. $(cd "$(dirname "$0")"; pwd)/setup.sh
+dir=`dirname -z "$0"`
+. $dir/setup.sh
 
 # make a dataset prediction
-cd
 task=`curl -X POST \
--F "file=@opentox-ruby/opentox-test/test/data/EPAFHM.mini.csv;type=text/csv" \
+-F "file=@$dir/../data/EPAFHM.mini.csv;type=text/csv" \
 $DATASET`
 mini=`get_result $task`
 task=`curl -X POST \

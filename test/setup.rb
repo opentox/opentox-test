@@ -8,24 +8,24 @@ ENV['ALGORITHM']=$algorithm[:uri] if $algorithm
 ENV['COMPOUND']=$compound[:uri] if $compound
 ENV['DATASET']=$dataset[:uri] if $dataset
 
-begin
+#begin
   unless $aa[:uri].to_s == ""
     $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
     $secondpi[:subjectid] = OpenTox::Authorization.authenticate($secondpi[:name], $secondpi[:password])
   end
-rescue
-  puts "Authorization error: #{$!.message}"
-  exit
-end
+#rescue
+  #puts "Authorization error: #{$!.message}"
+  #exit
+#end
 
 # build subjectid for testuser: guestguest
-begin
+#begin
   @@subjectid = nil
   unless $aa[:uri].to_s == ""
     @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
     raise if !OpenTox::Authorization.is_token_valid(@@subjectid)
   end
-rescue
-  puts "Authorization error: #{$!.message}"
-  exit
-end
+#rescue
+  #puts "Authorization error: #{$!.message}"
+  #exit
+#end
