@@ -12,7 +12,7 @@ class StressTest < Test::Unit::TestCase
 
   # Do multiple POST and check if completed
   def test_01_multiple_upload
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = []; task_uri = []; task =[]
     (0..2).each do |i|
       response[i] = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
@@ -31,7 +31,7 @@ class StressTest < Test::Unit::TestCase
   # Creates investigation for later Update
   def test_02a_pre_multiple_updates
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -42,7 +42,7 @@ class StressTest < Test::Unit::TestCase
 
   # Do multipe update on existing investigation
   def test_02b_multiple_updates
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2.zip"
     response = []; task_uri = []; task =[]
     response[0] = OpenTox::RestClientWrapper.put "#{@@uri}", {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response[0].code

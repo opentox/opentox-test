@@ -58,8 +58,9 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check if the userservice is available
   # @note return the guest user URI
   def test_00_pre_get_user_from_userservice
-    guesturi = OpenTox::RestClientWrapper.get("http://toxbanktest1.opentox.org:8080/toxbank/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
-    assert_equal "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", guesturi
+    #guesturi = OpenTox::RestClientWrapper.get("#{$user_service[:uri]}/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
+    guesturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/user?username=guest`.chomp.sub("\n","")
+    assert_equal "#{$user_service[:uri]}/user/U2", guesturi
   end
   
   # check post to investigation service without file,
@@ -95,8 +96,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   #   check for title/AccessionID "BII-I-1b"
   def test_02_post_investigation
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
-    #response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2,http://toxbanktest1.opentox.org:8080/toxbank/user/U124"}, { :subjectid => $pi[:subjectid] }
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     #puts task_uri
@@ -137,21 +137,21 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check for uri-list of a given user as application/rdf+xml
   # @note returns all listet investigations from a given user
   def test_02d_check_for_users_investigations
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of an inexisting user
   # @note returns nothing if inexisting user
   def test_02e_check_with_inexisting_user
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of an guest user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_guestuser_uris
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
@@ -182,7 +182,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "http://toxbanktest1.opentox.org:8080/toxbank/project/G2"},{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "#{$user_service[:uri]}/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -248,6 +248,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     assert @g.has_predicate?(RDF::TB.hasProject)
     assert @g.has_predicate?(RDF::TB.hasOrganisation)
+    assert @g.has_predicate?(RDF::DC.modified)
     @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
@@ -259,6 +260,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::DC.modified){|r| @@modified_time = r[2].to_s}
   end
 
   # get related protocol uris
@@ -335,7 +337,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note check flags are "false" and update them to "true"
   # @todo TODO update existing investigation with single files
   def test_10_a_update_investigation
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2.zip"
     response = OpenTox::RestClientWrapper.put @@uri.to_s, {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     assert_equal 202, response.code
     task_uri = response.chomp
@@ -416,7 +418,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # update policy 
   def test_10_h_update_guest_policy
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "http://toxbanktest1.opentox.org:8080/toxbank/user/U2"},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "#{$user_service[:uri]}/user/U2"},{:subjectid => $pi[:subjectid]}
     task_uri = response.chomp
     puts "update Policy: #{task_uri}"
     task = OpenTox::Task.new task_uri
@@ -457,13 +459,14 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::DC.modified){|r| assert r[2] > @@modified_time.to_s; puts "\nfirst mod: #{@@modified_time} \nsecond mod: #{r[2]}"}
   end
 
   # upload a investigation as secondpi
   # @note expect only secondpi uris in uri-list
   def test_20_a_post_data
     uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $secondpi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -474,7 +477,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     puts "secondpi-> uri: #{uri}"
     puts "pi-> uri: #{@@uri}"
     # pi get uris as rdf of secondpi
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => 'http://toxbanktest1.opentox.org:8080/toxbank/user/U479', :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_not_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
@@ -501,27 +504,22 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index", "get", $pi[:subjectid]
+    response = request_ssl3 "#{$search_service[:uri]}/search/index", "get", $pi[:subjectid]
     puts response.inspect
     assert_equal "200", response.code
-    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
-    assert_equal "200", response.code
+    #response = request_ssl3 "#{$search_service[:uri]}/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
+    #assert_equal "200", response.code
     n=0
     begin
-      @response = request_ssl3 "https://www.services.toxbank.net/toxbank-search/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      @response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
       n+=1
       puts "\nget uri from index:#{@response.body}"
       sleep 1
     end while @response.body != @@uri.to_s && n < 10
     assert_equal "200", response.code
     assert_equal @@uri.to_s, @response.body
-    response = request_ssl3 "https://services.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
-    assert_equal "200", response.code
-  end
-
-  # check if @@uri is indexed
-  def test_41_investigation_in_index
-    #OpenTox::RestClientWrapper.put "https://www.services.toxbank.net/toxbank-search/search/index/investigation?resourceUri=#{CGI.escape(investigation_uri)}",{},{:subjectid => @subjectid}
+    #response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
+    #assert_equal "200", response.code
   end
 
   # try to delete investigation as "guest",
@@ -565,11 +563,18 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
   end
 
+  # check if @@uri is indexed
+  def test_99_b_investigation_not_in_index
+    response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+    assert_equal "200", response.code
+    assert_no_match /#{@@uri}/, response.to_s
+  end
+
   # check that deleted uri is no longer in uri-list
   # @note expect investigation uri not in uri-list
-  def test_99_b_check_urilist
+  def test_99_c_check_urilist
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
-    assert_no_match /#{@@uri.to_s}/, response
+    assert_no_match /#{@@uri}/, response.to_s
   end
 
 end
