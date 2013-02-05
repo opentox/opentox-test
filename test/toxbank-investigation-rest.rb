@@ -66,27 +66,36 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check post to investigation service without file,
   # @note expect OpenTox::BadRequestError
   def test_01a_post_investigation_400_no_file
-    assert_raise OpenTox::BadRequestError do
-      response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
-    end
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "\nno file: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
   
   # post with wrong mime type,
   # @note expect OpenTox::BadRequestError
   def test_01b_wrong_mime_type
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
-    assert_raise OpenTox::BadRequestError do
-      response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-    end
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "wrong mime: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
 
   # post an empty zip,
   # @note expect OpenTox::BadRequestError
   def test_01c_upload_empty_zip
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
-    assert_raise OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-    end
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "empty file: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
 
   # create an investigation by uploading a zip file,
@@ -578,5 +587,4 @@ class TBInvestigationREST < Test::Unit::TestCase
   end
 
 end
-
 
