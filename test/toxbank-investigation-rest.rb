@@ -56,37 +56,46 @@ class TBInvestigationREST < Test::Unit::TestCase
 
 
   # check if the userservice is available
-  # @note return the guest user URI
+  # @note return the secondpi user URI
   def test_00_pre_get_user_from_userservice
     #guesturi = OpenTox::RestClientWrapper.get("#{$user_service[:uri]}/user?username=guest", nil, {:Accept => "text/uri-list", :subjectid => $pi[:subjectid]}).sub("\n","")
-    guesturi = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/user?username=guest`.chomp.sub("\n","")
-    assert_equal "#{$user_service[:uri]}/user/U2", guesturi
+    pi2uri = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/user?username=#{$secondpi[:name]}`.chomp.sub("\n","")
+    assert_equal "#{$secondpi[:uri]}", pi2uri
   end
   
   # check post to investigation service without file,
   # @note expect OpenTox::BadRequestError
   def test_01a_post_investigation_400_no_file
-    assert_raise OpenTox::BadRequestError do
-      response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
-    end
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "\nno file: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
   
   # post with wrong mime type,
   # @note expect OpenTox::BadRequestError
   def test_01b_wrong_mime_type
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
-    assert_raise OpenTox::BadRequestError do
-      response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-    end
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "wrong mime: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
 
   # post an empty zip,
   # @note expect OpenTox::BadRequestError
   def test_01c_upload_empty_zip
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zip" 
-    assert_raise OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-    end
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    puts "empty file: #{task.uri} \n"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
 
   # create an investigation by uploading a zip file,
@@ -137,7 +146,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check for uri-list of a given user as application/rdf+xml
   # @note returns all listet investigations from a given user
   def test_02d_check_for_users_investigations
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U271", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_match /#{@@uri}/, result.to_s
   end
 
@@ -148,10 +157,10 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_not_match /#{@@uri}/, result.to_s
   end
 
-  # check for uri-list of an guest user
+  # check for uri-list of an secondpi user
   # @note returns nothing because there are no investigations of this user
-  def test_02f_check_for_guestuser_uris
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U2", :accept => "application/rdf+xml", :subjectid => @@subjectid}).split("\n")
+  def test_02f_check_for_pi2user_uris
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}).split("\n")
     assert_not_match /#{@@uri}/, result.to_s
   end
 
@@ -362,7 +371,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   end
 
   # update flag isSummarySearchable
-  # @note expect Guest user can get metadata after update
+  # @note expect secondpi user can get metadata after update
   def test_10_c_update_flag_isSearchable
     response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
@@ -372,15 +381,15 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
-    assert_match /<\?xml/, res #Guest can get if isSS
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_match /<\?xml/, res #secondpi can get if isSS
   end
 
   # check title has changed by update
   # @note expect title after update is "BII-I-1"
   def test_10_d_check_if_title_has_changed_by_update
     # check content
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
@@ -388,11 +397,11 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
   end
 
-  # check investigation data still not reachable as GUEST
+  # check investigation data still not reachable as secondpi
   # @note expect OpenTox::NotAuthorizedError
-  def test_10_e_check_investigation_data_still_not_reachable_for_guest
+  def test_10_e_check_investigation_data_still_not_reachable_for_pi2
     assert_raise OpenTox::UnauthorizedError do
-      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
@@ -578,5 +587,4 @@ class TBInvestigationREST < Test::Unit::TestCase
   end
 
 end
-
 
