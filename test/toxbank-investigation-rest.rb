@@ -137,30 +137,30 @@ class TBInvestigationREST < Test::Unit::TestCase
   end
 
   # check for uri-list as application/rdf+xml
-  # @note returns all listet investigations in service
+  # @note returns list of user investigations as rdf+xml
   def test_02c_check_for_rdf_uri_list
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
     assert_match /#{@@uri}/, result.to_s
   end
 
-  # check for uri-list of a given user as application/rdf+xml
-  # @note returns all listet investigations from a given user
+  # check for uri-list of a given user as application/json
+  # @note returns list of users investigations as json
   def test_02d_check_for_users_investigations
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
-    assert_match /#{@@uri}/, result.to_s
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/json", :subjectid => $pi[:subjectid]})
+    assert_match /#{@@uri}/, result
   end
 
   # check for uri-list of an inexisting user
   # @note returns nothing if inexisting user
   def test_02e_check_with_inexisting_user
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/json", :subjectid => $pi[:subjectid]})
     assert_not_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of an secondpi user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_pi2user_uris
-    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/json", :subjectid => $secondpi[:subjectid]})
     assert_not_match /#{@@uri}/, result.to_s
   end
 
@@ -485,8 +485,8 @@ class TBInvestigationREST < Test::Unit::TestCase
     uri = URI(u)
     puts "secondpi-> uri: #{uri}"
     puts "pi-> uri: #{@@uri}"
-    # pi get uris as rdf of secondpi
-    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    # pi get uris of secondpi
+    response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/json", :subjectid => $pi[:subjectid]}
     assert_not_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
