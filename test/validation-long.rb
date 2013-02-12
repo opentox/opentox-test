@@ -1,7 +1,6 @@
 require 'test/unit'
 test_path = File.expand_path(File.dirname(__FILE__))
 require File.join(test_path,"validation_util.rb")
-
 require File.join(test_path,"setup.rb")
 
 begin
