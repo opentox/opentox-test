@@ -8,6 +8,17 @@ rescue
   exit
 end
 
+class String 
+  def uri?
+    uri = URI.parse(self)
+    %w( http https ).include?(uri.scheme)
+  rescue URI::BadURIError
+    false
+  rescue URI::InvalidURIError
+    false
+  end
+end
+
 class TaskTest < Test::Unit::TestCase
 
   def test_01_create_and_complete
@@ -147,6 +158,33 @@ class TaskTest < Test::Unit::TestCase
     task.wait
     task.get
     assert_no_match %r{username|password},  task.error_report[RDF::OT.actor]
+  end
+
+  def test_11_wait_for_error_task
+    # testing two uris:
+    # ../dataset/test/error_in_task starts a task that produces an internal-error with message 'error_in_task_message'  
+    # ../algorithm/test/wait_for_error_in_task starts a task that waits for ../dataset/test/error_in_task
+    [ File.join($dataset[:uri],'test/error_in_task'),
+      File.join($algorithm[:uri],'test/wait_for_error_in_task') ].each do |uri|
+        
+      puts "testing uri #{uri}"
+      task_uri = OpenTox::RestClientWrapper.post uri
+      assert((task_uri.uri? and task_uri=~/task/),"no task uri: #{task_uri}")
+      
+      # test1: wait_for_task, this should abort
+      begin
+        OpenTox.wait_for_task task_uri
+        assert false,"should have thrown an error because there was an error in the task we have waited for"
+      rescue => ex
+        assert ex.message=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
+      end
+
+      # test2: test if task is set accordingly
+      task = OpenTox::Task.new(task_uri)
+      task.get
+      assert task.error?
+      assert task.error_report[RDF::OT.message]=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
+    end
   end
 
 end
