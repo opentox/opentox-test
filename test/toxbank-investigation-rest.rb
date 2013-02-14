@@ -147,7 +147,9 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note returns list of users investigations as json
   def test_02d_check_for_users_investigations
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/json", :subjectid => $pi[:subjectid]})
+    #puts result
     assert_match /#{@@uri}/, result
+    assert_match /(\d{10})/, result # quickcheck for timestamp
   end
 
   # check for uri-list of an inexisting user

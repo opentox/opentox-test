@@ -1,4 +1,5 @@
-. $(cd "$(dirname "$0")"; pwd)/setup.sh
+dir=`dirname -z "$0"`
+. $dir/setup.sh
 
 # make benzene prediction w/ lazar m w/ pc
 task=`curl -X POST \

@@ -1,7 +1,7 @@
 require 'test/unit'
-require './validation_util.rb'
-
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+test_path = File.expand_path(File.dirname(__FILE__))
+require File.join(test_path,"validation_util.rb")
+require File.join(test_path,"setup.rb")
 
 begin
   puts "Service URI is: #{$validation[:uri]}"
@@ -29,14 +29,14 @@ end
 
 @@hamster_cv_feature_types = ["bbrc"]     
 @@files = {
-  File.new("data/hamster_carcinogenicity.csv") => :split_validation,
+  File.new(File.join(test_path,"data","hamster_carcinogenicity.csv")) => :split_validation,
   #File.new("data/EPAFHM.medi.csv") => :split_validation
   }
   
 unless defined?($short_tests)
   #@@hamster_cv_feature_types = ["bbrc", "last"]
   @@files.merge!({
-    File.new("data/hamster_carcinogenicity.csv") => :crossvalidation,  
+    File.new(File.join(test_path,"data","hamster_carcinogenicity.csv")) => :crossvalidation,  
   #  File.new("data/EPAFHM.csv") => :crossvalidation,
   #  File.new("data/hamster_carcinogenicity.csv") => :bootstrap_validation
     })
