@@ -513,14 +513,16 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if the UI index responses with 200
   def test_40_check_ui_index
-    response = request_ssl3 "#{$search_service[:uri]}/search/index", "get", $pi[:subjectid]
+    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index",{},{:subjectid => $pi[:subjectid]}
+    #response = request_ssl3 "#{$search_service[:uri]}/search/index", "get", $pi[:subjectid]
     puts response.inspect
     assert_equal "200", response.code
     #response = request_ssl3 "#{$search_service[:uri]}/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
     #assert_equal "200", response.code
     n=0
     begin
-      @response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      #@response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+      @response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
       n+=1
       puts "\nget uri from index:#{@response.body}"
       sleep 1
@@ -574,7 +576,8 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # check if @@uri is indexed
   def test_99_b_investigation_not_in_index
-    response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+    #response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
+    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal "200", response.code
     assert_no_match /#{@@uri}/, response.to_s
   end
