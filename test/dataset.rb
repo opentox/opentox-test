@@ -1,5 +1,4 @@
 require 'test/unit'
-require 'csv'
 require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
 DATA_DIR = File.join(File.dirname(__FILE__),"data")
 
