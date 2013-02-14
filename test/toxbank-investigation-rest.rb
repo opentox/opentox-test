@@ -518,7 +518,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index",{},{:subjectid => $pi[:subjectid]}
     #response = request_ssl3 "#{$search_service[:uri]}/search/index", "get", $pi[:subjectid]
     puts response.inspect
-    assert_equal "200", response.code
+    assert_equal 200, response.code
     #response = request_ssl3 "#{$search_service[:uri]}/search/index?resourceUri=#{CGI.escape(@@uri.to_s)}", "put" ,$pi[:subjectid]
     #assert_equal "200", response.code
     n=0
@@ -529,7 +529,7 @@ class TBInvestigationREST < Test::Unit::TestCase
       puts "\nget uri from index:#{@response.body}"
       sleep 1
     end while @response.body != @@uri.to_s && n < 10
-    assert_equal "200", response.code
+    assert_equal 200, response.code
     assert_equal @@uri.to_s, @response.body
     #response = request_ssl3 "https://toxbanktest2.toxbank.net/toxbank-search/search/index?#{CGI.escape(@@uri.to_s)}", "delete", $pi[:subjectid]
     #assert_equal "200", response.code
@@ -580,7 +580,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   def test_99_b_investigation_not_in_index
     #response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
-    assert_equal "200", response.code
+    assert_equal 200, response.code
     assert_no_match /#{@@uri}/, response.to_s
   end
 
