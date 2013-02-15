@@ -9,33 +9,41 @@ require 'test/unit'
 TEST_DIR = File.expand_path(File.dirname(__FILE__))
 require File.join(TEST_DIR,"setup.rb")
 require File.join(TEST_DIR,"helper.rb")
-SHELL_DIR = File.join(TEST_DIR,"shell")
 DATA_DIR = File.join(TEST_DIR,"data")
 
 class AlgorithmTest < Test::Unit::TestCase
 
-  def test_a_upload
-    mkvar(`bash #{SHELL_DIR}/upload.sh`)
-    puts "ds: '#{ENV['ds']}'"
-    assert_equal ENV['ds'].uri?, true
+  def test_01_upload
+    @@dataset = OpenTox::Dataset.new nil, @@subjectid
+    @@dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    assert_equal @@dataset.uri.uri?, true
+    puts @@dataset.uri
   end
 
-  def test_b1_lazar_m_bbrc
-    mkvar(`bash #{SHELL_DIR}/lazar_m_bbrc.sh`)
-    puts "lazar_m_bbrc: '#{ENV['lazar_m_bbrc']}'"
-    assert_equal ENV['lazar_m_bbrc'].uri?, true
+  def test_02_lazar_bbrc_model
+    lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar"), @@subjectid
+    model_uri =  lazar.run :dataset_uri => @@dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc")
+    @@model = OpenTox::Model.new model_uri, @@subjectid
+    assert_equal @@model.uri.uri?, true
+    puts @@model.uri
   end
 
-  def test_b2_lazar_p_bbrc
-    mkvar(`bash #{SHELL_DIR}/lazar_p_bbrc.sh`)
-    puts "lazar_p_bbrc: #{ENV['lazar_p_bbrc']}`"
-    assert_equal ENV['lazar_p_bbrc'].uri?, true
+  def test_03_lazar_bbrc_compound_prediction
+    prediction_uri = @@model.run :compound_uri => "#{$compound[:uri]}/InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
+    prediction = OpenTox::Dataset.new prediction_uri, @@subjectid
+    assert_equal prediction.uri.uri?, true
+    puts prediction.uri
   end
 
-  def test_b3_lazar_ds_bbrc
-    mkvar(`bash #{SHELL_DIR}/lazar_ds_bbrc.sh`)
-    puts "lazar_ds_bbrc: #{ENV['lazar_ds_bbrc']}`"
-    assert_equal ENV['lazar_ds_bbrc'].uri?, true
+  def test_04_lazar_bbrc_dataset_prediction
+    # make a dataset prediction
+    dataset = OpenTox::Dataset.new nil, @@subjectid
+    dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
+    assert_equal dataset.uri.uri?, true
+    prediction_uri = @@model.run :dataset_uri => dataset.uri
+    prediction = OpenTox::Dataset.new prediction_uri, @@subjectid
+    assert_equal prediction.uri.uri?, true
+    puts prediction.uri
   end
 
 end
