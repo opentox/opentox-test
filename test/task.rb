@@ -165,11 +165,12 @@ class TaskTest < Test::Unit::TestCase
     # ../dataset/test/error_in_task starts a task that produces an internal-error with message 'error_in_task_message'  
     # ../algorithm/test/wait_for_error_in_task starts a task that waits for ../dataset/test/error_in_task
     [ File.join($dataset[:uri],'test/error_in_task'),
-      File.join($algorithm[:uri],'test/wait_for_error_in_task') ].each do |uri|
+      File.join($algorithm[:uri],'test/wait_for_error_in_task')
+    ].each do |uri|
         
-      puts "testing uri #{uri}"
       task_uri = OpenTox::RestClientWrapper.post uri
-      assert((task_uri.uri? and task_uri=~/task/),"no task uri: #{task_uri}")
+      assert(URI.task?(task_uri) ,"no task uri: #{task_uri}")
+      task = OpenTox::Task.new task_uri
       
       # test1: wait_for_task, this should abort
       begin
@@ -180,7 +181,6 @@ class TaskTest < Test::Unit::TestCase
       end
 
       # test2: test if task is set accordingly
-      task = OpenTox::Task.new(task_uri)
       task.get
       assert task.error?
       assert task.error_report[RDF::OT.message]=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
