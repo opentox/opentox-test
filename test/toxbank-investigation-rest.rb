@@ -51,10 +51,6 @@ end
 
 class TBInvestigationREST < Test::Unit::TestCase
 
-  RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
-  RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
-
-
   # check if the userservice is available
   # @note return the secondpi user URI
   def test_00_pre_get_user_from_userservice

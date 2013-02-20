@@ -8,6 +8,9 @@ ENV['ALGORITHM']=$algorithm[:uri] if $algorithm
 ENV['COMPOUND']=$compound[:uri] if $compound
 ENV['DATASET']=$dataset[:uri] if $dataset
 
+RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
+RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
+
 #begin
   unless $aa[:uri].to_s == ""
     $pi[:subjectid] = OpenTox::Authorization.authenticate($pi[:name], $pi[:password])
