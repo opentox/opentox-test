@@ -9,18 +9,18 @@ rescue
 end
 
 class TBInvestigationWorkflow < Test::Unit::TestCase
-# Permission Matrix for owner, user1 (with GET permission) and user2 (no permission)
+# Permission Matrix for owner, user1 (with GET permission (e.G.: group-permission) and user2 (no permission)
 # sum    = isSummarySearchable=true
 # nosum  = isSummarySearchable=false
-# Publ   = isPublished = true
-# noPubl = isPublished = false
-#                      noSum   Sum    Pub   noSum   Sum    Pub
+# Pub    = isPublished = true
+# noPub  = isPublished = false
+#                      noSum   Pub  Pub+Sum noSum   Pub  Pub+Sum
 #               owner  user1  user1  user1  user2  user2  user2
-# GET             y      y      y      y      n      n      n
+# GET             y      n      y      y      n      n      n
 # POST,PUT,DEL    y      n      n      n      n      n      n
-# /metadata       y      n      y      y      n      y      y
-# /protocol       y      n      y      y      n      y      y
-# Download        y      n      n      y      n      n      n
+# /metadata       y      n      y      y      n      n      y
+# /protocol       y      n      y      y      n      n      y
+# Download        y      n      y      y      n      n      n
 #
 
   # create a new investigation by uploading a zip file,
