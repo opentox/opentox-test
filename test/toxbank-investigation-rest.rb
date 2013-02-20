@@ -159,7 +159,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert_not_match /#{@@uri}/, result.to_s
   end
 
-  # check for uri-list of an secondpi user
+  # check for uri-list of a secondpi user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_pi2user_uris
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/json", :subjectid => $secondpi[:subjectid]})

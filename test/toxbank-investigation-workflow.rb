@@ -18,9 +18,14 @@ class TBInvestigationAA < Test::Unit::TestCase
 #               owner  user1  user1  user1  user2  user2  user2
 # GET             y      y      y      y      n      n      n
 # POST,PUT,DEL    y      n      n      n      n      n      n
-# Meta            y      n      y      y      n      y      y
+# /metadata       y      n      y      y      n      y      y
+# /protocol       y      n      y      y      n      y      y
 # Download        y      n      n      y      n      n      n
 #
+
+  RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
+  RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
+
   # create a new investigation by uploading a zip file,
   # owner is $pi, Summary is not searchable, access=custom(owner only), not published
   def test_01_post_investigation
@@ -51,7 +56,60 @@ class TBInvestigationAA < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
   end
 
+  # check all permissions for owner
+  def test_04a_all_permission
+    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $pi[:subjectid]
+    assert_equal true, response
+    response = OpenTox::Authorization.authorize "#{@@uri}", "POST", $pi[:subjectid]
+    assert_equal true, response
+    response = OpenTox::Authorization.authorize "#{@@uri}", "PUT", $pi[:subjectid]
+    assert_equal true, response
+    response = OpenTox::Authorization.authorize "#{@@uri}", "DELETE", $pi[:subjectid]
+    assert_equal true, response
+  end
 
+  # get metadata for owner
+  def test_04b_get_metadata_pi
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  # get related protocol uris for owner
+  def test_04c_get_protocol_pi
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  def test_04d_get_download_pi
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $pi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  def test_05a_no_get_permission
+    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $secondpi[:subjectid]
+    assert_equal false, response
+  end
+
+  # do not get metadata for user1
+  def test_05b_get_metadata_secondpi
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    end
+  end
+
+  # do not get protocol for user1
+  def test_05c_get_protocol_secondpi
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    end
+  end
+
+  # do not get download for user1
+  def test_05d_get_download_secondpi
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
+    end
+  end
 
   # delete investigation/{id}
   # @note expect code 200
