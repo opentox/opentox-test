@@ -139,16 +139,13 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
 
   def test_20_update_modified_time
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    puts response.to_s
     g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| g << s}}
-
     g.query(:predicate => RDF::DC.modified){|r| @modified_time1 = r[2].to_s}
     t_start = Time.parse(@modified_time1).to_i
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => "#{@@toxbank_uri}"},{ :subjectid => $pi[:subjectid] }
     sleep 2
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    puts response.to_s
     g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| g << s}}
     g.query(:predicate => RDF::DC.modified){|r| @modified_time2 = r[2].to_s}
