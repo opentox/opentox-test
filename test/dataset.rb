@@ -165,6 +165,19 @@ class DatasetTest < Test::Unit::TestCase
     assert_equal false, URI.accessible?(d.uri)
   end
 
+  def test_from_csv2
+    File.open("test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
+    dir = File.expand_path(File.dirname(__FILE__))
+    dataset = OpenTox::Dataset.new nil, nil
+    dataset.upload File.join(dir,"test.csv")
+    assert_equal true, URI.accessible?(dataset.uri)
+    dataset.get
+    assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[OT.Warnings]
+    File.delete File.join(dir,"test.csv")
+    #puts dataset.uri
+  end
+
+
 end
 
 =begin
