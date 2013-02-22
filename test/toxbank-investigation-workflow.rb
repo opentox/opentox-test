@@ -10,8 +10,8 @@ end
 
 class TBInvestigationWorkflow < Test::Unit::TestCase
 # Permission Matrix for owner, user1 (with GET permission (e.G.: group-permission) and user2 (no permission)
-# sum    = isSummarySearchable=true
-# nosum  = isSummarySearchable=false
+# Sum    = isSummarySearchable=true
+# noSum  = isSummarySearchable=false
 # Pub    = isPublished = true
 # noPub  = isPublished = false
 #                      noSum   Pub  Pub+Sum noSum   Pub  Pub+Sum
