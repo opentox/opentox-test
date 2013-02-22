@@ -186,5 +186,30 @@ class TaskTest < Test::Unit::TestCase
       assert task.error_report[RDF::OT.message]=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
     end
   end
+  
+  def test_12_non_runtime_errors
+
+    [RuntimeError, ThreadError, StopIteration, LocalJumpError, EOFError, IOError, RegexpError, 
+     FloatDomainError, ZeroDivisionError, SystemCallError, EncodingError, NoMethodError, NameError, 
+     RangeError, KeyError, IndexError, ArgumentError, TypeError].each do |ex|
+      
+      error_msg = "raising a #{ex}"
+      puts error_msg
+      
+      task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+        sleep 2
+        raise ex,error_msg
+      end
+      
+      assert task.running?
+      assert_equal "Running", task.hasStatus
+      task.wait
+      assert task.error?
+      assert_equal "Error", task.hasStatus
+      assert_not_empty task.error_report[RDF::OT.errorCause]
+      assert_equal task.error_report[RDF::OT.message],error_msg
+    end
+    
+  end
 
 end
