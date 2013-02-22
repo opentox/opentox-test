@@ -1,6 +1,7 @@
 require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-DATA_DIR = File.join(File.dirname(__FILE__),"data")
+DIR = File.expand_path(File.dirname(__FILE__))
+DATA_DIR = File.join(DIR,"data")
+require File.join(DIR,"setup.rb")
 
 begin
   puts "Service URI is: #{$dataset[:uri]}"
@@ -166,14 +167,13 @@ class DatasetTest < Test::Unit::TestCase
   end
 
   def test_from_csv2
-    File.open("test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
-    dir = File.expand_path(File.dirname(__FILE__))
+    File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
     dataset = OpenTox::Dataset.new nil, nil
-    dataset.upload File.join(dir,"test.csv")
+    dataset.upload "#{DATA_DIR}/temp_test.csv"
     assert_equal true, URI.accessible?(dataset.uri)
     dataset.get
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[OT.Warnings]
-    File.delete File.join(dir,"test.csv")
+    File.delete "#{DATA_DIR}/temp_test.csv"
     #puts dataset.uri
   end
 
