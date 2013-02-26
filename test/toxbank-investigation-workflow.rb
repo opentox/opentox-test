@@ -14,6 +14,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
 # noSum  = isSummarySearchable=false
 # Pub    = isPublished = true
 # noPub  = isPublished = false
+#                      noPub  noSum         noPub  noSum
 #                      noSum   Pub  Pub+Sum noSum   Pub  Pub+Sum
 #               owner  user1  user1  user1  user2  user2  user2
 # GET             y      n      y      y      n      n      n
@@ -21,7 +22,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
 # /metadata       y      n      y      y      n      n      y
 # /protocol       y      n      y      y      n      n      y
 # Download        y      n      y      y      n      n      n
-#
+# Search          ?      n      n      y      n      n      y
 
   # create a new investigation by uploading a zip file,
   # owner is $pi, Summary is not searchable, access=custom(owner only), not published
@@ -135,6 +136,55 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
     test_05c_get_protocol_secondpi
     test_05d_get_download_secondpi
     test_05e_no_cud_permission
+  end
+
+  def test_08_put_published
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true"},{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
+  end
+
+  def test_09a_get_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  def test_09b_put_user1
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.put "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
+    end
+  end
+
+  def test_09c_post_user1
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.post "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
+    end
+  end
+
+  def test_09d_delete_user1
+    assert_raise OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.delete "#{@@uri}", {}, {:subjectid => $secondpi[:subjectid]}
+    end
+  end
+
+  # get metadata for owner
+  def test_09e_get_metadata_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  # get related protocol uris for owner
+  def test_09f_get_protocol_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_equal 200, response.code
+  end
+  
+  def test_09g_get_download_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
+    assert_equal 200, response.code
   end
 
   def test_20_update_modified_time
