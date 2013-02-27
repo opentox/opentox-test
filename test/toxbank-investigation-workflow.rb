@@ -136,6 +136,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
     test_05c_get_protocol_secondpi
     test_05d_get_download_secondpi
     test_05e_no_cud_permission
+    test_02_investigation_not_in_searchindex
   end
 
   def test_08_put_published
@@ -186,6 +187,64 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
     assert_equal 200, response.code
   end
+
+  def test_09h_not_indexed
+    test_02_investigation_not_in_searchindex
+  end
+
+  def test_10_put_searchable
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :summarySearchable => "true"},{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
+  end
+
+  def test_11a_repeat_user1_tests
+    test_09a_get_user1
+    test_09b_put_user1
+    test_09c_post_user1
+    test_09d_delete_user1
+    test_09e_get_metadata_user1
+    test_09f_get_protocol_user1
+    test_09g_get_download_user1
+  end
+
+  def test_11b_is_indexed
+    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+    assert_equal 200, response.code
+    assert_match /#{@@uri}/, response.to_s
+  end
+
+  def test_12_remove_group_access
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => ""},{ :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal uri, @@uri.to_s
+  end
+
+  # searchable + published without GET policy
+  def test_13a_repeat_05bcd
+    test_05a_no_get_permission
+    test_05d_get_download_secondpi
+    test_05e_no_cud_permission
+    test_11b_is_indexed
+  end
+
+  def test_13c_get_metadata_second_pi
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
+  # get related protocol uris for owner
+  def test_13d_get_protocol_second_pi
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_equal 200, response.code
+  end
+
 
   def test_20_update_modified_time
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}

@@ -521,7 +521,7 @@ class TBInvestigationREST < Test::Unit::TestCase
       sleep 1
     end while @response.body != @@uri.to_s && n < 10
     assert_equal 200, response.code
-    assert_equal "", @response.body
+    assert_equal @@uri.to_s, @response.body
   end
 
   # try to delete investigation as "guest",
