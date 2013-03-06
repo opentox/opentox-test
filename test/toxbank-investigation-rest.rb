@@ -535,18 +535,22 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to delete single file of investigation as "guest",
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
-    # TODO insert path to single file
     assert_raise OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
+      OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => @@subjectid}
     end
   end
 
-  # try to update an investigation as "guest",
+  # try to update an investigation as 'guest',
   # @note expect OpenTox::UnauthorizedError
   def test_92_try_to_update_id_as_guest
     assert_raise OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
     end
+  end
+
+  # delete single file of investigation,
+  def test_93_delete_single_file
+    OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $pi[:subjectid]}
   end
   
   # check if uri is in uri-list
