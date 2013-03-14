@@ -548,11 +548,24 @@ class TBInvestigationREST < Test::Unit::TestCase
     end
   end
 
-  # delete single file of investigation,
-  def test_93_delete_single_file
-    OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $pi[:subjectid]}
+=begin
+  # delete single file of investigation, currently not implemented
+  def test_93a_delete_single_file
+    response = OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $pi[:subjectid]}
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
-  
+
+  # delete single file of investigation, currently not implemented
+  def test_93b_delete_single_file
+    assert_raise OpenTox::ResourceNotFoundError do
+      OpenTox::RestClientWrapper.get "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $pi[:subjectid]}
+    end
+  end
+=end
+
   # check if uri is in uri-list
   # @note expect investigation uri exist
   def test_98_get_investigation
