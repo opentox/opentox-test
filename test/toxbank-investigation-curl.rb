@@ -40,7 +40,6 @@ class UploadTest < Test::Unit::TestCase
       #puts taskuri
       t = OpenTox::Task.new taskuri
       t.wait
-      t.get
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
       uri = t.resultURI

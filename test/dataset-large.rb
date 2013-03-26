@@ -16,7 +16,6 @@ class DatasetLargeTest < Test::Unit::TestCase
     f = File.join DATA_DIR, "EPAFHM.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
-    d.get
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
@@ -29,14 +28,11 @@ class DatasetLargeTest < Test::Unit::TestCase
     f = File.join DATA_DIR, "multi_cell_call.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
-    puts d.uri
-    d.get
-    puts "get finished"
     csv = CSV.read f
-    assert_equal csv.size-4, d.compounds.size
+    assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal true, d.features.first[RDF.type].include?(RDF::OT.NominalFeature)
-    assert_equal 1063, d.data_entries.size
+    assert_equal 1066, d.data_entries.size
     d.delete
     assert_equal false, URI.accessible?(d.uri)
   end
@@ -45,8 +41,6 @@ class DatasetLargeTest < Test::Unit::TestCase
     f = File.join DATA_DIR, "ISSCAN-multi.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
-    puts d.uri
-    d.get
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
@@ -61,7 +55,6 @@ class DatasetLargeTest < Test::Unit::TestCase
       threads << Thread.new(t) do |up|
         d = OpenTox::Dataset.new nil, @@subjectid
         d.upload "#{DATA_DIR}/hamster_carcinogenicity.csv"
-        d.get
         assert_equal OpenTox::Dataset, d.class
         assert_equal 1, d.features.size
         assert_equal 85, d.compounds.size
@@ -80,12 +73,7 @@ class DatasetLargeTest < Test::Unit::TestCase
     f = File.join DATA_DIR, "kazius.csv"
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload f
-    puts d.uri
-    d.get
     csv = CSV.read f
-    puts  d.compounds.size
-    puts  d.features.size
-    puts  d.data_entries.size
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size

@@ -22,7 +22,7 @@ end
 class TaskTest < Test::Unit::TestCase
 
   def test_01_create_and_complete
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
+    task = OpenTox::Task.run __method__,nil,@@subjectid do
       sleep 1
       $task[:uri]
     end
@@ -37,7 +37,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_02_all
-    all = OpenTox::Task.all($task[:uri])
+    all = OpenTox::Task.all
     assert_equal Array, all.class
     t = all.last
     assert_equal OpenTox::Task, t.class
@@ -45,19 +45,19 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_03_create_and_cancel
-    task = OpenTox::Task.create $task[:uri], @@subjectid do
+    task = OpenTox::Task.run __method__,nil,@@subjectid do
       sleep 2
       $task[:uri]
     end
     assert_equal true, task.running?
     task.cancel
     assert_equal true,task.cancelled?
-    assert_not_empty task.created_at
-    assert_not_empty task.finished_at
+    assert_not_empty task.created_at.to_s
+    assert_not_empty task.finished_at.to_s
   end
 
   def test_04_create_and_fail
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
       sleep 2
       raise "A runtime error occured"
     end
@@ -74,7 +74,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_05_create_and_fail_with_opentox_error
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
@@ -89,7 +89,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_06_create_and_fail_with_not_found_error
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
       sleep 1
       resource_not_found_error "An OpenTox::ResourceNotFoundError occured",  "http://test.org/fake_creator"
     end
@@ -105,7 +105,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_07_create_and_fail_with_rest_not_found_error
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
       sleep 1
       OpenTox::Feature.new.get
     end
@@ -119,7 +119,7 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_08_create_and_fail_with_restclientwrapper_error
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
       sleep 1
       OpenTox::RestClientWrapper.get "invalid uri"
     end
@@ -134,7 +134,7 @@ class TaskTest < Test::Unit::TestCase
 
   def test_09_check_resultURIs
     resulturi = "http://resulturi/test/1"
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
+    task = OpenTox::Task.run __method__,nil,@@subjectid do
       sleep 1
       resulturi
     end
@@ -151,12 +151,11 @@ class TaskTest < Test::Unit::TestCase
   end
 
   def test_10_uri_with_credentials
-    task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test" do
+    task = OpenTox::Task.run __method__,nil,@@subjectid do
       sleep 1
       resource_not_found_error "test", "http://username:password@test.org/fake_uri"
     end
     task.wait
-    task.get
     assert_no_match %r{username|password},  task.error_report[RDF::OT.actor]
   end
 
@@ -164,6 +163,7 @@ class TaskTest < Test::Unit::TestCase
     # testing two uris:
     # ../dataset/test/error_in_task starts a task that produces an internal-error with message 'error_in_task_message'  
     # ../algorithm/test/wait_for_error_in_task starts a task that waits for ../dataset/test/error_in_task
+    # TODO: remove test uris from services, e.g. dynamically instantiate Sinatra routes instead
     [ File.join($dataset[:uri],'test/error_in_task'),
       File.join($algorithm[:uri],'test/wait_for_error_in_task')
     ].each do |uri|
@@ -181,7 +181,6 @@ class TaskTest < Test::Unit::TestCase
       end
 
       # test2: test if task is set accordingly
-      task.get
       assert task.error?
       assert task.error_report[RDF::OT.message]=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
     end
@@ -196,7 +195,7 @@ class TaskTest < Test::Unit::TestCase
       error_msg = "raising a #{ex}"
       puts error_msg
       
-      task = OpenTox::Task.create $task[:uri], @@subjectid, RDF::DC.description => "test failure", RDF::DC.creator => "http://test.org/fake_creator" do
+      task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
         sleep 2
         raise ex,error_msg
       end
@@ -207,7 +206,7 @@ class TaskTest < Test::Unit::TestCase
       assert task.error?
       assert_equal "Error", task.hasStatus
       assert_not_empty task.error_report[RDF::OT.errorCause]
-      assert_equal task.error_report[RDF::OT.message],error_msg
+      assert_match error_msg,task.error_report[RDF::OT.message]
     end
     
   end

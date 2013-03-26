@@ -25,7 +25,6 @@ class ValidationTestUtil
       if (file.path =~ /csv$/)
         d = OpenTox::Dataset.new nil, subjectid
         d.upload file.path
-        d.get
         internal_server_error "num features not 1 (="+d.features.size.to_s+"), what to predict??" if d.features.size != 1
         @@prediction_features[file.path.to_s] = d.features[0].uri
         @@dataset_uris[file.path.to_s] = d.uri

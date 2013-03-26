@@ -67,7 +67,9 @@ class ValidationTest < Test::Unit::TestCase
     if defined?(@@delete) and @@delete
       [:data, :train_data, :test_data].each do |d|
         @@data.each do |data| 
-          OpenTox::Dataset.find(data[d],@@subjectid).delete if data[d] and data[:delete] and OpenTox::Dataset.exist?(data[d], @@subjectid)
+          OpenTox::Dataset.find(data[d],@@subjectid).delete if data[d] and data[:delete]
+          # CH: Dataset.exist? has been removed, find checks if uri is accessible
+          # and OpenTox::Dataset.exist?(data[d], @@subjectid)
         end
       end
       @@vs.each{|v| v.delete} if defined?@@vs
@@ -117,7 +119,7 @@ class ValidationTest < Test::Unit::TestCase
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
-        model = v.metadata[OT.model.to_s]
+        model = v.metadata[RDF::OT.model.to_s]
         assert model.uri?
         v_list = OpenTox::Validation.list( {:model => model} )
         assert v_list.size==1 and v_list.include?(v.uri)
@@ -164,14 +166,14 @@ class ValidationTest < Test::Unit::TestCase
         assert v.uri.uri?
         assert_prob_correct(v)
         
-        train_compounds = OpenTox::Dataset.find(v.metadata[OT.trainingDataset.to_s]).compounds
-        test_compounds = OpenTox::Dataset.find(v.metadata[OT.testDataset.to_s]).compounds
+        train_compounds = OpenTox::Dataset.find(v.metadata[RDF::OT.trainingDataset.to_s]).compounds
+        test_compounds = OpenTox::Dataset.find(v.metadata[RDF::OT.testDataset.to_s]).compounds
         orig_compounds = OpenTox::Dataset.find(data[:data]).compounds
         assert_equal((orig_compounds.size*0.9).round,train_compounds.size)
         assert_equal(orig_compounds.size,(train_compounds+test_compounds).size)
         assert_equal(orig_compounds.uniq.size,(train_compounds+test_compounds).uniq.size)
         
-        model = v.metadata[OT.model.to_s]
+        model = v.metadata[RDF::OT.model.to_s]
         assert model.uri?
         v_list = OpenTox::Validation.list( {:model => model} )
         assert v_list.size==1 and v_list.include?(v.uri)
@@ -213,7 +215,7 @@ class ValidationTest < Test::Unit::TestCase
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
-        model = v.metadata[OT.model.to_s]
+        model = v.metadata[RDF::OT.model.to_s]
         assert model.uri?
         v_list = OpenTox::Validation.list( {:model => model} )
         assert v_list.size==1 and v_list.include?(v.uri)
@@ -317,13 +319,13 @@ class ValidationTest < Test::Unit::TestCase
           assert_kind_of OpenTox::Validation,stats_val
           assert_prob_correct(stats_val)
           
-          algorithm = cv.metadata[OT.algorithm.to_s]
+          algorithm = cv.metadata[RDF::OT.algorithm.to_s]
           assert algorithm.uri?
           cv_list = OpenTox::Crossvalidation.list( {:algorithm => algorithm} )
           assert cv_list.include?(cv.uri)
           cv_list.each do |cv_uri|
             #begin catch not authorized somehow
-              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[OT.algorithm.to_s]
+              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm.to_s]
               assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
             #rescue 
             #end
@@ -419,8 +421,8 @@ class ValidationTest < Test::Unit::TestCase
     
     internal_server_error "no opentox object" unless opentox_object.class.to_s.split("::").first=="OpenTox"
     assert opentox_object.metadata.is_a?(Hash)
-    assert opentox_object.metadata[DC.date.to_s].to_s.length>0,"date not set for "+opentox_object.uri.to_s+", is metadata loaded? (use find) :\n"+opentox_object.metadata.to_yaml
-    time = Time.parse(opentox_object.metadata[DC.date.to_s])
+    assert opentox_object.metadata[RDF::DC.date.to_s].to_s.length>0,"date not set for "+opentox_object.uri.to_s+", is metadata loaded? (use find) :\n"+opentox_object.metadata.to_yaml
+    time = Time.parse(opentox_object.metadata[RDF::DC.date.to_s])
     assert time!=nil
 =begin    
     assert time<Time.new,"date of "+opentox_object.uri.to_s+" is in the future: "+time.to_s
@@ -429,13 +431,13 @@ class ValidationTest < Test::Unit::TestCase
   end
   
   def assert_prob_correct( validation )
-    class_stats = validation.metadata[OT.classificationStatistics.to_s]
+    class_stats = validation.metadata[RDF::OT.classificationStatistics.to_s]
     if class_stats != nil
-      class_value_stats = class_stats[OT.classValueStatistics.to_s]
+      class_value_stats = class_stats[RDF::OT.classValueStatistics.to_s]
       class_value_stats.each do |cs|
-        #puts cs[OT.positivePredictiveValue.to_s]
-        #puts validation.probabilities(0,cs[OT.classValue.to_s]).inspect
-        assert cs[OT.positivePredictiveValue.to_s]==validation.probabilities(0,cs[OT.classValue.to_s],@@subjectid)[:probs][cs[OT.classValue.to_s]]
+        #puts cs[RDF::OT.positivePredictiveValue.to_s]
+        #puts validation.probabilities(0,cs[RDF::OT.classValue.to_s]).inspect
+        assert cs[RDF::OT.positivePredictiveValue.to_s]==validation.probabilities(0,cs[RDF::OT.classValue.to_s],@@subjectid)[:probs][cs[RDF::OT.classValue.to_s]]
       end
     end
   end  

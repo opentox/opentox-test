@@ -106,12 +106,12 @@ class FeatureRestTest < Test::Unit::TestCase
   end
 
   def test_12_list_features
-    r = OpenTox::Feature.all $feature[:uri], @@subjectid
+    r = OpenTox::Feature.all @@subjectid
     assert_equal true, r.collect{|f| f.uri}.include?(@@feature.uri)
   end
 
   def test_13_get_feature
-    @@feature.get
+    @@feature = OpenTox::Feature.new @@feature.uri, @@subjectid
     assert_equal "test", @@feature.title
     assert_equal RDF::OT.Feature, @@feature[RDF.type]
   end
@@ -126,6 +126,18 @@ class FeatureRestTest < Test::Unit::TestCase
     uri = @@feature.uri
     @@feature.delete
     assert_equal false, URI.accessible?(uri)
+  end
+
+  def test_16_duplicated_features
+    metadata = {
+      RDF::DC.title => "test",
+      RDF.type => [RDF::OT.Feature, RDF::OT.StringFeature],
+      RDF::DC.description => "feature duplication test"
+    }
+    feature = OpenTox::Feature.create metadata, @@subjectid
+    dup_feature = OpenTox::Feature.find_or_create metadata, @@subjectid
+    assert_equal feature.uri, dup_feature.uri
+    feature.delete
   end
 
 end

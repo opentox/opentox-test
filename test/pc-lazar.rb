@@ -8,7 +8,7 @@
 require 'test/unit'
 TEST_DIR = File.expand_path(File.dirname(__FILE__))
 require File.join(TEST_DIR,"setup.rb")
-require File.join(TEST_DIR,"helper.rb")
+#require File.join(TEST_DIR,"helper.rb")
 #SHELL_DIR = File.join(TEST_DIR,"shell")
 DATA_DIR = File.join(TEST_DIR,"data")
 
@@ -33,7 +33,7 @@ class AlgorithmTest < Test::Unit::TestCase
 
   def test_02_lazar_pc_model
     lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar")
-    @@model = lazar.run :dataset_uri => @@dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"physicochemical"), :pc_type => "geometrical"
+    @@model = lazar.run :dataset_uri => @@dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"pc-descriptors"), :pc_type => "geometrical"
     assert_equal @@model.uri.uri?, true
     puts @@model.uri
   end

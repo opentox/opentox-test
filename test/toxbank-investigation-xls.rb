@@ -27,7 +27,6 @@ class ExcelUploadTest < Test::Unit::TestCase
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
     t.wait
-    #t.get
     puts t.uri
     assert_equal true, t.completed?
     uri = t.resultURI
