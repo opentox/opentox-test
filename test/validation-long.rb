@@ -67,7 +67,7 @@ class ValidationTest < Test::Unit::TestCase
     if defined?(@@delete) and @@delete
       [:data, :train_data, :test_data].each do |d|
         @@data.each do |data| 
-          OpenTox::Dataset.find(data[d],@@subjectid).delete if data[d] and data[:delete]
+          OpenTox::Dataset.new(data[d],@@subjectid).delete if data[d] and data[:delete]
           # CH: Dataset.exist? has been removed, find checks if uri is accessible
           # and OpenTox::Dataset.exist?(data[d], @@subjectid)
         end
@@ -162,6 +162,7 @@ class ValidationTest < Test::Unit::TestCase
         #v_uri = "http://localhost:8087/validation/90"
         #v = OpenTox::Validation.find(v_uri)
         
+        puts v.inspect
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
@@ -319,13 +320,13 @@ class ValidationTest < Test::Unit::TestCase
           assert_kind_of OpenTox::Validation,stats_val
           assert_prob_correct(stats_val)
           
-          algorithm = cv.metadata[RDF::OT.algorithm.to_s]
+          algorithm = cv.metadata[RDF::OT.algorithm]
           assert algorithm.uri?
           cv_list = OpenTox::Crossvalidation.list( {:algorithm => algorithm} )
           assert cv_list.include?(cv.uri)
           cv_list.each do |cv_uri|
             #begin catch not authorized somehow
-              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm.to_s]
+              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm]
               assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
             #rescue 
             #end
@@ -416,12 +417,16 @@ class ValidationTest < Test::Unit::TestCase
     end
   end
 
-  # checks if opento_object has date defined in metadata, and time is less than max_time seconds ago
+  # checks if opentox_object has date defined in metadata, and time is less than max_time seconds ago
   def assert_valid_date( opentox_object, max_time=600 )
     
     internal_server_error "no opentox object" unless opentox_object.class.to_s.split("::").first=="OpenTox"
     assert opentox_object.metadata.is_a?(Hash)
-    assert opentox_object.metadata[RDF::DC.date.to_s].to_s.length>0,"date not set for "+opentox_object.uri.to_s+", is metadata loaded? (use find) :\n"+opentox_object.metadata.to_yaml
+    puts opentox_object.class
+    puts "DATE"
+    puts RDF::DC.date.to_s
+    puts opentox_object.metadata.inspect
+    assert opentox_object.metadata[RDF::DC.date.to_s],"date not set for "+opentox_object.uri.to_s+", is metadata loaded? (use find) :\n"+opentox_object.metadata.to_yaml
     time = Time.parse(opentox_object.metadata[RDF::DC.date.to_s])
     assert time!=nil
 =begin    
@@ -431,13 +436,13 @@ class ValidationTest < Test::Unit::TestCase
   end
   
   def assert_prob_correct( validation )
-    class_stats = validation.metadata[RDF::OT.classificationStatistics.to_s]
+    class_stats = validation.metadata[RDF::OT.classificationStatistics]
     if class_stats != nil
-      class_value_stats = class_stats[RDF::OT.classValueStatistics.to_s]
+      class_value_stats = class_stats[RDF::OT.classValueStatistics]
       class_value_stats.each do |cs|
-        #puts cs[RDF::OT.positivePredictiveValue.to_s]
-        #puts validation.probabilities(0,cs[RDF::OT.classValue.to_s]).inspect
-        assert cs[RDF::OT.positivePredictiveValue.to_s]==validation.probabilities(0,cs[RDF::OT.classValue.to_s],@@subjectid)[:probs][cs[RDF::OT.classValue.to_s]]
+        #puts cs[RDF::OT.positivePredictiveValue]
+        #puts validation.probabilities(0,cs[RDF::OT.classValue]).inspect
+        assert cs[RDF::OT.positivePredictiveValue]==validation.probabilities(0,cs[RDF::OT.classValue],@@subjectid)[:probs][cs[RDF::OT.classValue]]
       end
     end
   end  

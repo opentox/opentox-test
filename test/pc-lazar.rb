@@ -23,7 +23,7 @@ class AlgorithmTest < Test::Unit::TestCase
   def test_02_pc_fds
     #task_uri = OpenTox::RestClientWrapper.post File.join(@@dataset.uri, "pc"), {:pc_type => "geometrical"}
     #puts task_uri
-    #@pc = OpenTox.wait_for_task(task_uri)
+    #@pc = wait_for_task(task_uri)
     #puts @pc.uri
     #assert_equal @pc.uri.uri?, true
     #mkvar(`bash #{SHELL_DIR}/pc_fds.sh`)

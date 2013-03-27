@@ -174,7 +174,7 @@ class TaskTest < Test::Unit::TestCase
       
       # test1: wait_for_task, this should abort
       begin
-        OpenTox.wait_for_task task_uri
+        wait_for_task task_uri
         assert false,"should have thrown an error because there was an error in the task we have waited for"
       rescue => ex
         assert ex.message=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
