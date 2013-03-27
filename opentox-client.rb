@@ -3,12 +3,12 @@ require 'openbabel'
 all = Dir["test/*.rb"]
 exclude = [
   "test/setup.rb",
+  "test/authorization.rb",
   "test/lazarweb.rb",
   "test/descriptors.rb",
   "test/pc-lazar.rb",
 ] + Dir["test/toxbank*.rb"]
-puts (all - exclude).inspect
-(all - exclude).each {|f| require_relative f }
+(all - exclude).each {|f| puts f; require_relative f }
 =begin
 require './test/error.rb'
 require './test/compound.rb'

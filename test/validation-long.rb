@@ -320,13 +320,13 @@ class ValidationTest < Test::Unit::TestCase
           assert_kind_of OpenTox::Validation,stats_val
           assert_prob_correct(stats_val)
           
-          algorithm = cv.metadata[RDF::OT.algorithm]
+          algorithm = cv.metadata[RDF::OT.algorithm.to_s]
           assert algorithm.uri?
           cv_list = OpenTox::Crossvalidation.list( {:algorithm => algorithm} )
           assert cv_list.include?(cv.uri)
           cv_list.each do |cv_uri|
             #begin catch not authorized somehow
-              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm]
+              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm.to_s]
               assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
             #rescue 
             #end
