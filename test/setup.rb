@@ -7,10 +7,6 @@ require File.join(ENV["HOME"],".opentox","config","test.rb")
 TEST_DIR = File.expand_path(File.dirname(__FILE__))
 DATA_DIR = File.join(TEST_DIR,"data")
 
-#ENV['ALGORITHM']=$algorithm[:uri] if $algorithm
-#ENV['COMPOUND']=$compound[:uri] if $compound
-#ENV['DATASET']=$dataset[:uri] if $dataset
-
 RDF::TB  = RDF::Vocabulary.new "http://onto.toxbank.net/api/"
 RDF::ISA = RDF::Vocabulary.new "http://onto.toxbank.net/isa/"
 

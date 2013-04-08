@@ -6,7 +6,6 @@ class AlgorithmTest < Test::Unit::TestCase
   def test_01_upload
     @@dataset = OpenTox::Dataset.new nil, @@subjectid
     @@dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    puts @@dataset.uri
     assert_equal @@dataset.uri.uri?, true
   end
 
@@ -17,7 +16,6 @@ class AlgorithmTest < Test::Unit::TestCase
     @@model = OpenTox::Model.new model_uri, @@subjectid
     assert_equal @@model.uri.uri?, true
     feature_dataset_uri = @@model[RDF::OT.featureDataset]
-    puts feature_dataset_uri 
     feature_dataset = OpenTox::Dataset.new feature_dataset_uri , @@subjectid
     assert_equal @@dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
@@ -40,12 +38,8 @@ class AlgorithmTest < Test::Unit::TestCase
     } ].each do |example|
       prediction_uri = @@model.run :compound_uri => example[:compound].uri
       prediction_dataset = OpenTox::Dataset.new prediction_uri, @@subjectid
-      puts @@model.uri
-      puts prediction_dataset.uri
-      puts example[:compound].smiles
       assert_equal prediction_dataset.uri.uri?, true
       prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == example[:compound].uri}.first
-      puts prediction.inspect
       assert_equal example[:prediction], prediction[:value]
       assert_equal example[:confidence], prediction[:confidence]
     end
@@ -57,10 +51,8 @@ class AlgorithmTest < Test::Unit::TestCase
     dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     assert_equal dataset.uri.uri?, true
     prediction_uri = @@model.run :dataset_uri => dataset.uri
-    puts prediction_uri
     prediction = OpenTox::Dataset.new prediction_uri, @@subjectid
     assert_equal prediction.uri.uri?, true
-    puts prediction.to_turtle
   end
 =begin
 =end

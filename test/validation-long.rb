@@ -423,7 +423,6 @@ class ValidationTest < Test::Unit::TestCase
     internal_server_error "no opentox object" unless opentox_object.class.to_s.split("::").first=="OpenTox"
     assert opentox_object.metadata.is_a?(Hash)
     puts opentox_object.class
-    puts "DATE"
     puts RDF::DC.date.to_s
     puts opentox_object.metadata.inspect
     assert opentox_object.metadata[RDF::DC.date.to_s],"date not set for "+opentox_object.uri.to_s+", is metadata loaded? (use find) :\n"+opentox_object.metadata.to_yaml

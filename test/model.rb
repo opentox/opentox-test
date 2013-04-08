@@ -32,8 +32,6 @@ class ModelTest < Test::Unit::TestCase
     assert_equal 2, a.parameters.size
     p = a.parameters.collect{|p| p if p[RDF::DC.title] == "test"}.compact.first
     assert_equal "mandatory", p[RDF::OT.paramScope].to_s
-    #puts a.to_turtle
-    #puts a.uri
     #a.run :compound_uri => OpenTox::Compound.from_smiles("c1ccccc1NN").uri
     a.delete
   end
