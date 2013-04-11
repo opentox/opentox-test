@@ -4,7 +4,7 @@ all = Dir["test/*.rb"]
 exclude = [
   "test/setup.rb",
   "test/authorization.rb",
-  "test/plicy.rb",
+  "test/policy.rb",
   "test/lazarweb.rb",
   "test/descriptors.rb",
   "test/pc-lazar.rb",
