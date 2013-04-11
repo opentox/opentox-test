@@ -21,7 +21,7 @@ class AlgorithmTest < Test::Unit::TestCase
   end
 
   def test_02_cdk_single
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","AtomCountDescriptor"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","AtomCount"), @@subjectid
     c = OpenTox::Compound.from_smiles "c1ccccc1"
     d = OpenTox::Dataset.new(a.run :compound_uri => c.uri)
     assert_equal 12, d.data_entries[0][0]
@@ -30,7 +30,7 @@ class AlgorithmTest < Test::Unit::TestCase
     d = OpenTox::Dataset.new(a.run :compound_uri => c.uri)
     assert_equal 17, d.data_entries[0][0]
     d.delete
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","CarbonTypesDescriptor"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","CarbonTypes"), @@subjectid
     d = OpenTox::Dataset.new(a.run :compound_uri => c.uri)
     assert_equal [1.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0.0], d.data_entries[0]
     d.delete
@@ -40,7 +40,7 @@ class AlgorithmTest < Test::Unit::TestCase
     a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","joelib","LogP"), @@subjectid
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     d = OpenTox::Dataset.new(a.run :compound_uri => c.uri)
-    assert_equal 2.6590800000000003, d.data_entries[0][0]
+    assert_equal 2.65908, d.data_entries[0][0]
     d.delete
   end
 
@@ -49,10 +49,11 @@ class AlgorithmTest < Test::Unit::TestCase
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     dataset_uri = a.run :compound_uri => c.uri
     d = OpenTox::Dataset.new dataset_uri
-    assert_equal 356, d.data_entries[0].size
+    assert_equal 340, d.data_entries[0].size
     d.delete
   end
 
+=begin
   def test_05_dataset
     a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), @@subjectid
     dataset = OpenTox::Dataset.new nil, @@subjectid
@@ -60,7 +61,7 @@ class AlgorithmTest < Test::Unit::TestCase
     result_uri = a.run :dataset_uri => dataset.uri
     d = OpenTox::Dataset.new result_uri
     assert_equal dataset.compounds.size, d.data_entries.size
-    assert_equal 356, d.data_entries[0].size
+    assert_equal 340, d.data_entries[0].size
     d.delete
   end
 
@@ -73,5 +74,6 @@ class AlgorithmTest < Test::Unit::TestCase
   def test_concurrent
     # parallel access to algorithm service
   end
+=end
 
 end
