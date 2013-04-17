@@ -246,6 +246,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::TB.hasAuthor)
     assert @g.has_predicate?(RDF::DC.title)
     assert @g.has_predicate?(RDF::DC.abstract)
     assert @g.has_predicate?(RDF::TB.hasKeyword)
@@ -447,6 +448,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    assert @g.has_predicate?(RDF::TB.hasAuthor)
     assert @g.has_predicate?(RDF::DC.title)
     assert @g.has_predicate?(RDF::DC.abstract)
     assert @g.has_predicate?(RDF::TB.hasKeyword)
