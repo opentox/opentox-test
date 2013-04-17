@@ -19,18 +19,11 @@ class AlgorithmTest < Test::Unit::TestCase
     assert_equal 54, feature_dataset.features.size
     assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', OpenTox::Feature.new(feature_dataset.features.first.uri, @@subjectid).title
     data = {}
-    puts feature_dataset.uri
     feature_dataset.compounds.each_with_index do |c,i|
       data[c.smiles] = {}
       feature_dataset.features.each_with_index do |f,j|
         match = c.match([f.title])[f.title]
         value = feature_dataset.data_entries[i][j].to_i 
-        unless value == match.to_i
-          puts c.smiles
-          puts f.title
-          puts "feature dataset: "+ value.to_s
-          puts "match: "+ match.to_i.to_s
-        end
         assert_equal match.to_i, value
       end
     end

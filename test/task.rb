@@ -193,7 +193,6 @@ class TaskTest < Test::Unit::TestCase
      RangeError, KeyError, IndexError, ArgumentError, TypeError].each do |ex|
       
       error_msg = "raising a #{ex}"
-      puts error_msg
       
       task = OpenTox::Task.run __method__,"http://test.org/fake_creator",@@subjectid do
         sleep 2
