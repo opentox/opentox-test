@@ -246,17 +246,11 @@ class TBInvestigationREST < Test::Unit::TestCase
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::TB.hasAuthor)
-    assert @g.has_predicate?(RDF::DC.title)
-    assert @g.has_predicate?(RDF::DC.abstract)
-    assert @g.has_predicate?(RDF::TB.hasKeyword)
-    assert @g.has_predicate?(RDF::TB.hasOwner)
-    assert @g.has_predicate?(RDF::TB.isPublished)
-    assert @g.has_predicate?(RDF::TB.isSummarySearchable)
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
-    assert @g.has_predicate?(RDF::TB.hasProject)
-    assert @g.has_predicate?(RDF::TB.hasOrganisation)
-    assert @g.has_predicate?(RDF::DC.modified)
+    @g.query(:predicate => RDF::DC.modified){|r| @@modified_time = r[2].to_s}
+    predicates_to_check = [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::TB.isSummarySearchable,RDF::ISA.hasAccessionID,RDF::TB.hasProject,RDF::TB.hasOrganisation,RDF::DC.modified]
+    predicates_to_check.each do |pred|
+      assert @g.has_predicate?(pred), "Metadata do not have Predicate #{pred}"
+    end
     @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
@@ -268,7 +262,6 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
     @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
-    @g.query(:predicate => RDF::DC.modified){|r| @@modified_time = r[2].to_s}
   end
 
   # get related protocol uris
