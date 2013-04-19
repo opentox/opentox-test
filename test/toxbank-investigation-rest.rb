@@ -133,6 +133,14 @@ class TBInvestigationREST < Test::Unit::TestCase
   end
 
   # check for uri-list as application/rdf+xml
+  # @note returns all listet investigtions in service
+  def test_02b2_check_for_rdfxml_uri_list
+    result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match /rdf\:RDF xmlns\:rdf/, result.to_s
+    assert_match /#{@@uri}/, result.to_s
+  end
+
+  # check for uri-list as application/rdf+xml
   # @note returns list of user investigations as rdf+xml
   def test_02c_check_for_rdf_uri_list
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$pi[:uri]}", :accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}).split("\n")
