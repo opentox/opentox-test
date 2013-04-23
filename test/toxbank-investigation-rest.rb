@@ -116,7 +116,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1b/}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1b/, r[2].to_s}
   end
 
   # check that policy files not listed in uri-list 
@@ -176,7 +176,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   end
 
   # update flag "isPublished",
@@ -196,7 +196,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     result = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :allowReadByGroup => "#{$user_service[:uri]}/project/G2"},{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -206,7 +206,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /true/, r[2].to_s}
   end
 
   # check flag "isSummarySearchable" is false,
@@ -215,7 +215,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
   end
 
   # update flag "isSummarySearchable" to "true",
@@ -232,7 +232,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     result = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(result.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isSummarySearchabel){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isSummarySearchabel){|r| assert_match /false/, r[2].to_s}
     response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -242,7 +242,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
   end
 
   # get investigation/{id}/metadata in rdf+xml 
@@ -259,17 +259,17 @@ class TBInvestigationREST < Test::Unit::TestCase
     predicates_to_check.each do |pred|
       assert @g.has_predicate?(pred), "Metadata do not have Predicate #{pred}"
     end
-    @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
-    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
+    @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match /U271/, r[2].to_s.split("/").last}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
-    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match r[2].to_s.split("/").last, /G176/}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
-    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
-    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
-    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match /G176/, r[2].to_s.split("/").last}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match /G2/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/, r[2].to_s.split("#").last}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /true/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match /[S192|S193]/, r[2].to_s.split("/").last}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /Background Cell growth underlies many key cellular and developmental processes/, r[2].to_s}
   end
 
   # get related protocol uris
@@ -392,9 +392,9 @@ class TBInvestigationREST < Test::Unit::TestCase
     res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
   end
 
   # check investigation data still not reachable as secondpi
@@ -458,17 +458,17 @@ class TBInvestigationREST < Test::Unit::TestCase
     assert @g.has_predicate?(RDF::ISA.hasAccessionID)
     assert @g.has_predicate?(RDF::TB.hasProject)
     assert @g.has_predicate?(RDF::TB.hasOrganisation)
-    @g.query(:predicate => RDF::DC.title){|r| assert_match r[2].to_s, /Growth control of the eukaryote cell: a systems biology study in yeast/}
-    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U271/}
+    @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match /U271/, r[2].to_s.split("/").last}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
-    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match r[2].to_s.split("/").last, /G176/}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match r[2].to_s, /BII-I-1/}
-    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match r[2].to_s, /G2/}
-    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match r[2].to_s.split("#").last, /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /true/}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
-    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match r[2].to_s.split("/").last, /[S192|S193]/}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match r[2].to_s, /Background Cell growth underlies many key cellular and developmental processes/}
+    @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match /G176/, r[2].to_s.split("/").last}
+    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasProject){|r| assert_match /G2/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/, r[2].to_s.split("#").last}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /true/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
+    @g.query(:predicate => RDF::ISA.hasStudy){|r| assert_match /[S192|S193]/, r[2].to_s.split("/").last}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /Background Cell growth underlies many key cellular and developmental processes/, r[2].to_s}
     @g.query(:predicate => RDF::DC.modified){|r| assert r[2] > @@modified_time.to_s; puts "\nfirst mod: #{@@modified_time} \nsecond mod: #{r[2]}"}
   end
 
