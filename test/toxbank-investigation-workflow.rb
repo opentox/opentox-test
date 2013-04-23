@@ -51,7 +51,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match r[2].to_s, /false/}
+    @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   end
 
   # check all permissions for owner
@@ -273,7 +273,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
     data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match r[2].to_s, /true/}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
   end
 
   # delete investigation/{id}
