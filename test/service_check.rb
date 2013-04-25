@@ -44,8 +44,8 @@ class ServiceCheck < Test::Unit::TestCase
     assert_equal 200, response.code
   end
   
-  #def test_validation
-    #response = OpenTox::RestClientWrapper.head($validation[:uri])
-    #assert_equal 200, response.code
-  #end
+  def test_validation
+    response = OpenTox::RestClientWrapper.head($validation[:uri])
+    assert_equal 200, response.code
+  end
 end
