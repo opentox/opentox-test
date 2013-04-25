@@ -1,15 +1,6 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
-begin
-  puts "Service URI is: #{$feature[:uri]}"
-rescue
-  puts "Configuration Error: $feature[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
-  exit
-end
-
-class FeatureRestTest < Test::Unit::TestCase
+class FeatureRestTest < MiniTest::Unit::TestCase
 
   def serialize rdf, format
     string = RDF::Writer.for(format).buffer  do |writer|
@@ -28,107 +19,84 @@ class FeatureRestTest < Test::Unit::TestCase
 
   # TODO: test supported accept/content-type formats
   # TODO: test invalid rdfs
-  def test_01_create_feature
-    @@rdf = RDF::Graph.new
+  def test_rest_feature
+    @rdf = RDF::Graph.new
     subject = RDF::URI.new File.join($feature[:uri], SecureRandom.uuid)
-    @@rdf << RDF::Statement.new(subject, RDF::DC.title, "test" )
-    @@rdf << RDF::Statement.new(subject, RDF.type, RDF::OT.Feature)
+    @rdf << RDF::Statement.new(subject, RDF::DC.title, "test" )
+    @rdf << RDF::Statement.new(subject, RDF.type, RDF::OT.Feature)
 
-    @@formats = [
+    @formats = [
       [:ntriples, "text/plain"],
       [:rdfxml, "application/rdf+xml"],
       [:turtle, 'text/turtle']
     ]
-    @@uris = []
+    @uris = []
     
-    @@formats.each do |f|
-      @@uris << subject.to_s
-      #OpenTox::RestClientWrapper.post(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]})
-      OpenTox::RestClientWrapper.put(subject.to_s, serialize(@@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
-      assert_equal true, URI.accessible?(@@uris.last, @@subjectid)
+    @formats.each do |f|
+      @uris << subject.to_s
+      OpenTox::RestClientWrapper.put(subject.to_s, serialize(@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
+      assert_equal true, URI.accessible?(@uris.last, @@subjectid)
     end
-  end
-
-
-  def test_02_list_features
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list").split("\n")
-    @@uris.each{ |uri|
+
+    @uris.each do |uri|
       assert_equal true, URI.accessible?(uri, @@subjectid)
       assert_equal true, r.include?(uri)
-    }
-  end
-
-  def test_03_get_feature
-    @@uris.each do |uri|
-      @@formats.each do |f|
+      @formats.each do |f|
         rdf = OpenTox::RestClientWrapper.get(uri, {}, :accept => f[1])
         # TODO compare with rdf serialization
         assert_match /#{uri}/, rdf
       end
     end
-  end
 
-  def test_04_add_to_feature
-    uri = @@uris.first
+    uri = @uris.first
     new_rdf = RDF::Graph.new
     new_rdf << RDF::Statement.new(RDF::Node.new, RDF::DC.author, "XYZ")
-    @@formats.each do |f|
+    @formats.each do |f|
       OpenTox::RestClientWrapper.post(uri, serialize(new_rdf,f[0]), :content_type => f[1])
       assert_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
       # TODO compare with rdf serialization
     end
-  end
 
-  def test_05_replace_feature
-    @@formats.each do |f|
-      @@uris.each do |uri|
-        OpenTox::RestClientWrapper.put(uri, serialize(@@rdf,f[0]), :content_type => f[1])
+    @formats.each do |f|
+      @uris.each do |uri|
+        OpenTox::RestClientWrapper.put(uri, serialize(@rdf,f[0]), :content_type => f[1])
         assert_equal true, URI.accessible?(uri)
-        assert_no_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
+        refute_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
       end
     end
-  end
 
-  def test_06_delete_feature
-    @@uris.each do |uri|
+    @uris.each do |uri|
       OpenTox::RestClientWrapper.delete(uri)
-      assert_raise OpenTox::ResourceNotFoundError do
+      assert_raises OpenTox::ResourceNotFoundError do
         OpenTox::RestClientWrapper.get(uri)
       end
     end
   end
 
-  def test_11_create_feature
-    @@feature = OpenTox::Feature.new nil, @@subjectid
-    @@feature.title = "test"
-    @@feature.put
-    assert_equal true, URI.accessible?(@@feature.uri)
-  end
+  def test_opentox_feature
+    @feature = OpenTox::Feature.new nil, @@subjectid
+    @feature.title = "test"
+    @feature.put
+    assert_equal true, URI.accessible?(@feature.uri)
 
-  def test_12_list_features
     r = OpenTox::Feature.all @@subjectid
-    assert_equal true, r.collect{|f| f.uri}.include?(@@feature.uri)
-  end
+    assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
 
-  def test_13_get_feature
-    @@feature = OpenTox::Feature.new @@feature.uri, @@subjectid
-    assert_equal "test", @@feature.title
-    assert_equal RDF::OT.Feature, @@feature[RDF.type]
-  end
+    @feature = OpenTox::Feature.new @feature.uri, @@subjectid
+    assert_equal "test", @feature.title
+    assert_equal RDF::OT.Feature, @feature[RDF.type]
 
-  def test_14_update_feature
-    @@feature.title = "test2"
-    @@feature.put
-    assert_match "test", OpenTox::RestClientWrapper.get(@@feature.uri)
-  end
+    @feature.title = "test2"
+    @feature.put
+    assert_match "test", OpenTox::RestClientWrapper.get(@feature.uri)
 
-  def test_15_delete_feature
-    uri = @@feature.uri
-    @@feature.delete
+    uri = @feature.uri
+    @feature.delete
     assert_equal false, URI.accessible?(uri)
   end
 
-  def test_16_duplicated_features
+  def test_duplicated_features
     metadata = {
       RDF::DC.title => "test",
       RDF.type => [RDF::OT.Feature, RDF::OT.StringFeature],

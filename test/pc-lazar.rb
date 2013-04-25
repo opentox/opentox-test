@@ -5,14 +5,15 @@
   * Date: 10/2012
 =end
 
-require 'test/unit'
 TEST_DIR = File.expand_path(File.dirname(__FILE__))
-require File.join(TEST_DIR,"setup.rb")
+require_relative "setup.rb"
+#require File.join(TEST_DIR,"setup.rb")
 #require File.join(TEST_DIR,"helper.rb")
 #SHELL_DIR = File.join(TEST_DIR,"shell")
 DATA_DIR = File.join(TEST_DIR,"data")
 
-class AlgorithmTest < Test::Unit::TestCase
+class PcLazarTest < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 
   def test_01_upload
     @@dataset = OpenTox::Dataset.new nil, @@subjectid

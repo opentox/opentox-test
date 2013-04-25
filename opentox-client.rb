@@ -6,7 +6,6 @@ exclude = [
   "test/authorization.rb",
   "test/policy.rb",
   "test/lazarweb.rb",
-  "test/descriptors.rb",
   "test/pc-lazar.rb",
 ] + Dir["test/toxbank*.rb"]
 (all - exclude).each {|f| require_relative f }

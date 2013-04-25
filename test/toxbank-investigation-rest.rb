@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),".." ,".." ,"toxbank-investigation", "util.rb")
 
 begin
@@ -8,7 +8,8 @@ rescue
   exit
 end
 
-class TBInvestigationBasic < Test::Unit::TestCase
+class TBInvestigationBasic < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
   
   # check response from service without header,
   # @note expect OpenTox::BadRequestError
@@ -49,7 +50,7 @@ class TBInvestigationBasic < Test::Unit::TestCase
 
 end
 
-class TBInvestigationREST < Test::Unit::TestCase
+class TBInvestigationREST < MiniTest::Unit::TestCase
 
   # check if the userservice is available
   # @note return the secondpi user URI
@@ -160,14 +161,14 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note returns nothing if inexisting user
   def test_02e_check_with_inexisting_user
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/json", :subjectid => $pi[:subjectid]})
-    assert_not_match /#{@@uri}/, result.to_s
+    refute_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of a secondpi user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_pi2user_uris
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/json", :subjectid => $secondpi[:subjectid]})
-    assert_not_match /#{@@uri}/, result.to_s
+    refute_match /#{@@uri}/, result.to_s
   end
 
   # check for flag "isPublished" is false,
@@ -488,7 +489,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     puts "pi-> uri: #{@@uri}"
     # pi get uris of secondpi
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/json", :subjectid => $pi[:subjectid]}
-    assert_not_match /#{@@uri}/, response
+    refute_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
     assert_equal 200, result.code
@@ -590,14 +591,14 @@ class TBInvestigationREST < Test::Unit::TestCase
     #response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
   # check that deleted uri is no longer in uri-list
   # @note expect investigation uri not in uri-list
   def test_99_c_check_urilist
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
 end

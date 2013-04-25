@@ -1,7 +1,6 @@
-require 'test/unit'
+require_relative "setup.rb"
 test_path = File.expand_path(File.dirname(__FILE__))
 require File.join(test_path,"validation_util.rb")
-require File.join(test_path,"setup.rb")
 
 begin
   puts "Service URI is: #{$validation[:uri]}"
@@ -42,7 +41,8 @@ unless defined?($short_tests)
     })
 end
 
-class ValidationTest < Test::Unit::TestCase
+class ValidationTest < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 
   def global_setup
     puts "login and upload datasets"

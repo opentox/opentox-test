@@ -16,6 +16,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["test"]
   gem.required_ruby_version = '>= 1.9.2'
 
+  gem.add_runtime_dependency 'minitest'
   gem.add_runtime_dependency "opentox-client"
   gem.post_install_message = "Please configure test in ~/.opentox/config/test.rb"
 

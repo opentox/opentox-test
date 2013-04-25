@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),".." ,".." ,"toxbank-investigation", "util.rb")
 
 begin
@@ -8,7 +8,8 @@ rescue
   exit
 end
 
-class TBInvestigationWorkflow < Test::Unit::TestCase
+class TBInvestigationWorkflow < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 # Permission Matrix for owner, user1 (with GET permission (e.G.: group-permission) and user2 (no permission)
 # Sum    = isSummarySearchable=true
 # noSum  = isSummarySearchable=false
@@ -42,7 +43,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
   def test_02_investigation_not_in_searchindex
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
   # check for flag "isPublished" is false,

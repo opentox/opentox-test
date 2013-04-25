@@ -1,13 +1,8 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
-class UploadTest < Test::Unit::TestCase
-
-  def setup
-  end
+class UploadTest < MiniTest::Unit::TestCase
   
-  def teardown
-  end
-  
+  i_suck_and_my_tests_are_order_dependent!
   def test_01_basic_response
     response = `curl -i -k --user #{$four_store[:user]}:#{$four_store[:password]} '#{$four_store[:uri]}/status/'`.chomp
     assert_match /200/, response

@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$investigation[:uri]}"
@@ -8,7 +8,7 @@ rescue
 end
 
 
-class StressTest < Test::Unit::TestCase
+class StressTest < MiniTest::Unit::TestCase
 
   # Do multiple POST and check if completed
   def test_01_multiple_upload
