@@ -1,5 +1,4 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$task[:uri]}"
@@ -19,7 +18,7 @@ class String
   end
 end
 
-class TaskTest < Test::Unit::TestCase
+class TaskTest < MiniTest::Unit::TestCase
 
   def test_01_create_and_complete
     task = OpenTox::Task.run __method__,nil,@@subjectid do
@@ -32,8 +31,8 @@ class TaskTest < Test::Unit::TestCase
     assert_equal true,  task.completed?
     assert_equal "Completed", task.hasStatus
     assert_equal $task[:uri], task.resultURI
-    assert_not_empty task.created_at
-    assert_not_empty task.finished_at
+    refute_empty task.created_at
+    refute_empty task.finished_at
   end
 
   def test_02_all
@@ -52,8 +51,8 @@ class TaskTest < Test::Unit::TestCase
     assert_equal true, task.running?
     task.cancel
     assert_equal true,task.cancelled?
-    assert_not_empty task.created_at.to_s
-    assert_not_empty task.finished_at.to_s
+    refute_empty task.created_at.to_s
+    refute_empty task.finished_at.to_s
   end
 
   def test_04_create_and_fail
@@ -68,9 +67,9 @@ class TaskTest < Test::Unit::TestCase
     assert_equal "Error", task.hasStatus
     assert_equal "A runtime error occured", task.error_report[RDF::OT.message]
     assert_equal "500", task.error_report[RDF::OT.statusCode]
-    assert_not_empty task.error_report[RDF::OT.errorCause]
-    assert_not_empty task.created_at
-    assert_not_empty task.finished_at
+    refute_empty task.error_report[RDF::OT.errorCause]
+    refute_empty task.created_at
+    refute_empty task.finished_at
   end
 
   def test_05_create_and_fail_with_opentox_error
@@ -85,7 +84,7 @@ class TaskTest < Test::Unit::TestCase
     assert_equal "Error", task.hasStatus
     assert_equal "An OpenTox::Error occured", task.error_report[RDF::OT.message]
     assert_equal "500", task.error_report[RDF::OT.statusCode]
-    assert_not_empty task.error_report[RDF::OT.errorCause]
+    refute_empty task.error_report[RDF::OT.errorCause]
   end
 
   def test_06_create_and_fail_with_not_found_error
@@ -100,7 +99,7 @@ class TaskTest < Test::Unit::TestCase
     assert_equal "Error", task.hasStatus
     assert_equal "An OpenTox::ResourceNotFoundError occured", task.error_report[RDF::OT.message]
     assert_equal "OpenTox::ResourceNotFoundError", task.error_report[RDF::OT.errorCode]
-    assert_not_empty task.error_report[RDF::OT.errorCause]
+    refute_empty task.error_report[RDF::OT.errorCause]
     assert_equal "404", task.error_report[RDF::OT.statusCode]
   end
 
@@ -114,7 +113,7 @@ class TaskTest < Test::Unit::TestCase
     task.wait
     assert task.error?
     assert_equal "Error", task.hasStatus
-    assert_not_empty task.error_report[RDF::OT.errorCause]
+    refute_empty task.error_report[RDF::OT.errorCause]
     assert_equal "404", task.error_report[RDF::OT.statusCode]
   end
 
@@ -128,7 +127,7 @@ class TaskTest < Test::Unit::TestCase
     task.wait
     assert task.error?
     assert_equal "Error", task.hasStatus
-    assert_not_empty task.error_report[RDF::OT.errorCause]
+    refute_empty task.error_report[RDF::OT.errorCause]
     assert_equal "400", task.error_report[RDF::OT.statusCode]
   end
 
@@ -156,7 +155,7 @@ class TaskTest < Test::Unit::TestCase
       resource_not_found_error "test", "http://username:password@test.org/fake_uri"
     end
     task.wait
-    assert_no_match %r{username|password},  task.error_report[RDF::OT.actor]
+    refute_match %r{username|password},  task.error_report[RDF::OT.actor]
   end
 
   def test_11_wait_for_error_task
@@ -204,7 +203,7 @@ class TaskTest < Test::Unit::TestCase
       task.wait
       assert task.error?
       assert_equal "Error", task.hasStatus
-      assert_not_empty task.error_report[RDF::OT.errorCause]
+      refute_empty task.error_report[RDF::OT.errorCause]
       assert_match error_msg,task.error_report[RDF::OT.message]
     end
     

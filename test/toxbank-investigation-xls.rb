@@ -1,6 +1,6 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
-class ExcelUploadTest < Test::Unit::TestCase
+class ExcelUploadTest < MiniTest::Unit::TestCase
 
   def setup
     @tmpdir = File.join(File.dirname(__FILE__),"tmp")

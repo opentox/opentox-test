@@ -1,7 +1,3 @@
-
-require 'test/unit'
-
-
 class String 
   def uri?
     uri = URI.parse(self)

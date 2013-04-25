@@ -1,7 +1,7 @@
-require 'test/unit'
 require_relative "setup.rb"
 
-class AlgorithmTest < Test::Unit::TestCase
+class FminerLazarTest < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 
   def test_01_upload
     @@dataset = OpenTox::Dataset.new nil, @@subjectid

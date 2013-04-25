@@ -1,7 +1,5 @@
-require 'test/unit'
 require 'csv'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
-DATA_DIR = File.join(File.dirname(__FILE__),"data")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$dataset[:uri]}"
@@ -10,7 +8,7 @@ rescue
   exit
 end
 
-class DatasetLargeTest < Test::Unit::TestCase
+class DatasetLargeTest < MiniTest::Unit::TestCase
 
   def test_01_upload_epafhm
     f = File.join DATA_DIR, "EPAFHM.csv"

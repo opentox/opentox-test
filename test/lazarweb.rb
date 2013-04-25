@@ -1,5 +1,3 @@
-require 'rubygems'
-require 'test/unit'
 require 'capybara/dsl'
 require 'capybara-webkit'
 
@@ -8,7 +6,7 @@ Capybara.default_wait_time = 6
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
 
-class LazarWebTest < Test::Unit::TestCase
+class LazarWebTest < MiniTest::Unit::TestCase
   include Capybara::DSL
 
 

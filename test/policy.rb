@@ -1,5 +1,4 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 TEST_URI    = "http://only_a_test/test/" + rand(1000000).to_s
 USER_TYPE   = "LDAPUsers"
@@ -11,7 +10,7 @@ POLICY_NAME = "test_policy_#{rand(100000)}"
 RULE_NAME = "test_rule_#{rand(100000)}"
 SUBJECT_NAME = "test_subject_#{rand(100000)}"
 
-class PolicyTest < Test::Unit::TestCase
+class PolicyTest < MiniTest::Unit::TestCase
 
   # Test base class and attributes
   def test_01_class

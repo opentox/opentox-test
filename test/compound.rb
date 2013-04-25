@@ -1,5 +1,4 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$compound[:uri]}"
@@ -8,7 +7,7 @@ rescue
   exit
 end
 
-class CompoundTest < Test::Unit::TestCase
+class CompoundTest < MiniTest::Unit::TestCase
 
   def test_0_compound_from_smiles
     c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"
