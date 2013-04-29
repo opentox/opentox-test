@@ -33,7 +33,7 @@ class PcLazarTest < MiniTest::Unit::TestCase
   end
 
   def test_02_lazar_pc_model
-    lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar")
+    lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar"), @@subjectid
     @@model = lazar.run :dataset_uri => @@dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"pc-descriptors"), :pc_type => "geometrical"
     assert_equal @@model.uri.uri?, true
     puts @@model.uri
