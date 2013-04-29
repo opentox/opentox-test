@@ -32,13 +32,13 @@ class TestOpenToxAuthorizationBasic < MiniTest::Unit::TestCase
   end
 
   def test_06_bad_login
-    assert_raise OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::ResourceNotFoundError do
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end
 =begin
   def test_07_unauthorized
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       result = OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", @@subjectid).to_s
     end
   end

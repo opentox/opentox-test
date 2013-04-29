@@ -88,21 +88,21 @@ class TBInvestigationWorkflow < MiniTest::Unit::TestCase
 
   # do not get metadata for user2
   def test_05b_get_metadata_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   # do not get protocol for user2
   def test_05c_get_protocol_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   # do not get download for user2
   def test_05d_get_download_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
     end
   end
@@ -155,19 +155,19 @@ class TBInvestigationWorkflow < MiniTest::Unit::TestCase
   end
 
   def test_09b_put_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.put "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   def test_09c_post_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.post "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   def test_09d_delete_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.delete "#{@@uri}", {}, {:subjectid => $secondpi[:subjectid]}
     end
   end
