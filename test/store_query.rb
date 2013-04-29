@@ -59,9 +59,9 @@ class UploadTest < MiniTest::Unit::TestCase
     threads = []
     50.times do |t|
       threads << Thread.new(t) do |up|
-        puts "Start Time >> " << (Time.now).to_s
+        #puts "Start Time >> " << (Time.now).to_s
         response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -H 'accept:application/rdf+xml' -d 'query=CONSTRUCT { ?s ?p ?o. } WHERE {?s ?p ?o.} LIMIT 10' '#{$four_store[:uri]}/sparql/'`.chomp 
-        puts response
+        # puts response
         assert_match /200/, response
       end
     end
@@ -72,7 +72,7 @@ class UploadTest < MiniTest::Unit::TestCase
     threads = []
     50.times do |t|
       threads << Thread.new(t) do |up|
-        puts "Start Time >> " << (Time.now).to_s
+        #puts "Start Time >> " << (Time.now).to_s
         response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/#{$four_store[:user]}/test#{t}.n3'`.chomp
         assert_match /200/, response
       end
