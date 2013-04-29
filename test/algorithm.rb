@@ -1,5 +1,3 @@
-require 'test/unit'
-#$algorithm = {:uri => "http://webservices.in-silico.ch/algorithm"}
 require_relative "setup.rb"
 
 begin
@@ -9,9 +7,9 @@ rescue
   exit
 end
 
-class AlgorithmTest < Test::Unit::TestCase
+class AlgorithmTest < MiniTest::Unit::TestCase
 
-  def test_01_set_parameters
+  def test_set_parameters
     a = OpenTox::Algorithm.new nil, @@subjectid
     a.parameters = [
       {RDF::DC.title => "test", RDF::OT.paramScope => "mandatory"},

@@ -1,32 +1,31 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
-class ErrorTest < Test::Unit::TestCase
+class ErrorTest < MiniTest::Unit::TestCase
 
   def test_bad_request
     object = OpenTox::Feature.new 
-    assert_raise OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::ResourceNotFoundError do
       response = object.get
     end
   end
 
   def test_error_methods
-    assert_raise OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::ResourceNotFoundError do
       resource_not_found_error "This is a test"
     end
   end
 
   def test_exception
-    assert_raise Exception do
+    assert_raises Exception do
       raise Exception.new "Basic Exception"
     end
   end
 
   def test_backtick
-    assert_raise OpenTox::InternalServerError do
+    assert_raises OpenTox::InternalServerError do
       `this call will not work`
     end
-    assert_raise OpenTox::InternalServerError do
+    assert_raises OpenTox::InternalServerError do
       `ls inexisting_directory`
     end
   end

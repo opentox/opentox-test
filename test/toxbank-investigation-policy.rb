@@ -1,7 +1,8 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","toxbank-investigation","tbaccount.rb")
 
-class TBAccountBasicTest < Test::Unit::TestCase
+class TBAccountBasicTest < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 
   @@accounts = {"mrautenberg" => "#{RDF::TBU.U124}", "guest" => "#{RDF::TBU.U2}", "member" => "#{RDF::TBO.G176}"}
   @@fake_uri = "http://only_a_test/test/" + rand(1000000).to_s

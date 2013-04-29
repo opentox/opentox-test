@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),".." ,".." ,"toxbank-investigation", "util.rb")
 
 begin
@@ -8,7 +8,8 @@ rescue
   exit
 end
 
-class TBInvestigationWorkflow < Test::Unit::TestCase
+class TBInvestigationWorkflow < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 # Permission Matrix for owner, user1 (with GET permission (e.G.: group-permission) and user2 (no permission)
 # Sum    = isSummarySearchable=true
 # noSum  = isSummarySearchable=false
@@ -42,7 +43,7 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
   def test_02_investigation_not_in_searchindex
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
   # check for flag "isPublished" is false,
@@ -87,21 +88,21 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
 
   # do not get metadata for user2
   def test_05b_get_metadata_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   # do not get protocol for user2
   def test_05c_get_protocol_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   # do not get download for user2
   def test_05d_get_download_secondpi
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
     end
   end
@@ -154,19 +155,19 @@ class TBInvestigationWorkflow < Test::Unit::TestCase
   end
 
   def test_09b_put_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.put "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   def test_09c_post_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.post "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
     end
   end
 
   def test_09d_delete_user1
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.delete "#{@@uri}", {}, {:subjectid => $secondpi[:subjectid]}
     end
   end

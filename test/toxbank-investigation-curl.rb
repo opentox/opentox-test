@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$investigation[:uri]}"
@@ -9,7 +9,7 @@ end
 
 #TODO: check 4store entries/errors
 
-class UploadTest < Test::Unit::TestCase
+class UploadTest < MiniTest::Unit::TestCase
 
   def setup
     @tmpdir = File.join(File.dirname(__FILE__),"tmp")

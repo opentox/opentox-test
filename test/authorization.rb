@@ -1,8 +1,9 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
 
-class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
+class TestOpenToxAuthorizationBasic < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
  
   def test_01_server
     @aaserver = $aa[:uri]
@@ -10,12 +11,12 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
   end
  
   def test_02_get_token
-    assert_not_nil @@subjectid
+    refute_nil @@subjectid
   end
   
   def test_03_is_valid_token
     tok = login
-    assert_not_nil tok
+    refute_nil tok
     assert OpenTox::Authorization.is_token_valid(tok)
     logout(tok)
   end
@@ -31,20 +32,20 @@ class TestOpenToxAuthorizationBasic < Test::Unit::TestCase
   end
 
   def test_06_bad_login
-    assert_raise OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::ResourceNotFoundError do
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end
 =begin
   def test_07_unauthorized
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       result = OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", @@subjectid).to_s
     end
   end
 =end
 end
 
-class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
+class TestOpenToxAuthorizationLDAP < MiniTest::Unit::TestCase
 
   def test_01_list_user_groups
     assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user], @@subjectid)
@@ -56,7 +57,7 @@ class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
 
 end
 
-class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
+class TestOpenToxAuthorizationLDAP < MiniTest::Unit::TestCase
 
   def test_01_create_check_delete_default_policies
     res = OpenTox::Authorization.send_policy(TEST_URI, @@subjectid)
@@ -72,7 +73,7 @@ class TestOpenToxAuthorizationLDAP < Test::Unit::TestCase
 
   def test_02_check_policy_rules
     tok_anonymous = OpenTox::Authorization.authenticate("anonymous","anonymous")
-    assert_not_nil tok_anonymous
+    refute_nil tok_anonymous
     res = OpenTox::Authorization.send_policy(TEST_URI, @@subjectid)
     assert res
     assert OpenTox::Authorization.uri_has_policy(TEST_URI, @@subjectid)

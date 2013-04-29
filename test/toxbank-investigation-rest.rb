@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),".." ,".." ,"toxbank-investigation", "util.rb")
 
 begin
@@ -8,12 +8,13 @@ rescue
   exit
 end
 
-class TBInvestigationBasic < Test::Unit::TestCase
+class TBInvestigationBasic < MiniTest::Unit::TestCase
+  #i_suck_and_my_tests_are_order_dependent!
   
   # check response from service without header,
   # @note expect OpenTox::BadRequestError
   def test_01_get_investigations_400
-    assert_raise OpenTox::BadRequestError do
+    assert_raises OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, { :subjectid => $pi[:subjectid] }
     end
   end
@@ -21,7 +22,7 @@ class TBInvestigationBasic < Test::Unit::TestCase
   # give wrong header
   # @note expect OpenTox::BadRequestError
   def test_01_b_wrong_header
-    assert_raise OpenTox::BadRequestError do
+    assert_raises OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get $investigation[:uri], {:accept => "text/text"}, { :subjectid => $pi[:subjectid] }
     end
   end
@@ -49,7 +50,8 @@ class TBInvestigationBasic < Test::Unit::TestCase
 
 end
 
-class TBInvestigationREST < Test::Unit::TestCase
+class TBInvestigationREST < MiniTest::Unit::TestCase
+  i_suck_and_my_tests_are_order_dependent!
 
   # check if the userservice is available
   # @note return the secondpi user URI
@@ -160,14 +162,14 @@ class TBInvestigationREST < Test::Unit::TestCase
   # @note returns nothing if inexisting user
   def test_02e_check_with_inexisting_user
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$user_service[:uri]}/user/U01", :accept => "application/json", :subjectid => $pi[:subjectid]})
-    assert_not_match /#{@@uri}/, result.to_s
+    refute_match /#{@@uri}/, result.to_s
   end
 
   # check for uri-list of a secondpi user
   # @note returns nothing because there are no investigations of this user
   def test_02f_check_for_pi2user_uris
     result = OpenTox::RestClientWrapper.get("#{$investigation[:uri]}", {}, {:user => "#{$secondpi[:uri]}", :accept => "application/json", :subjectid => $secondpi[:subjectid]})
-    assert_not_match /#{@@uri}/, result.to_s
+    refute_match /#{@@uri}/, result.to_s
   end
 
   # check for flag "isPublished" is false,
@@ -309,7 +311,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # get a resource as guest
   # @note expect no result until investigation is published
   def test_05f
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => @@subjectid}
     end
   end
@@ -365,7 +367,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   def test_10_b_check_flags_after_update
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end #Guest can not get
   end
@@ -400,7 +402,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # check investigation data still not reachable as secondpi
   # @note expect OpenTox::NotAuthorizedError
   def test_10_e_check_investigation_data_still_not_reachable_for_pi2
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
@@ -420,7 +422,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # @note expect data is still not reachable without policy
   def test_10_g_guest_can_not_get
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
     end
   end
@@ -488,7 +490,7 @@ class TBInvestigationREST < Test::Unit::TestCase
     puts "pi-> uri: #{@@uri}"
     # pi get uris of secondpi
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:user => "#{$user_service[:uri]}/user/U479", :accept => "application/json", :subjectid => $pi[:subjectid]}
-    assert_not_match /#{@@uri}/, response
+    refute_match /#{@@uri}/, response
     assert_match /#{uri}/, response
     result = OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $secondpi[:subjectid]}
     assert_equal 200, result.code
@@ -530,7 +532,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to delete investigation as "guest",
   # @note expect OpenTox::UnauthorizedError
   def test_90_try_to_delete_id_as_guest
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
     end
   end
@@ -538,7 +540,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to delete single file of investigation as "guest",
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => @@subjectid}
     end
   end
@@ -546,7 +548,7 @@ class TBInvestigationREST < Test::Unit::TestCase
   # try to update an investigation as 'guest',
   # @note expect OpenTox::UnauthorizedError
   def test_92_try_to_update_id_as_guest
-    assert_raise OpenTox::UnauthorizedError do
+    assert_raises OpenTox::UnauthorizedError do
       OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
     end
   end
@@ -563,7 +565,7 @@ class TBInvestigationREST < Test::Unit::TestCase
 
   # delete single file of investigation, currently not implemented
   def test_93b_delete_single_file
-    assert_raise OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::ResourceNotFoundError do
       OpenTox::RestClientWrapper.get "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $pi[:subjectid]}
     end
   end
@@ -590,14 +592,14 @@ class TBInvestigationREST < Test::Unit::TestCase
     #response = request_ssl3 "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}", "get", $pi[:subjectid]
     response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
   # check that deleted uri is no longer in uri-list
   # @note expect investigation uri not in uri-list
   def test_99_c_check_urilist
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
-    assert_no_match /#{@@uri}/, response.to_s
+    refute_match /#{@@uri}/, response.to_s
   end
 
 end

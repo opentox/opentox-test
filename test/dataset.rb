@@ -1,16 +1,6 @@
-require 'test/unit'
-DIR = File.expand_path(File.dirname(__FILE__))
-DATA_DIR = File.join(DIR,"data")
-require File.join(DIR,"setup.rb")
+require_relative "setup.rb"
 
-begin
-  puts "Service URI is: #{$dataset[:uri]}"
-rescue
-  puts "Configuration Error: $dataset[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
-  exit
-end
-
-class DatasetTest < Test::Unit::TestCase
+class DatasetTest < MiniTest::Unit::TestCase
 
 =begin
 
@@ -60,7 +50,7 @@ class DatasetTest < Test::Unit::TestCase
     d.title = "Create dataset test"
 
     # features not set
-    assert_raise OpenTox::BadRequestError do
+    assert_raises OpenTox::BadRequestError do
       d << [OpenTox::Compound.from_smiles("c1ccccc1NN"), 1,2]
     end
 
@@ -74,7 +64,7 @@ class DatasetTest < Test::Unit::TestCase
     end
 
     # wrong feature size
-    assert_raise OpenTox::BadRequestError do
+    assert_raises OpenTox::BadRequestError do
       d << [OpenTox::Compound.from_smiles("c1ccccc1NN"), 1,2,3]
     end
     
@@ -114,7 +104,7 @@ class DatasetTest < Test::Unit::TestCase
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     assert_equal OpenTox::Dataset, d.class
-    assert_not_nil d[RDF::OT.Warnings]
+    refute_nil d[RDF::OT.Warnings]
     assert_equal "EPAFHM.mini.csv",  d[RDF::OT.hasSource]
     assert_equal "EPAFHM.mini.csv",  d.title
     d.delete 
@@ -124,7 +114,7 @@ class DatasetTest < Test::Unit::TestCase
   def test_multicolumn_csv
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload "#{DATA_DIR}/multicolumn.csv"
-    assert_not_nil d[RDF::OT.Warnings]
+    refute_nil d[RDF::OT.Warnings]
     assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
     assert_match /3, 5/,  d[RDF::OT.Warnings]
     assert_equal 5, d.features.size
@@ -187,7 +177,7 @@ class DatasetTest < Test::Unit::TestCase
 end
 
 =begin
-class DatasetRestTest < Test::Unit::TestCase
+class DatasetRestTest < MiniTest::Unit::TestCase
 
   def test_01_get_uri_list
     result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }

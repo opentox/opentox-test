@@ -1,5 +1,4 @@
-require 'test/unit'
-require File.join(File.expand_path(File.dirname(__FILE__)),"setup.rb")
+require_relative "setup.rb"
 
 begin
   puts "Service URI is: #{$model[:uri]}"
@@ -8,7 +7,7 @@ rescue
   exit
 end
 
-class ModelTest < Test::Unit::TestCase
+class ModelTest < MiniTest::Unit::TestCase
 
   def test_01_create_and_set_parameters
     a = OpenTox::Model.new nil, @@subjectid
