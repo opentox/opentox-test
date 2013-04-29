@@ -47,7 +47,7 @@ class ValidationTest < MiniTest::Unit::TestCase
   def global_setup
     puts "login and upload datasets"
     if $aa[:uri]
-      @@subjectid = OpenTox::Authorization.authenticate(TEST_USER,TEST_PW)
+      @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
       internal_server_error "could not log in" unless @@subjectid
       puts "logged in: "+@@subjectid.to_s
     else
