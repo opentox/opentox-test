@@ -25,7 +25,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal 76, d.compounds.size
     assert_equal 76, d.data_entries.size
     d.delete 
-    assert_equal false, URI.accessible?(d.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 =end
 
@@ -81,8 +81,8 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal 2, new_dataset.features.size
     assert_equal [[1,2],[4,5],[6,7]], new_dataset.data_entries
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
-    assert_equal false, URI.accessible?(new_dataset.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(new_dataset.uri, @@subjectid)
   end
 
   def test_dataset_accessors
@@ -108,7 +108,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal "EPAFHM.mini.csv",  d[RDF::OT.hasSource]
     assert_equal "EPAFHM.mini.csv",  d.title
     d.delete 
-    assert_equal false, URI.accessible?(d.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 
   def test_multicolumn_csv
@@ -123,7 +123,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal [[1.0, 1.0, "true", "true", "test"], [1.0, 2.0, "false", "7.5", "test"], [1.0, 3.0, "true", "5", "test"], [0.0, 4.0, "false", "false", "test"], [1.0, 2.0, "true", "4", "test_2"],[1.0, nil, "false", nil, nil]], d.data_entries
     assert_equal "c1cc[nH]c1,1.0,,false,,", d.to_csv.split("\n")[6]
     #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
-    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
+    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv', :subjectid => @@subjectid})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.shift
     original_csv.shift
@@ -135,7 +135,7 @@ class DatasetTest < MiniTest::Unit::TestCase
       assert_equal original_csv[i].collect{|v| (v.class == String) ? ((v.strip == "") ? nil : v.strip) : v}, row
     end
     d.delete 
-    assert_equal false, URI.accessible?(d.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 
   def test_from_csv
@@ -149,7 +149,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     csv.shift
     assert_equal csv.collect{|r| r[1]}, d.data_entries.flatten
     d.delete 
-    assert_equal false, URI.accessible?(d.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 
   def test_from_xls
@@ -160,7 +160,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal 85, d.compounds.size
     assert_equal 85, d.data_entries.size
     d.delete 
-    assert_equal false, URI.accessible?(d.uri)
+    assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 
   def test_from_csv2
@@ -168,7 +168,7 @@ class DatasetTest < MiniTest::Unit::TestCase
     dataset = OpenTox::Dataset.new nil, @@subjectid
     dataset.upload "#{DATA_DIR}/temp_test.csv"
     dataset.get
-    assert_equal true, URI.accessible?(dataset.uri)
+    assert_equal true, URI.accessible?(dataset.uri, @@subjectid)
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
   end
