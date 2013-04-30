@@ -12,7 +12,7 @@ rescue
   exit
 end
 
-class ServiceCheck < Test::Unit::TestCase
+class ServiceCheck < MiniTest::Unit::TestCase
     
   def test_algorithm
     response = OpenTox::RestClientWrapper.head($algorithm[:uri])
