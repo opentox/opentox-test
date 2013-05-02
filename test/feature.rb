@@ -78,7 +78,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     @feature = OpenTox::Feature.new nil, @@subjectid
     @feature.title = "test"
     @feature.put
-    assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{uri}"
+    assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
     r = OpenTox::Feature.all @@subjectid
     assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)

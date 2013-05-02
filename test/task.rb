@@ -167,7 +167,7 @@ class TaskTest < MiniTest::Unit::TestCase
       File.join($algorithm[:uri],'test/wait_for_error_in_task')
     ].each do |uri|
         
-      task_uri = OpenTox::RestClientWrapper.post uri
+      task_uri = OpenTox::RestClientWrapper.post uri, nil, @@subjectid
       assert(URI.task?(task_uri) ,"no task uri: #{task_uri}")
       task = OpenTox::Task.new task_uri
       
