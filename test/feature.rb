@@ -98,7 +98,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
   
   def test_update_feature
     @feature = OpenTox::Feature.new nil, @@subjectid
-    @feature.tile = "newtest"
+    @feature.title = "newtest"
     @feature.put
     @features = OpenTox::Feature.all $feature[:uri]
     fsize = @features.size
