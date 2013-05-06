@@ -95,6 +95,22 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     @feature.delete
     assert_equal false, URI.accessible?(uri)
   end
+  
+  def test_update_feature
+    @feature = OpenTox::Feature.new nil, @@subjectid
+    @feature.tile = "newtest"
+    @feature.put
+    @features = OpenTox::Feature.all $feature[:uri]
+    fsize = @features.size
+    @f = @features.last
+    assert_match "newtest", @f.title
+    @f.title = "newtest2"
+    @f.put
+    @features = OpenTox::Feature.all $feature[:uri]
+    assert_equal fsize, @features.size
+    @f = @features.last
+    assert_match "newtest2", @f.title
+  end
 
   def test_duplicated_features
     metadata = {
