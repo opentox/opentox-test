@@ -1,3 +1,4 @@
+=begin
 require 'test/unit'
 require 'capybara/dsl'
 require 'capybara-webkit'
@@ -15,19 +16,19 @@ class LazarWebTest < MiniTest::Unit::TestCase
 
   @@uri = "http://istva:8080/toxcreate"
 
-=begin  
+  
   def test_00_start
     `Xvfb :1 -screen 0 1024x768x16 -nolisten inet6 &`
     sleep 2
   end
-=end
+
   def test_01_a_visit
     visit(@@uri)
     assert page.has_content?('Lazar Toxicity Predictions')
   end
 
 # temporarily disabled html/css validation
-=begin
+
   def test_01_b_validate_html
     visit(@@uri)
     html = page.source
@@ -60,7 +61,7 @@ class LazarWebTest < MiniTest::Unit::TestCase
     first(:button, 'Check').click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
-=end
+
   def test_02_a_insert_wrong_smiles
     visit(@@uri)
     page.fill_in 'identifier', :with => "blahblah"
@@ -316,9 +317,10 @@ class LazarWebTest < MiniTest::Unit::TestCase
       assert page.has_link?('regression'), "true"
     end
   end
-=begin
+
   def test_99_kill
     `pidof Xvfb|xargs kill`
   end
-=end
+
 end
+=end
