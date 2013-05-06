@@ -89,7 +89,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
 
     @feature.title = "test2"
     @feature.put
-    assert_match "test", OpenTox::RestClientWrapper.get(@feature.uri)
+    assert_match "test2", OpenTox::RestClientWrapper.get(@feature.uri)
 
     uri = @feature.uri
     @feature.delete
@@ -98,18 +98,18 @@ class FeatureRestTest < MiniTest::Unit::TestCase
   
   def test_update_feature
     @feature = OpenTox::Feature.new nil, @@subjectid
-    @feature.title = "newtest"
+    @feature.title = "new"
     @feature.put
     @features = OpenTox::Feature.all $feature[:uri]
     fsize = @features.size
     @f = @features.last
-    assert_match "newtest", @f.title
-    @f.title = "newtest2"
+    assert_match "new", @f.title
+    @f.title = "new2"
     @f.put
     @features = OpenTox::Feature.all $feature[:uri]
     assert_equal fsize, @features.size
     @f = @features.last
-    assert_match "newtest2", @f.title
+    assert_match "new2", @f.title
   end
 
   def test_duplicated_features
