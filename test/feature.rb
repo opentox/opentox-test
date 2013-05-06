@@ -35,12 +35,12 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     @formats.each do |f|
       @uris << subject.to_s
       OpenTox::RestClientWrapper.put(subject.to_s, serialize(@rdf, f[0]), {:subjectid => @@subjectid, :content_type => f[1]}).chomp
-      assert_equal true, URI.accessible?(@uris.last, @@subjectid)
+      assert_equal true, URI.accessible?(@uris.last, @@subjectid), "URI is not accessible uri: #{@uris.last}"
     end
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list").split("\n")
 
     @uris.each do |uri|
-      assert_equal true, URI.accessible?(uri, @@subjectid)
+      assert_equal true, URI.accessible?(uri, @@subjectid), "URI is not accessible uri: #{uri}"
       assert_equal true, r.include?(uri)
       @formats.each do |f|
         rdf = OpenTox::RestClientWrapper.get(uri, {}, :accept => f[1])
@@ -61,7 +61,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     @formats.each do |f|
       @uris.each do |uri|
         OpenTox::RestClientWrapper.put(uri, serialize(@rdf,f[0]), :content_type => f[1])
-        assert_equal true, URI.accessible?(uri)
+        assert_equal true, URI.accessible?(uri, @@subjectid), "URI is not accessible uri: #{uri}"
         refute_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
       end
     end
@@ -78,7 +78,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     @feature = OpenTox::Feature.new nil, @@subjectid
     @feature.title = "test"
     @feature.put
-    assert_equal true, URI.accessible?(@feature.uri)
+    assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
     r = OpenTox::Feature.all @@subjectid
     assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
@@ -93,7 +93,7 @@ class FeatureRestTest < MiniTest::Unit::TestCase
 
     uri = @feature.uri
     @feature.delete
-    assert_equal false, URI.accessible?(uri)
+    assert_equal false, URI.accessible?(uri, @@subjectid), "URI is still accessible uri: #{uri}"
   end
   
   def test_update_feature
