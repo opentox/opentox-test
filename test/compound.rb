@@ -7,7 +7,7 @@ rescue
   exit
 end
 
-class CompoundTest < MiniTest::Unit::TestCase
+class CompoundTest < MiniTest::Test
 
   def test_0_compound_from_smiles
     c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"

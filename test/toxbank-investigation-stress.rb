@@ -8,7 +8,7 @@ rescue
 end
 
 
-class StressTest < MiniTest::Unit::TestCase
+class StressTest < MiniTest::Test
 
   # Do multiple POST and check if completed
   def test_01_multiple_upload

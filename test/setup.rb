@@ -83,7 +83,7 @@ MiniTest::Unit.runner = OpenToxMiniTest::Unit.new
 
 =begin
 module OpenTox
-  class Test < MiniTest::Unit::TestCase
+  class Test < MiniTest::Test
     #include MiniTest::TestSetupHelper
 
     def before_suites

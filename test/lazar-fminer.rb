@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class FminerLazarTest < MiniTest::Unit::TestCase
+class FminerLazarTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def test_01_upload

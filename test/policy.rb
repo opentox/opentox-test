@@ -10,7 +10,7 @@ POLICY_NAME = "test_policy_#{rand(100000)}"
 RULE_NAME = "test_rule_#{rand(100000)}"
 SUBJECT_NAME = "test_subject_#{rand(100000)}"
 
-class PolicyTest < MiniTest::Unit::TestCase
+class PolicyTest < MiniTest::Test
 
   # Test base class and attributes
   def test_01_class

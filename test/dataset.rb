@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class DatasetTest < MiniTest::Unit::TestCase
+class DatasetTest < MiniTest::Test
 
 =begin
 
@@ -177,7 +177,7 @@ class DatasetTest < MiniTest::Unit::TestCase
 end
 
 =begin
-class DatasetRestTest < MiniTest::Unit::TestCase
+class DatasetRestTest < MiniTest::Test
 
   def test_01_get_uri_list
     result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }

@@ -18,7 +18,7 @@ class String
   end
 end
 
-class TaskTest < MiniTest::Unit::TestCase
+class TaskTest < MiniTest::Test
 
   def test_01_create_and_complete
     task = OpenTox::Task.run __method__,nil,@@subjectid do

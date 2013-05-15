@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class UploadTest < MiniTest::Unit::TestCase
+class UploadTest < MiniTest::Test
   
   i_suck_and_my_tests_are_order_dependent!
   def test_01_basic_response

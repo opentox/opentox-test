@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class FeatureRestTest < MiniTest::Unit::TestCase
+class FeatureRestTest < MiniTest::Test
 
   def serialize rdf, format
     string = RDF::Writer.for(format).buffer  do |writer|

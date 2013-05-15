@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class FminerTest < MiniTest::Unit::TestCase
+class FminerTest < MiniTest::Test
 
   def test_fminer
 

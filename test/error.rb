@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class ErrorTest < MiniTest::Unit::TestCase
+class ErrorTest < MiniTest::Test
 
   def test_bad_request
     object = OpenTox::Feature.new 

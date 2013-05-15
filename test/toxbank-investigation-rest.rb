@@ -8,7 +8,7 @@ rescue
   exit
 end
 
-class TBInvestigationBasic < MiniTest::Unit::TestCase
+class TBInvestigationBasic < MiniTest::Test
   #i_suck_and_my_tests_are_order_dependent!
   
   # check response from service without header,
@@ -50,7 +50,7 @@ class TBInvestigationBasic < MiniTest::Unit::TestCase
 
 end
 
-class TBInvestigationREST < MiniTest::Unit::TestCase
+class TBInvestigationREST < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   # check if the userservice is available

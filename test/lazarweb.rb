@@ -9,7 +9,7 @@ Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
 
-class LazarWebTest < MiniTest::Unit::TestCase
+class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
   
   include Capybara::DSL
