@@ -93,6 +93,8 @@ class FeatureRestTest < MiniTest::Test
     f = OpenTox::Feature.all @@subjectid
     fsize2 = f.size
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
+    #TODO overwrite edited graphs in OTobjects by PUT, title "test" should be deleted
+    refute_match "test", OpenTox::RestClientWrapper.get(@feature2.uri)
     assert_equal fsize, fsize2
 
     uri = @feature2.uri
