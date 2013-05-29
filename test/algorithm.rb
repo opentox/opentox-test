@@ -7,7 +7,7 @@ rescue
   exit
 end
 
-class AlgorithmTest < MiniTest::Unit::TestCase
+class AlgorithmTest < MiniTest::Test
 
   def test_set_parameters
     a = OpenTox::Algorithm.new nil, @@subjectid

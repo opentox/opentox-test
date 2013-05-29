@@ -12,7 +12,7 @@ require_relative "setup.rb"
 #SHELL_DIR = File.join(TEST_DIR,"shell")
 DATA_DIR = File.join(TEST_DIR,"data")
 
-class PcLazarTest < MiniTest::Unit::TestCase
+class PcLazarTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def test_01_upload

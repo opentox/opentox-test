@@ -8,7 +8,7 @@ rescue
   exit
 end
 
-class DatasetLargeTest < MiniTest::Unit::TestCase
+class DatasetLargeTest < MiniTest::Test
 
   def test_01_upload_epafhm
     f = File.join DATA_DIR, "EPAFHM.csv"

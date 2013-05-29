@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class DatasetTest < MiniTest::Unit::TestCase
+class DatasetTest < MiniTest::Test
 
 =begin
 
@@ -94,9 +94,9 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal "multicolumn.csv",  new_dataset[RDF::OT.hasSource]
     assert_equal "multicolumn.csv",  new_dataset.title
     # get features
-    assert_equal 5, new_dataset.features.size
-    assert_equal 6, new_dataset.compounds.size
-    assert_equal [1, nil, "false", nil, nil], new_dataset.data_entries.last
+    assert_equal 6, new_dataset.features.size
+    assert_equal 7, new_dataset.compounds.size
+    assert_equal ["1", nil, "false", nil, nil, 1.0], new_dataset.data_entries.last
     d.delete
   end
 
@@ -117,12 +117,12 @@ class DatasetTest < MiniTest::Unit::TestCase
     refute_nil d[RDF::OT.Warnings]
     assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
     assert_match /3, 5/,  d[RDF::OT.Warnings]
-    assert_equal 5, d.features.size
-    assert_equal 6, d.compounds.size
+    assert_equal 6, d.features.size
+    assert_equal 7, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
-    assert_equal [[1.0, 1.0, "true", "true", "test"], [1.0, 2.0, "false", "7.5", "test"], [1.0, 3.0, "true", "5", "test"], [0.0, 4.0, "false", "false", "test"], [1.0, 2.0, "true", "4", "test_2"],[1.0, nil, "false", nil, nil]], d.data_entries
-    assert_equal "c1cc[nH]c1,1.0,,false,,", d.to_csv.split("\n")[6]
-    #assert_equal 'c1ccc[nH]1,1,,false,,', d.to_csv.split("\n")[6]
+    assert_equal [["1", "1", "true", "true", "test", 1.1], ["1", "2", "false", "7.5", "test", 0.24], ["1", "3", "true", "5", "test", 3578.239], ["0", "4", "false", "false", "test", -2.35], ["1", "2", "true", "4", "test_2", 1.0], ["1", "2", "false", "false", "test", -1.5], ["1", nil, "false", nil, nil, 1.0]], d.data_entries
+    assert_equal "c1cc[nH]c1,1,,false,,,1.0", d.to_csv.split("\n")[7]
+    #assert_equal 'c1ccc[nH]1,1,,false,,,1.0', d.to_csv.split("\n")[7]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv', :subjectid => @@subjectid})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.shift
@@ -152,6 +152,21 @@ class DatasetTest < MiniTest::Unit::TestCase
     assert_equal false, URI.accessible?(d.uri, @@subjectid)
   end
 
+  def test_from_csv_classification
+    ["int", "float", "string"].each do |mode|
+      d = OpenTox::Dataset.new nil, @@subjectid
+      d.upload "#{DATA_DIR}/hamster_carcinogenicity.mini.bool_#{mode}.csv"
+      csv = CSV.read("#{DATA_DIR}/hamster_carcinogenicity.mini.bool_#{mode}.csv")
+      csv.shift
+      entries = d.data_entries.flatten
+      csv.each_with_index do |r, i|
+        assert_equal r[1].to_s, entries[i]
+      end
+      d.delete 
+      assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    end
+  end
+
   def test_from_xls
     d = OpenTox::Dataset.new nil, @@subjectid
     d.upload "#{DATA_DIR}/hamster_carcinogenicity.xls"
@@ -177,7 +192,7 @@ class DatasetTest < MiniTest::Unit::TestCase
 end
 
 =begin
-class DatasetRestTest < MiniTest::Unit::TestCase
+class DatasetRestTest < MiniTest::Test
 
   def test_01_get_uri_list
     result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }

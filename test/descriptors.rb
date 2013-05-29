@@ -7,7 +7,7 @@ rescue
   exit
 end
 
-class DescriptorTest < MiniTest::Unit::TestCase
+class DescriptorTest < MiniTest::Test
 
   def test_compound_openbabel_single
     a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","openbabel","logP"), @@subjectid

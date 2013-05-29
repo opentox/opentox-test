@@ -18,7 +18,7 @@ class String
   end
 end
 
-class TaskTest < MiniTest::Unit::TestCase
+class TaskTest < MiniTest::Test
 
   def test_01_create_and_complete
     task = OpenTox::Task.run __method__,nil,@@subjectid do
@@ -27,7 +27,9 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert_equal true,  task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
+    assert_equal 200, task.code
     assert_equal true,  task.completed?
     assert_equal "Completed", task.hasStatus
     assert_equal $task[:uri], task.resultURI
@@ -49,8 +51,10 @@ class TaskTest < MiniTest::Unit::TestCase
       $task[:uri]
     end
     assert_equal true, task.running?
+    assert_equal 202, task.code
     task.cancel
-    assert_equal true,task.cancelled?
+    assert_equal 503, task.code
+    assert_equal true, task.cancelled?
     refute_empty task.created_at.to_s
     refute_empty task.finished_at.to_s
   end
@@ -62,8 +66,10 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert_equal true, task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
     assert task.error?
+    assert_equal 500, task.code
     assert_equal "Error", task.hasStatus
     assert_equal "A runtime error occured", task.error_report[RDF::OT.message]
     assert_equal "500", task.error_report[RDF::OT.statusCode]
@@ -79,8 +85,10 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
     assert task.error?
+    assert_equal 500, task.code
     assert_equal "Error", task.hasStatus
     assert_equal "An OpenTox::Error occured", task.error_report[RDF::OT.message]
     assert_equal "500", task.error_report[RDF::OT.statusCode]
@@ -94,8 +102,10 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
     assert task.error?
+    assert_equal 404, task.code
     assert_equal "Error", task.hasStatus
     assert_equal "An OpenTox::ResourceNotFoundError occured", task.error_report[RDF::OT.message]
     assert_equal "OpenTox::ResourceNotFoundError", task.error_report[RDF::OT.errorCode]
@@ -110,8 +120,10 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
     assert task.error?
+    assert_equal 404, task.code
     assert_equal "Error", task.hasStatus
     refute_empty task.error_report[RDF::OT.errorCause]
     assert_equal "404", task.error_report[RDF::OT.statusCode]
@@ -124,8 +136,10 @@ class TaskTest < MiniTest::Unit::TestCase
     end
     assert task.running?
     assert_equal "Running", task.hasStatus
+    assert_equal 202, task.code
     task.wait
     assert task.error?
+    assert_equal 400, task.code
     assert_equal "Error", task.hasStatus
     refute_empty task.error_report[RDF::OT.errorCause]
     assert_equal "400", task.error_report[RDF::OT.statusCode]
@@ -200,8 +214,10 @@ class TaskTest < MiniTest::Unit::TestCase
       
       assert task.running?
       assert_equal "Running", task.hasStatus
+      assert_equal 202, task.code
       task.wait
       assert task.error?
+      assert_equal 500, task.code
       assert_equal "Error", task.hasStatus
       refute_empty task.error_report[RDF::OT.errorCause]
       assert_match error_msg,task.error_report[RDF::OT.message]

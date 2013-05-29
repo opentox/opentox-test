@@ -41,7 +41,7 @@ unless defined?($short_tests)
     })
 end
 
-class ValidationTest < MiniTest::Unit::TestCase
+class ValidationTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def global_setup

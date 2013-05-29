@@ -1,21 +1,21 @@
+=begin
+require 'test/unit'
 require 'capybara/dsl'
 require 'capybara-webkit'
+require 'capybara_minitest_spec'
 
-Capybara.default_driver = :webkit
-Capybara.default_wait_time = 6
+Capybara.default_driver = :selenium
+Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
 
-class LazarWebTest < MiniTest::Unit::TestCase
+class LazarWebTest < MiniTest::Test
+  i_suck_and_my_tests_are_order_dependent!
+  
   include Capybara::DSL
-
 
   @@uri = "http://istva:8080/toxcreate"
 
-  def insert_to_post
-    visit(@@uri)
-    page.fill_in('identifier', :with => "NNc1ccccc1")
-  end
   
   def test_00_start
     `Xvfb :1 -screen 0 1024x768x16 -nolisten inet6 &`
@@ -27,14 +27,17 @@ class LazarWebTest < MiniTest::Unit::TestCase
     assert page.has_content?('Lazar Toxicity Predictions')
   end
 
+# temporarily disabled html/css validation
+
   def test_01_b_validate_html
     visit(@@uri)
     html = page.source
+    puts "\n#{page.source}\n"
     visit('http://validator.w3.org/#validate-by-input')
     within_fieldset('validate-by-input') do
       fill_in 'fragment', :with => html
     end
-    click_on 'Check'
+    first(:button, 'Check').click
     assert page.has_content?('This document was successfully checked as XHTML 1.0 Transitional!'), "true"
   end
 
@@ -46,7 +49,7 @@ class LazarWebTest < MiniTest::Unit::TestCase
     within_fieldset('validate-by-input') do
       fill_in 'text', :with => html
     end
-    click_on 'Check'
+    first(:button, 'Check').click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
     # progressbar.css
     visit(@@uri + '/progressbar/progressbar.css')
@@ -55,7 +58,7 @@ class LazarWebTest < MiniTest::Unit::TestCase
     within_fieldset('validate-by-input') do
       fill_in 'text', :with => html
     end
-    click_on 'Check'
+    first(:button, 'Check').click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
 
@@ -63,13 +66,13 @@ class LazarWebTest < MiniTest::Unit::TestCase
     visit(@@uri)
     page.fill_in 'identifier', :with => "blahblah"
     check('model6')
-    click_on 'Predict'
-    assert page.has_content?('OpenTox::RestCallError'), "true"
+    first(:button, 'Predict').click
+    assert page.has_content?('OpenTox::RestCallError')
     visit(@@uri)
     page.fill_in 'identifier', :with => "N9N7N8"
     check('model6')
-    click_on 'Predict'
-    assert page.has_content?('OpenTox::RestCallError'), "true"
+    first(:button, 'Predict').click
+    assert page.has_content?('OpenTox::RestCallError')
   end
   
   def test_02_b_check_all_links_exists
@@ -79,22 +82,24 @@ class LazarWebTest < MiniTest::Unit::TestCase
   end
 
   def test_03_MOU
-    insert_to_post
+    visit(@@uri)
+    page.fill_in('identifier', :with => "NNc1ccccc1")
     check('model6')
-    click_on 'Predict'
+    first(:button, 'Predict').click
     assert page.has_content?('MOU (pTD50)'), "true"
     assert page.has_content?('3.1809'), "true"
     assert page.has_content?('TD50'), "true"
     assert page.has_content?('71.4481'), "true"
     assert page.has_link?('Measured activity'), "true"
-    click_on 'Measured activity'
+    first(:link, 'Measured activity').click
     assert page.has_content?('Experimental result(s) from the training dataset.'), "true"
   end
 
   def test_04_RAT
-    insert_to_post
+    visit(@@uri)
+    page.fill_in('identifier', :with => "NNc1ccccc1")
     check('model9')
-    click_on 'Predict'
+    first(:button, 'Predict').click
     within(:xpath, '/html/body/div[3]/div[3]/table/tbody') do
       assert page.has_content?('RAT (pTD50)'), "true"
       assert page.has_content?('4.8504'), "true"
@@ -103,7 +108,7 @@ class LazarWebTest < MiniTest::Unit::TestCase
       assert page.has_link?('Confidence'), "true"
       assert page.has_content?('0.585'), "true"
       assert page.has_button?('Details'), "true"
-      click_on 'Details'
+      first(:button, 'Details').click
     end
     # check lazar help is shown
     within('html body div.content div.lazar-predictions dl#lazar_algorithm') do
@@ -111,7 +116,7 @@ class LazarWebTest < MiniTest::Unit::TestCase
       links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
     end
     # check prediction table links
-    within('html body div.content div.lazar-predictions table') do
+    within(:xpath, '/html/body/div[3]/div[3]/table/tbody') do
       links = ['Prediction', 'Confidence', 'Names and synonyms', 'Physico chemical descriptors', 'Measured activity', 'Similarity']
       links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
     end
@@ -199,20 +204,21 @@ class LazarWebTest < MiniTest::Unit::TestCase
   end
 
   def test_05_prediction_on_four_models_parallel
-    insert_to_post
+    visit(@@uri)
+    page.fill_in('identifier', :with => "NNc1ccccc1")
     check('model6')
     check('model9')
     check('model10')
     check('model11')
-    click_on 'Predict'
+    first(:button, 'Predict').click
     # check table headline
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr') do
+    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr/th') do
       assert page.has_content?('NNc1ccccc1')
     end
     # check for image
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td') do
-      assert page.has_xpath?('/html/body/div[3]/div[3]/table/tbody/tr[2]/td/img')
-    end
+    #within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td') do
+    assert page.has_xpath?('/html/body/div[3]/div[3]/table/tbody/tr[2]/td/img')
+    #end
     # check for MOU (pTD50)
     within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td[2]') do
       assert page.has_content?('MOU (pTD50):')
@@ -256,14 +262,14 @@ class LazarWebTest < MiniTest::Unit::TestCase
         session = Capybara::Session.new(:webkit)
         puts "Start Time >> " << (Time.now).to_s
         session.visit(@@uri)
-        session.within(:xpath, '/html/body/div[3]/div[3]/form/fieldset') do
-          session.fill_in 'identifier', :with => 'NNc1ccccc1'
-        end
+        #session.within(:xpath, '/html/body/div[3]/div[3]/form/fieldset') do
+        session.fill_in 'identifier', :with => 'NNc1ccccc1'
+        #end
         session.check('model6')
         session.check('model9')
         session.check('model10')
         session.check('model11')
-        session.click_on 'Predict'
+        session.first(:button, 'Predict').click
         # check for Prediction page
         assert session.has_content?('NNc1ccccc1'), "true"
         assert session.has_no_content?('Error'), "true"
@@ -317,3 +323,4 @@ class LazarWebTest < MiniTest::Unit::TestCase
   end
 
 end
+=end

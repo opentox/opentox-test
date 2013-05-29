@@ -1,4 +1,4 @@
-require 'test/unit'
+require 'minitest/autorun'
 require 'openbabel'
 all = Dir["test/*.rb"]
 exclude = [

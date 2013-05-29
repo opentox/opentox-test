@@ -9,7 +9,7 @@ end
 
 #TODO: check 4store entries/errors
 
-class UploadTest < MiniTest::Unit::TestCase
+class UploadTest < MiniTest::Test
 
   def setup
     @tmpdir = File.join(File.dirname(__FILE__),"tmp")

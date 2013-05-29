@@ -7,7 +7,7 @@ rescue
   exit
 end
 
-class ModelTest < MiniTest::Unit::TestCase
+class ModelTest < MiniTest::Test
 
   def test_01_create_and_set_parameters
     a = OpenTox::Model.new nil, @@subjectid

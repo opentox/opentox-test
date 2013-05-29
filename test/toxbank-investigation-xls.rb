@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class ExcelUploadTest < MiniTest::Unit::TestCase
+class ExcelUploadTest < MiniTest::Test
 
   def setup
     @tmpdir = File.join(File.dirname(__FILE__),"tmp")

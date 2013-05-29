@@ -1,7 +1,7 @@
 require_relative "setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","toxbank-investigation","tbaccount.rb")
 
-class TBAccountBasicTest < MiniTest::Unit::TestCase
+class TBAccountBasicTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   @@accounts = {"mrautenberg" => "#{RDF::TBU.U124}", "guest" => "#{RDF::TBU.U2}", "member" => "#{RDF::TBO.G176}"}

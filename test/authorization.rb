@@ -2,7 +2,7 @@ require_relative "setup.rb"
 
 TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
 
-class TestOpenToxAuthorizationBasic < MiniTest::Unit::TestCase
+class TestOpenToxAuthorizationBasic < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
  
   def test_01_server
@@ -45,7 +45,7 @@ class TestOpenToxAuthorizationBasic < MiniTest::Unit::TestCase
 =end
 end
 
-class TestOpenToxAuthorizationLDAP < MiniTest::Unit::TestCase
+class TestOpenToxAuthorizationLDAP < MiniTest::Test
 
   def test_01_list_user_groups
     assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user], @@subjectid)
@@ -57,7 +57,7 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Unit::TestCase
 
 end
 
-class TestOpenToxAuthorizationLDAP < MiniTest::Unit::TestCase
+class TestOpenToxAuthorizationLDAP < MiniTest::Test
 
   def test_01_create_check_delete_default_policies
     res = OpenTox::Authorization.send_policy(TEST_URI, @@subjectid)

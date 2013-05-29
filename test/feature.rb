@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class FeatureRestTest < MiniTest::Unit::TestCase
+class FeatureRestTest < MiniTest::Test
 
   def serialize rdf, format
     string = RDF::Writer.for(format).buffer  do |writer|
@@ -81,19 +81,24 @@ class FeatureRestTest < MiniTest::Unit::TestCase
     assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
     r = OpenTox::Feature.all @@subjectid
+    fsize = r.size
     assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
 
-    @feature = OpenTox::Feature.new @feature.uri, @@subjectid
-    assert_equal "test", @feature.title
+    @feature2 = OpenTox::Feature.new @feature.uri, @@subjectid
+    assert_equal "test", @feature2.title
     assert_equal RDF::OT.Feature, @feature[RDF.type]
 
-    @feature.title = "test2"
-    @feature.put
-    # TODO: get title only
-    assert_match "test2", OpenTox::RestClientWrapper.get(@feature.uri)
+    @feature2.title = "feature2"
+    @feature2.put
+    f = OpenTox::Feature.all @@subjectid
+    fsize2 = f.size
+    assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
+    #TODO overwrite edited graphs in OTobjects by PUT, title "test" should be deleted
+    refute_match "test", OpenTox::RestClientWrapper.get(@feature2.uri)
+    assert_equal fsize, fsize2
 
-    uri = @feature.uri
-    @feature.delete
+    uri = @feature2.uri
+    @feature2.delete
     assert_equal false, URI.accessible?(uri, @@subjectid), "URI is still accessible uri: #{uri}"
   end
 
