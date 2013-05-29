@@ -89,7 +89,8 @@ class FeatureRestTest < MiniTest::Unit::TestCase
 
     @feature.title = "test2"
     @feature.put
-    assert_match "test", OpenTox::RestClientWrapper.get(@feature.uri)
+    # TODO: get title only
+    assert_match "test2", OpenTox::RestClientWrapper.get(@feature.uri)
 
     uri = @feature.uri
     @feature.delete
