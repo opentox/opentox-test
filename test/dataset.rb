@@ -42,6 +42,14 @@ class DatasetTest < MiniTest::Test
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
   end
+  
+  def test_head_id
+    d = OpenTox::Dataset.new nil, @@subjectid
+    d.title = "head test"
+    d.put
+    response = `curl -Lki -H subjectid:#{@@subjectid} #{d.uri}`
+    assert_match /200/, response
+  end
 
   def test_client_create
     d = OpenTox::Dataset.new nil, @@subjectid
