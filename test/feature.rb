@@ -67,6 +67,7 @@ class FeatureRestTest < MiniTest::Test
     end
 
     @uris.each do |uri|
+      puts uri.to_s
       OpenTox::RestClientWrapper.delete(uri)
       assert_raises OpenTox::ResourceNotFoundError do
         OpenTox::RestClientWrapper.get(uri)
