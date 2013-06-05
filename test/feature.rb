@@ -67,6 +67,7 @@ class FeatureRestTest < MiniTest::Test
     end
 
     @uris.each do |uri|
+      puts uri.to_s
       OpenTox::RestClientWrapper.delete(uri)
       assert_raises OpenTox::ResourceNotFoundError do
         OpenTox::RestClientWrapper.get(uri)
@@ -93,7 +94,6 @@ class FeatureRestTest < MiniTest::Test
     f = OpenTox::Feature.all @@subjectid
     fsize2 = f.size
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
-    #TODO overwrite edited graphs in OTobjects by PUT, title "test" should be deleted
     refute_match "test", OpenTox::RestClientWrapper.get(@feature2.uri)
     assert_equal fsize, fsize2
 
