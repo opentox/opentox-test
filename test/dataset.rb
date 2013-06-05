@@ -182,12 +182,10 @@ class DatasetTest < MiniTest::Test
     File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
     dataset = OpenTox::Dataset.new nil, @@subjectid
     dataset.upload "#{DATA_DIR}/temp_test.csv"
-    dataset.get
     assert_equal true, URI.accessible?(dataset.uri, @@subjectid)
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
   end
-
 
 end
 

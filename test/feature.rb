@@ -78,12 +78,14 @@ class FeatureRestTest < MiniTest::Test
     @feature = OpenTox::Feature.new nil, @@subjectid
     @feature.title = "test"
     @feature.put
+    uri = @feature.uri
     assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
     r = OpenTox::Feature.all @@subjectid
     fsize = r.size
     assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
 
+    # modify feature
     @feature2 = OpenTox::Feature.new @feature.uri, @@subjectid
     assert_equal "test", @feature2.title
     assert_equal RDF::OT.Feature, @feature[RDF.type]
@@ -93,8 +95,8 @@ class FeatureRestTest < MiniTest::Test
     f = OpenTox::Feature.all @@subjectid
     fsize2 = f.size
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
-    #TODO overwrite edited graphs in OTobjects by PUT, title "test" should be deleted
     refute_match "test", OpenTox::RestClientWrapper.get(@feature2.uri)
+    assert_equal uri,@feature2.uri
     assert_equal fsize, fsize2
 
     uri = @feature2.uri
