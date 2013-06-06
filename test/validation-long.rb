@@ -111,7 +111,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_bootstrapping_validation(p, @@subjectid, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::NotAuthorizedError do
+          assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -154,7 +154,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_training_test_split(p, @@subjectid, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::NotAuthorizedError do
+          assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -208,7 +208,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_training_test_validation(p, @@subjectid, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::NotAuthorizedError do
+          assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -237,7 +237,7 @@ class ValidationTest < MiniTest::Test
       assert defined?v,"no validation defined"
       assert_kind_of OpenTox::Validation,v
       if $aa[:uri]
-        assert_rest_call_error OpenTox::NotAuthorizedError do
+        assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::ValidationReport.create(v.uri)
         end
       end
@@ -247,7 +247,7 @@ class ValidationTest < MiniTest::Test
       report = OpenTox::ValidationReport.create(v.uri,params,@@subjectid)
       assert report.uri.uri?
       if $aa[:uri]
-        assert_rest_call_error OpenTox::NotAuthorizedError do
+        assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::ValidationReport.find(report.uri)
         end
       end
@@ -304,7 +304,7 @@ class ValidationTest < MiniTest::Test
           cv = OpenTox::Crossvalidation.create(p, @@subjectid, t)
           assert cv.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::NotAuthorizedError do
+            assert_rest_call_error OpenTox::UnauthorizedError do
               OpenTox::Crossvalidation.find(cv.uri)
             end
           end
@@ -312,7 +312,7 @@ class ValidationTest < MiniTest::Test
           assert_valid_date cv
           assert cv.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::NotAuthorizedError do
+            assert_rest_call_error OpenTox::UnauthorizedError do
               cv.statistics(cv)
             end
           end
@@ -353,7 +353,7 @@ class ValidationTest < MiniTest::Test
       #  OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri)
       #end
       if $aa[:uri]
-        assert_rest_call_error OpenTox::NotAuthorizedError do
+        assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::CrossvalidationReport.create(cv.uri)
         end
       end
@@ -361,7 +361,7 @@ class ValidationTest < MiniTest::Test
       report = OpenTox::CrossvalidationReport.create(cv.uri,@@subjectid)
       assert report.uri.uri?
       if $aa[:uri]
-        assert_rest_call_error OpenTox::NotAuthorizedError do
+        assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::CrossvalidationReport.find(report.uri)
         end
       end
@@ -388,7 +388,7 @@ class ValidationTest < MiniTest::Test
           hash = { @@cv_identifiers[i] => [@@cvs[i].uri],
                    @@cv_identifiers[j] => [@@cvs[j].uri] }
           if $aa[:uri]
-            assert_rest_call_error OpenTox::NotAuthorizedError do
+            assert_rest_call_error OpenTox::UnauthorizedError do
               OpenTox::AlgorithmComparisonReport.create hash,{}
             end
           end
@@ -399,7 +399,7 @@ class ValidationTest < MiniTest::Test
           report = OpenTox::AlgorithmComparisonReport.create hash,params,@@subjectid
           assert report.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::NotAuthorizedError do
+            assert_rest_call_error OpenTox::UnauthorizedError do
               OpenTox::AlgorithmComparisonReport.find(report.uri)
             end
           end
