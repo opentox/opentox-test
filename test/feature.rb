@@ -22,7 +22,7 @@ class FeatureRestTest < MiniTest::Test
   def test_rest_feature
     @rdf = RDF::Graph.new
     subject = RDF::URI.new File.join($feature[:uri], SecureRandom.uuid)
-    @rdf << RDF::Statement.new(subject, RDF::DC.title, "test" )
+    @rdf << RDF::Statement.new(subject, RDF::DC.title, "tost" )
     @rdf << RDF::Statement.new(subject, RDF.type, RDF::OT.Feature)
 
     @formats = [
@@ -77,7 +77,7 @@ class FeatureRestTest < MiniTest::Test
 
   def test_opentox_feature
     @feature = OpenTox::Feature.new nil, @@subjectid
-    @feature.title = "test"
+    @feature.title = "tost"
     @feature.put
     assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
@@ -86,7 +86,7 @@ class FeatureRestTest < MiniTest::Test
     assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
 
     @feature2 = OpenTox::Feature.new @feature.uri, @@subjectid
-    assert_equal "test", @feature2.title
+    assert_equal "tost", @feature2.title
     assert_equal RDF::OT.Feature, @feature[RDF.type]
 
     @feature2.title = "feature2"
@@ -94,7 +94,7 @@ class FeatureRestTest < MiniTest::Test
     f = OpenTox::Feature.all @@subjectid
     fsize2 = f.size
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
-    refute_match "test", OpenTox::RestClientWrapper.get(@feature2.uri)
+    refute_match "tost", OpenTox::RestClientWrapper.get(@feature2.uri)
     assert_equal fsize, fsize2
 
     uri = @feature2.uri
