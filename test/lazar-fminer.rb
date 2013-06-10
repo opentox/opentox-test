@@ -101,7 +101,7 @@ class FminerLazarTest < MiniTest::Test
     prediction_dataset = OpenTox::Dataset.new prediction_uri, @@subjectid
     assert_equal prediction_dataset.uri.uri?, true
     prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == compound.uri}.first
-    assert_equal "false", prediction[:value]
+    assert_equal "0", prediction[:value]
     assert_equal 0.025885845574483608, prediction[:confidence]
     dataset.delete
     model.delete
