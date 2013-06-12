@@ -81,9 +81,9 @@ class FeatureRestTest < MiniTest::Test
     @feature.put
     assert_equal true, URI.accessible?(@feature.uri, @@subjectid), "URI is not accessible uri: #{@feature.uri}"
 
-    r = OpenTox::Feature.all @@subjectid
-    fsize = r.size
-    assert_equal true, r.collect{|f| f.uri}.include?(@feature.uri)
+    list = OpenTox::Feature.all @@subjectid
+    listsize1 = list.length
+    assert_equal true, list.collect{|f| f.uri}.include?(@feature.uri)
 
     @feature2 = OpenTox::Feature.new @feature.uri, @@subjectid
     assert_equal "tost", @feature2.title
@@ -91,11 +91,11 @@ class FeatureRestTest < MiniTest::Test
 
     @feature2.title = "feature2"
     @feature2.put
-    f = OpenTox::Feature.all @@subjectid
-    fsize2 = f.size
+    list = OpenTox::Feature.all @@subjectid
+    listsize2 = list.length
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
     refute_match "tost", OpenTox::RestClientWrapper.get(@feature2.uri)
-    assert_equal fsize, fsize2
+    assert_equal listsize1, listsize2
 
     uri = @feature2.uri
     @feature2.delete
