@@ -76,7 +76,7 @@ class ValidationTest < MiniTest::Test
       @@cvs.each{|cv| cv.delete} if defined?@@cvs
       @@reports.each{|report| report.delete} if defined?@@reports
     end
-    OpenTox::Authorization.logout(@@subjectid) if $aa[:uri]
+    #OpenTox::Authorization.logout(@@subjectid) if $aa[:uri]
   end  
 
   def test_validation_list
