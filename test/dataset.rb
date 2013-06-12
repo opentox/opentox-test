@@ -66,7 +66,7 @@ class DatasetTest < MiniTest::Test
     d.features = ["test1", "test2"].collect do |title|
       f = OpenTox::Feature.new nil,@subjectid
       f.title = title
-      f[RDF.type] = RDF::OT.NumericFeature
+      f[RDF.type] = [RDF::OT.NumericFeature, RDF::OT.Feature]
       f.put
       f
     end
@@ -194,6 +194,9 @@ class DatasetTest < MiniTest::Test
     assert_equal true, URI.accessible?(dataset.uri, @@subjectid)
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
+    dataset.features.each{|f| feature = OpenTox::Feature.find f.uri, @@subjectid; feature.delete}
+    dataset.delete
+    assert_equal false, URI.accessible?(dataset.uri, @@subjectid)
   end
 
 
