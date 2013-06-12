@@ -15,8 +15,8 @@ class UriListTest < MiniTest::Test
     mime_types.each do |mt|
       s_urilist = `curl -i -H accept:#{mt} http://localhost:8084/feature`
       assert_match /200 OK/, s_urilist.to_s
-      refute_match /Content-Length: 0/, s_urilist.to_s
-      refute_match /dataset/, s_urilist.to_s
+      refute_match /Content-Length: 0/, s_urilist.to_s, "Attention, content length empty!"
+      refute_match /dataset/, s_urilist.to_s, "Attention, found dataset in feature uri-list!"
     end
   end
 
