@@ -104,7 +104,7 @@ class FeatureRestTest < MiniTest::Test
 
   def test_duplicated_features
     metadata = {
-      RDF::DC.title => "test",
+      RDF::DC.title => "feature duplication test",
       RDF.type => [RDF::OT.Feature, RDF::OT.StringFeature],
       RDF::DC.description => "feature duplication test"
     }
