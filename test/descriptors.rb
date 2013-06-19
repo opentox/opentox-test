@@ -10,9 +10,9 @@ end
 class DescriptorTest < MiniTest::Test
 
   def test_compound_openbabel_single
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","openbabel","logP"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","openbabel","logP"), SUBJECTID
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), @@subjectid)
+    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), SUBJECTID)
     assert_equal 1, d.data_entries.size
     assert_equal 1, d.data_entries[0].size
     assert_equal 1.12518, d.data_entries[0][0]
@@ -20,40 +20,40 @@ class DescriptorTest < MiniTest::Test
   end
 
   def test_compound_cdk_single
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","AtomCount"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","AtomCount"), SUBJECTID
     c = OpenTox::Compound.from_smiles "c1ccccc1"
-    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), @@subjectid)
+    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), SUBJECTID)
     assert_equal 12, d.data_entries[0][0]
     d.delete
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), @@subjectid)
+    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), SUBJECTID)
     assert_equal 17, d.data_entries[0][0]
     d.delete
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","CarbonTypes"), @@subjectid
-    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), @@subjectid)
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","cdk","CarbonTypes"), SUBJECTID
+    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), SUBJECTID)
     assert_equal [1.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0.0], d.data_entries[0]
     d.delete
   end
 
   def test_compound_joelib_single
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","joelib","LogP"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor","joelib","LogP"), SUBJECTID
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), @@subjectid)
+    d = OpenTox::Dataset.new(a.run(:compound_uri => c.uri), SUBJECTID)
     assert_equal 2.65908, d.data_entries[0][0]
     d.delete
   end
 
   def test_compound_all
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     dataset_uri = a.run :compound_uri => c.uri
-    d = OpenTox::Dataset.new dataset_uri, @@subjectid
+    d = OpenTox::Dataset.new dataset_uri, SUBJECTID
     assert_equal 340, d.data_entries[0].size
     d.delete
   end
 
   def test_compound_descriptor_parameters
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
     descriptor_uris = [
       File.join($algorithm[:uri],"descriptor","openbabel","logP"),
       File.join($algorithm[:uri],"descriptor","cdk","AtomCount"),
@@ -62,7 +62,7 @@ class DescriptorTest < MiniTest::Test
     ]
     compound = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result_uri = a.run :compound_uri => compound.uri, :descriptor_uris => descriptor_uris
-    d = OpenTox::Dataset.new result_uri, @@subjectid
+    d = OpenTox::Dataset.new result_uri, SUBJECTID
     assert_equal 12, d.features.size
     assert_equal 12, d.data_entries[0].size
     assert_equal [[1.12518, 17.0, 1.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0.0, 2.65908]], d.data_entries
@@ -70,28 +70,28 @@ class DescriptorTest < MiniTest::Test
   end
 
   def test_dataset_descriptor_parameters
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
     descriptor_uris = [
       File.join($algorithm[:uri],"descriptor","openbabel","logP"),
       File.join($algorithm[:uri],"descriptor","cdk","AtomCount"),
       File.join($algorithm[:uri],"descriptor","cdk","CarbonTypes"),
       File.join($algorithm[:uri],"descriptor","joelib","LogP"),
     ]
-    dataset = OpenTox::Dataset.new nil, @@subjectid
+    dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
     result_uri = a.run :dataset_uri => dataset.uri, :descriptor_uris => descriptor_uris
-    d = OpenTox::Dataset.new result_uri, @@subjectid
+    d = OpenTox::Dataset.new result_uri, SUBJECTID
     assert_equal dataset.compounds.size, d.data_entries.size
     assert_equal 12, d.data_entries[0].size
     d.delete
   end
 
   def test_dataset_all
-    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), @@subjectid
-    dataset = OpenTox::Dataset.new nil, @@subjectid
+    a = OpenTox::Algorithm.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
+    dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
     result_uri = a.run :dataset_uri => dataset.uri
-    d = OpenTox::Dataset.new result_uri, @@subjectid
+    d = OpenTox::Dataset.new result_uri, SUBJECTID
     assert_equal dataset.compounds.size, d.data_entries.size
     assert_equal 340, d.data_entries[0].size
     d.delete

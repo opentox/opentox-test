@@ -72,11 +72,11 @@ class TBAccountBasicTest < MiniTest::Test
   def test_10_create_guest_policy
     guest = OpenTox::TBAccount.new("#{RDF::TBU.U2}", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri)
-    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", SUBJECTID)
     test_98_delete_policies
   end
 
@@ -85,10 +85,10 @@ class TBAccountBasicTest < MiniTest::Test
   def test_11_create_membergroup_policy
     guest = OpenTox::TBAccount.new("#{RDF::TBO.G176}", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", SUBJECTID)
     test_98_delete_policies
   end
 
@@ -126,11 +126,11 @@ class TBAccountBasicTest < MiniTest::Test
   def test_13a_create_guest_rw_policy
     guest = OpenTox::TBAccount.new("#{RDF::TBU.U2}", $pi[:subjectid]) #PI creates policies
     guest.send_policy(@@fake_uri, "readwrite")
-    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", @@subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", @@subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", @@subjectid)
+    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", SUBJECTID)
     # delete policies in 13b!
   end
 

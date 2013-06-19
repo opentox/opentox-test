@@ -12,7 +12,7 @@ class CompoundTest < MiniTest::Test
   def test_0_compound_from_smiles
     c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"
     assert_equal "InChI=1S/BF4.Na/c2-1(3,4)5;/q-1;+1", c.inchi
-    assert_equal "[Na+].F[B-](F)(F)F", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures. This is a known bug in OpenBabel which drops positive charges on 64bit machines. The only known workaround is to install the compound webservice on a 32bit machine" # still does not work on 64bit machines
+    assert_equal "[B-](F)(F)(F)F.[Na+]", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures using an outdated version of OpenBabel. Please install OpenBabel version 2.3.2 or higher." # seems to be fixed in 2.3.2
   end
 
   def test_1_compound_from_smiles
@@ -46,6 +46,7 @@ class CompoundTest < MiniTest::Test
 
   def test_compound_image
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
+    puts c.uri
     testbild = "/tmp/testbild.png"
     f = File.open(testbild, "w").puts c.png
     assert_match "image/png", `file -b --mime-type /tmp/testbild.png`
@@ -54,7 +55,7 @@ class CompoundTest < MiniTest::Test
   end
 
 =begin
-  # OpenBabel segfaults randomly durng inchikey calculation
+  # OpenBabel segfaults randomly during inchikey calculation
   def test_inchikey
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
     assert_equal "UHOVQNZJYSORNB-UHFFFAOYSA-N", c.inchikey
@@ -71,10 +72,16 @@ class CompoundTest < MiniTest::Test
     assert_equal "CHEMBL277500", c.chemblid
   end
 
-=begin
-  def test_match_hits
-    c = OpenTox::Compound.from_smiles $compound[:uri], "N=C=C1CCC(=F=FO)C1"
-    assert_equal ({"FF"=>2, "CC"=>10, "C"=>6, "C1CCCC1"=>10, "C=C"=>2}), c.match_hits(['CC','F=F','C','C=C','FF','C1CCCC1','OO'])
+  def test_match_smarts
+    c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
+    result = OpenTox::Descriptor::Smarts.fingerprint c, "FF"
+    assert_equal [1], result.first
+    smarts = ["CC", "C", "C=C", "CO", "FF", "C1CCCC1", "NN"]
+    result = OpenTox::Descriptor::Smarts.fingerprint c, smarts
+    assert_equal [1,1,1,0,1,1,0], result.first
+    result = OpenTox::Descriptor::Smarts.count c, smarts
+    counts = [10,6,2,0,2,10,0]
+    assert_equal counts, result.first
   end
-=end
+
 end

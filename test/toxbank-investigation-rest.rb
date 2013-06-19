@@ -312,7 +312,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect no result until investigation is published
   def test_05f
     assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => @@subjectid}
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/#{@@resource}", {}, {:accept => "text/plain", :subjectid => SUBJECTID}
     end
   end
 
@@ -368,7 +368,7 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
     assert_raises OpenTox::UnauthorizedError do
-      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => SUBJECTID}
     end #Guest can not get
   end
 
@@ -423,7 +423,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect data is still not reachable without policy
   def test_10_g_guest_can_not_get
     assert_raises OpenTox::UnauthorizedError do
-      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+      res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => SUBJECTID}
     end
   end
 
@@ -439,7 +439,7 @@ class TBInvestigationREST < MiniTest::Test
 
   # @note data is available with policy
   def test_10_i_guest_can_get
-    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => @@subjectid}
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => SUBJECTID}
     assert_match /<\?xml/, res
   end
 
@@ -503,7 +503,7 @@ class TBInvestigationREST < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
     # check for guest policy
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", @@subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", SUBJECTID)
   end
 
   # check how many policies,
@@ -533,7 +533,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_90_try_to_delete_id_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@subjectid}
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => SUBJECTID}
     end
   end
 
@@ -541,7 +541,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => @@subjectid}
+      OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => SUBJECTID}
     end
   end
 
@@ -549,7 +549,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_92_try_to_update_id_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => @@subjectid}
+      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"},{:subjectid => SUBJECTID}
     end
   end
 

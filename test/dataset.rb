@@ -6,7 +6,7 @@ class DatasetTest < MiniTest::Test
 
 # TODO: and add Egons example
   def test_sdf_with_multiple_features
-    @dataset = OpenTox::Dataset.new nil, @@subjectid
+    @dataset = OpenTox::Dataset.new nil, SUBJECTID
     @dataset.upload "#{DATA_DIR}/CPDBAS_v5c_1547_29Apr2008part.sdf"
     assert_equal OpenTox::Dataset, @dataset.class
     puts @dataset.features.size
@@ -17,7 +17,7 @@ class DatasetTest < MiniTest::Test
 # TODO: create unordered example file with working references
 # e.g. download from ambit, upload
   def test_create_from_ntriples
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload File.join(DATA_DIR,"hamster_carcinogenicity.ntriples")
     assert_equal OpenTox::Dataset, d.class
     assert_equal "hamster_carcinogenicity.ntriples",  d.title 
@@ -25,34 +25,34 @@ class DatasetTest < MiniTest::Test
     assert_equal 76, d.compounds.size
     assert_equal 76, d.data_entries.size
     d.delete 
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
   end
 =end
 
   def test_all
-    d1 = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid), @@subjectid
+    d1 = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid), SUBJECTID
     d1.put
-    datasets = OpenTox::Dataset.all @@subjectid
+    datasets = OpenTox::Dataset.all SUBJECTID
     assert_equal OpenTox::Dataset, datasets.first.class
     d1.delete
   end
 
   def test_create_empty
-    d = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid), @@subjectid
+    d = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid), SUBJECTID
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
   end
   
   def test_head_id
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.title = "head test"
     d.put
-    response = `curl -Lki -H subjectid:#{@@subjectid} #{d.uri}`
+    response = `curl -Lki -H subjectid:#{SUBJECTID} #{d.uri}`
     assert_match /200/, response
   end
 
   def test_client_create
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
     d.title = "Create dataset test"
@@ -84,20 +84,20 @@ class DatasetTest < MiniTest::Test
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
     d.put
     # check if dataset has been saved correctly
-    new_dataset = OpenTox::Dataset.new d.uri, @@subjectid
+    new_dataset = OpenTox::Dataset.new d.uri, SUBJECTID
     assert_equal 3, new_dataset.compounds.size
     assert_equal 2, new_dataset.features.size
     assert_equal [[1,2],[4,5],[6,7]], new_dataset.data_entries
     d.delete
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
-    assert_equal false, URI.accessible?(new_dataset.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
+    assert_equal false, URI.accessible?(new_dataset.uri, SUBJECTID)
   end
 
   def test_dataset_accessors
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload "#{DATA_DIR}/multicolumn.csv"
     # create empty dataset
-    new_dataset = OpenTox::Dataset.new d.uri, @@subjectid
+    new_dataset = OpenTox::Dataset.new d.uri, SUBJECTID
     # get metadata
     assert_equal "multicolumn.csv",  new_dataset[RDF::OT.hasSource]
     assert_equal "multicolumn.csv",  new_dataset.title
@@ -109,18 +109,18 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_create_from_file
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     assert_equal OpenTox::Dataset, d.class
     refute_nil d[RDF::OT.Warnings]
     assert_equal "EPAFHM.mini.csv",  d[RDF::OT.hasSource]
     assert_equal "EPAFHM.mini.csv",  d.title
     d.delete 
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
   end
 
   def test_multicolumn_csv
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload "#{DATA_DIR}/multicolumn.csv"
     refute_nil d[RDF::OT.Warnings]
     assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
@@ -131,7 +131,7 @@ class DatasetTest < MiniTest::Test
     assert_equal [["1", "1", "true", "true", "test", 1.1], ["1", "2", "false", "7.5", "test", 0.24], ["1", "3", "true", "5", "test", 3578.239], ["0", "4", "false", "false", "test", -2.35], ["1", "2", "true", "4", "test_2", 1.0], ["1", "2", "false", "false", "test", -1.5], ["1", nil, "false", nil, nil, 1.0]], d.data_entries
     assert_equal "c1cc[nH]c1,1,,false,,,1.0", d.to_csv.split("\n")[7]
     #assert_equal 'c1ccc[nH]1,1,,false,,,1.0', d.to_csv.split("\n")[7]
-    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv', :subjectid => @@subjectid})
+    csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv', :subjectid => SUBJECTID})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.shift
     original_csv.shift
@@ -143,11 +143,11 @@ class DatasetTest < MiniTest::Test
       assert_equal original_csv[i].collect{|v| (v.class == String) ? ((v.strip == "") ? nil : v.strip) : v}, row
     end
     d.delete 
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
   end
 
   def test_from_csv
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload "#{DATA_DIR}/hamster_carcinogenicity.csv"
     assert_equal OpenTox::Dataset, d.class
     assert_equal 1, d.features.size
@@ -157,12 +157,12 @@ class DatasetTest < MiniTest::Test
     csv.shift
     assert_equal csv.collect{|r| r[1]}, d.data_entries.flatten
     d.delete 
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
   end
 
   def test_from_csv_classification
     ["int", "float", "string"].each do |mode|
-      d = OpenTox::Dataset.new nil, @@subjectid
+      d = OpenTox::Dataset.new nil, SUBJECTID
       d.upload "#{DATA_DIR}/hamster_carcinogenicity.mini.bool_#{mode}.csv"
       csv = CSV.read("#{DATA_DIR}/hamster_carcinogenicity.mini.bool_#{mode}.csv")
       csv.shift
@@ -171,26 +171,26 @@ class DatasetTest < MiniTest::Test
         assert_equal r[1].to_s, entries[i]
       end
       d.delete 
-      assert_equal false, URI.accessible?(d.uri, @@subjectid)
+      assert_equal false, URI.accessible?(d.uri, SUBJECTID)
     end
   end
 
   def test_from_xls
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload "#{DATA_DIR}/hamster_carcinogenicity.xls"
     assert_equal OpenTox::Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size
     assert_equal 85, d.data_entries.size
     d.delete 
-    assert_equal false, URI.accessible?(d.uri, @@subjectid)
+    assert_equal false, URI.accessible?(d.uri, SUBJECTID)
   end
 
   def test_from_csv2
     File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
-    dataset = OpenTox::Dataset.new nil, @@subjectid
+    dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload "#{DATA_DIR}/temp_test.csv"
-    assert_equal true, URI.accessible?(dataset.uri, @@subjectid)
+    assert_equal true, URI.accessible?(dataset.uri, SUBJECTID)
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
   end
@@ -201,13 +201,13 @@ end
 class DatasetRestTest < MiniTest::Test
 
   def test_01_get_uri_list
-    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => SUBJECTID }
     assert_equal 200, result.code
   end
 
   # check if default response header is text/uri-list
   def test_02_get_datasetlist_type
-    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => @@subjectid }
+    result = OpenTox::RestClientWrapper.get $dataset[:uri], {}, { :accept => 'text/uri-list', :subjectid => SUBJECTID }
     assert_equal "text/uri-list", result.headers[:content_type]
   end
 

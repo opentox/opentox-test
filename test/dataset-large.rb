@@ -12,7 +12,7 @@ class DatasetLargeTest < MiniTest::Test
 
   def test_01_upload_epafhm
     f = File.join DATA_DIR, "EPAFHM.csv"
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload f
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
@@ -24,7 +24,7 @@ class DatasetLargeTest < MiniTest::Test
 
   def test_02_upload_multicell
     f = File.join DATA_DIR, "multi_cell_call.csv"
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload f
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
@@ -37,7 +37,7 @@ class DatasetLargeTest < MiniTest::Test
 
   def test_03_upload_isscan
     f = File.join DATA_DIR, "ISSCAN-multi.csv"
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload f
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
@@ -51,7 +51,7 @@ class DatasetLargeTest < MiniTest::Test
     threads = []
     3.times do |t|
       threads << Thread.new(t) do |up|
-        d = OpenTox::Dataset.new nil, @@subjectid
+        d = OpenTox::Dataset.new nil, SUBJECTID
         d.upload "#{DATA_DIR}/hamster_carcinogenicity.csv"
         assert_equal OpenTox::Dataset, d.class
         assert_equal 1, d.features.size
@@ -69,7 +69,7 @@ class DatasetLargeTest < MiniTest::Test
 
   def test_05_upload_kazius
     f = File.join DATA_DIR, "kazius.csv"
-    d = OpenTox::Dataset.new nil, @@subjectid
+    d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload f
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size

@@ -45,18 +45,21 @@ class ValidationTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def global_setup
+=begin
+    # SUBJECTID is set in setup.rb
     puts "login and upload datasets"
     if $aa[:uri]
-      @@subjectid = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
-      internal_server_error "could not log in" unless @@subjectid
-      puts "logged in: "+@@subjectid.to_s
+      SUBJECTID = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
+      internal_server_error "could not log in" unless SUBJECTID
+      puts "logged in: "+SUBJECTID.to_s
     else
       puts "AA disabled"
-      @@subjectid = nil
+      SUBJECTID = nil
     end
+=end
     @@files.each do |file,type|
       @@data << { :type => type,
-        :data => ValidationTestUtil.upload_dataset(file, @@subjectid),
+        :data => ValidationTestUtil.upload_dataset(file, SUBJECTID),
         :feat => ValidationTestUtil.prediction_feature_for_file(file),
         :info => file.path, :delete => true} 
     end
@@ -67,16 +70,16 @@ class ValidationTest < MiniTest::Test
     if defined?(@@delete) and @@delete
       [:data, :train_data, :test_data].each do |d|
         @@data.each do |data| 
-          OpenTox::Dataset.new(data[d],@@subjectid).delete if data[d] and data[:delete]
+          OpenTox::Dataset.new(data[d],SUBJECTID).delete if data[d] and data[:delete]
           # CH: Dataset.exist? has been removed, find checks if uri is accessible
-          # and OpenTox::Dataset.exist?(data[d], @@subjectid)
+          # and OpenTox::Dataset.exist?(data[d], SUBJECTID)
         end
       end
       @@vs.each{|v| v.delete} if defined?@@vs
       @@cvs.each{|cv| cv.delete} if defined?@@cvs
       @@reports.each{|report| report.delete} if defined?@@reports
     end
-    OpenTox::Authorization.logout(@@subjectid) if $aa[:uri]
+    OpenTox::Authorization.logout(SUBJECTID) if $aa[:uri]
   end  
 
   def test_validation_list
@@ -108,14 +111,14 @@ class ValidationTest < MiniTest::Test
           end
         end
         def t.waiting_for(task_uri); end
-        v = OpenTox::Validation.create_bootstrapping_validation(p, @@subjectid, t)
+        v = OpenTox::Validation.create_bootstrapping_validation(p, SUBJECTID, t)
         assert v.uri.uri?
         if $aa[:uri]
           assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
-        v = OpenTox::Validation.find(v.uri, @@subjectid)
+        v = OpenTox::Validation.find(v.uri, SUBJECTID)
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
@@ -151,14 +154,14 @@ class ValidationTest < MiniTest::Test
           end
         end
         def t.waiting_for(task_uri); end
-        v = OpenTox::Validation.create_training_test_split(p, @@subjectid, t)
+        v = OpenTox::Validation.create_training_test_split(p, SUBJECTID, t)
         assert v.uri.uri?
         if $aa[:uri]
           assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
-        v = OpenTox::Validation.find(v.uri, @@subjectid)
+        v = OpenTox::Validation.find(v.uri, SUBJECTID)
         #v_uri = "http://localhost:8087/validation/90"
         #v = OpenTox::Validation.find(v_uri)
         
@@ -205,14 +208,14 @@ class ValidationTest < MiniTest::Test
           end
         end
         def t.waiting_for(task_uri); end
-        v = OpenTox::Validation.create_training_test_validation(p, @@subjectid, t)
+        v = OpenTox::Validation.create_training_test_validation(p, SUBJECTID, t)
         assert v.uri.uri?
         if $aa[:uri]
           assert_rest_call_error OpenTox::UnauthorizedError do
             OpenTox::Validation.find(v.uri)
           end
         end
-        v = OpenTox::Validation.find(v.uri, @@subjectid)
+        v = OpenTox::Validation.find(v.uri, SUBJECTID)
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
@@ -229,7 +232,7 @@ class ValidationTest < MiniTest::Test
 
   
   def test_validation_report
-    #@@cv = OpenTox::Crossvalidation.find("http://local-ot/validation/crossvalidation/48", @@subjectid)
+    #@@cv = OpenTox::Crossvalidation.find("http://local-ot/validation/crossvalidation/48", SUBJECTID)
     
     @@reports = [] unless defined?@@reports
     @@vs.each do |v|
@@ -241,22 +244,22 @@ class ValidationTest < MiniTest::Test
           OpenTox::ValidationReport.create(v.uri)
         end
       end
-      report = OpenTox::ValidationReport.find_for_validation(v.uri,@@subjectid)
+      report = OpenTox::ValidationReport.find_for_validation(v.uri,SUBJECTID)
       assert_nil report,"report already exists for validation\nreport: "+(report ? report.uri.to_s : "")+"\nvalidation: "+v.uri.to_s
       params = {:min_confidence => 0.05}
-      report = OpenTox::ValidationReport.create(v.uri,params,@@subjectid)
+      report = OpenTox::ValidationReport.create(v.uri,params,SUBJECTID)
       assert report.uri.uri?
       if $aa[:uri]
         assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::ValidationReport.find(report.uri)
         end
       end
-      report = OpenTox::ValidationReport.find(report.uri,@@subjectid)
+      report = OpenTox::ValidationReport.find(report.uri,SUBJECTID)
       assert_valid_date report
       assert report.uri.uri?
-      report2 = OpenTox::ValidationReport.find_for_validation(v.uri,@@subjectid)
+      report2 = OpenTox::ValidationReport.find_for_validation(v.uri,SUBJECTID)
       assert_equal report.uri,report2.uri
-      report3_uri = v.find_or_create_report(@@subjectid)
+      report3_uri = v.find_or_create_report(SUBJECTID)
       assert_equal report.uri,report3_uri
       puts report2.uri unless defined?(@@delete) and @@delete
       @@reports << report2
@@ -301,14 +304,14 @@ class ValidationTest < MiniTest::Test
             end
           end
           def t.waiting_for(task_uri); end
-          cv = OpenTox::Crossvalidation.create(p, @@subjectid, t)
+          cv = OpenTox::Crossvalidation.create(p, SUBJECTID, t)
           assert cv.uri.uri?
           if $aa[:uri]
             assert_rest_call_error OpenTox::UnauthorizedError do
               OpenTox::Crossvalidation.find(cv.uri)
             end
           end
-          cv = OpenTox::Crossvalidation.find(cv.uri, @@subjectid)
+          cv = OpenTox::Crossvalidation.find(cv.uri, SUBJECTID)
           assert_valid_date cv
           assert cv.uri.uri?
           if $aa[:uri]
@@ -316,7 +319,7 @@ class ValidationTest < MiniTest::Test
               cv.statistics(cv)
             end
           end
-          stats_val = cv.statistics(@@subjectid)
+          stats_val = cv.statistics(SUBJECTID)
           assert_kind_of OpenTox::Validation,stats_val
           assert_prob_correct(stats_val)
           
@@ -326,7 +329,7 @@ class ValidationTest < MiniTest::Test
           assert cv_list.include?(cv.uri)
           cv_list.each do |cv_uri|
             #begin catch not authorized somehow
-              alg = OpenTox::Crossvalidation.find(cv_uri, @@subjectid).metadata[RDF::OT.algorithm.to_s]
+              alg = OpenTox::Crossvalidation.find(cv_uri, SUBJECTID).metadata[RDF::OT.algorithm.to_s]
               assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
             #rescue 
             #end
@@ -342,7 +345,7 @@ class ValidationTest < MiniTest::Test
   end
     
   def test_crossvalidation_report
-    #@@cv = OpenTox::Crossvalidation.find("http://local-ot/validation/crossvalidation/48", @@subjectid)
+    #@@cv = OpenTox::Crossvalidation.find("http://local-ot/validation/crossvalidation/48", SUBJECTID)
     
     @@reports = [] unless defined?@@reports
     @@cvs.each do |cv|
@@ -357,20 +360,20 @@ class ValidationTest < MiniTest::Test
           OpenTox::CrossvalidationReport.create(cv.uri)
         end
       end
-      assert OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri,@@subjectid)==nil
-      report = OpenTox::CrossvalidationReport.create(cv.uri,@@subjectid)
+      assert OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri,SUBJECTID)==nil
+      report = OpenTox::CrossvalidationReport.create(cv.uri,SUBJECTID)
       assert report.uri.uri?
       if $aa[:uri]
         assert_rest_call_error OpenTox::UnauthorizedError do
           OpenTox::CrossvalidationReport.find(report.uri)
         end
       end
-      report = OpenTox::CrossvalidationReport.find(report.uri,@@subjectid)
+      report = OpenTox::CrossvalidationReport.find(report.uri,SUBJECTID)
       assert_valid_date report
       assert report.uri.uri?
-      report2 = OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri,@@subjectid)
+      report2 = OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri,SUBJECTID)
       assert_equal report.uri,report2.uri
-      report3_uri = cv.find_or_create_report(@@subjectid)
+      report3_uri = cv.find_or_create_report(SUBJECTID)
       assert_equal report.uri,report3_uri
       puts report2.uri unless defined?(@@delete) and @@delete
       @@reports << report2
@@ -392,23 +395,23 @@ class ValidationTest < MiniTest::Test
               OpenTox::AlgorithmComparisonReport.create hash,{}
             end
           end
-          assert OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[i].uri,@@subjectid)==nil
-          assert OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[j].uri,@@subjectid)==nil
+          assert OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[i].uri,SUBJECTID)==nil
+          assert OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[j].uri,SUBJECTID)==nil
           
           params = {:ttest_significance => 0.95, :ttest_attributes => "real_runtime,percent_unpredicted", :max_num_predictions => 5}
-          report = OpenTox::AlgorithmComparisonReport.create hash,params,@@subjectid
+          report = OpenTox::AlgorithmComparisonReport.create hash,params,SUBJECTID
           assert report.uri.uri?
           if $aa[:uri]
             assert_rest_call_error OpenTox::UnauthorizedError do
               OpenTox::AlgorithmComparisonReport.find(report.uri)
             end
           end
-          report = OpenTox::AlgorithmComparisonReport.find(report.uri,@@subjectid)
+          report = OpenTox::AlgorithmComparisonReport.find(report.uri,SUBJECTID)
           assert_valid_date report
           assert report.uri.uri?
-          report2 = OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[i].uri,@@subjectid)
+          report2 = OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[i].uri,SUBJECTID)
           assert_equal report.uri,report2.uri
-          report3 = OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[j].uri,@@subjectid)
+          report3 = OpenTox::AlgorithmComparisonReport.find_for_crossvalidation(@@cvs[j].uri,SUBJECTID)
           assert_equal report.uri,report3.uri
           puts report2.uri unless defined?(@@delete) and @@delete
           @@reports << report2 
@@ -441,7 +444,7 @@ class ValidationTest < MiniTest::Test
       class_value_stats.each do |cs|
         #puts cs[RDF::OT.positivePredictiveValue]
         #puts validation.probabilities(0,cs[RDF::OT.classValue]).inspect
-        assert cs[RDF::OT.positivePredictiveValue]==validation.probabilities(0,cs[RDF::OT.classValue],@@subjectid)[:probs][cs[RDF::OT.classValue]]
+        assert cs[RDF::OT.positivePredictiveValue]==validation.probabilities(0,cs[RDF::OT.classValue],SUBJECTID)[:probs][cs[RDF::OT.classValue]]
       end
     end
   end  
