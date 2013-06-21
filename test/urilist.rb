@@ -13,7 +13,7 @@ class UriListTest < MiniTest::Test
   def test_02_urilist_mime
     mime_types = ["application/rdf+xml", "text/turtle", "application/sparql-results+xml", "text/plain", "text/uri-list", "text/html"]
     mime_types.each do |mt|
-      s_urilist = `curl -i -H accept:#{mt} http://localhost:8084/feature`
+      s_urilist = `curl -i -H accept:#{mt} #{$feature[:uri]}`
       assert_match /200 OK/, s_urilist.to_s
       refute_match /Content-Length: 0/, s_urilist.to_s, "Attention, content length empty!"
       refute_match /dataset/, s_urilist.to_s, "Attention, found dataset in feature uri-list!"
