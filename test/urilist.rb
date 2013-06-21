@@ -3,10 +3,10 @@ require_relative "setup.rb"
 class UriListTest < MiniTest::Test
 
   def test_01_urilist_dublicates
-    services = {1=>"algorithm", 3=>"dataset", 4=>"feature", 5=>"model", 6=>"task"}
-    services.each do |k, service|
-      s_urilist = `curl -H accept:text/uri-list http://localhost:808#{k}/#{service}`.split("\n") 
-      assert_equal s_urilist.uniq.length, s_urilist.length, "Attention, dublicates found in #{service} uri-list!"
+    services = [$algorithm[:uri], $dataset[:uri], $feature[:uri], $model[:uri], $task[:uri]]
+    services.each do |service|
+      s_urilist = `curl -H accept:text/uri-list #{service}`.split("\n")
+      assert_equal s_urilist.uniq.length, s_urilist.length, "Attention, dublicates found in #{service.split("/").last} uri-list!"
     end
   end
 
