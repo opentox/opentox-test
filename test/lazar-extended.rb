@@ -41,7 +41,7 @@ class LazarExtendedTest < MiniTest::Test
     feature_dataset_uri = model[RDF::OT.featureDataset]
     feature_dataset = OpenTox::Dataset.new feature_dataset_uri , SUBJECTID
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
-    assert_equal 51, feature_dataset.features.size
+    assert_equal 52, feature_dataset.features.size
     assert_equal '[#17&A]-[#6&A]', OpenTox::Feature.new(feature_dataset.features.first.uri, SUBJECTID).title
     compound = OpenTox::Compound.from_inchi("InChI=1S/C10H9NO2S/c1-8-2-4-9(5-3-8)13-6-10(12)11-7-14/h2-5H,6H2,1H3")
     prediction_uri = model.run :compound_uri => compound.uri

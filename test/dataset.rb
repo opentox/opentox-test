@@ -193,9 +193,9 @@ class DatasetTest < MiniTest::Test
     assert_equal true, URI.accessible?(dataset.uri, SUBJECTID)
     assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
-    dataset.features.each{|f| feature = OpenTox::Feature.find f.uri, @@subjectid; feature.delete}
+    dataset.features.each{|f| feature = OpenTox::Feature.find f.uri, SUBJECTID; feature.delete}
     dataset.delete
-    assert_equal false, URI.accessible?(dataset.uri, @@subjectid)
+    assert_equal false, URI.accessible?(dataset.uri, SUBJECTID)
   end
 
 end
