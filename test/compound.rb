@@ -72,16 +72,4 @@ class CompoundTest < MiniTest::Test
     assert_equal "CHEMBL277500", c.chemblid
   end
 
-  def test_match_smarts
-    c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
-    result = OpenTox::Descriptor::Smarts.fingerprint c, "FF"
-    assert_equal [1], result.first
-    smarts = ["CC", "C", "C=C", "CO", "FF", "C1CCCC1", "NN"]
-    result = OpenTox::Descriptor::Smarts.fingerprint c, smarts
-    assert_equal [1,1,1,0,1,1,0], result.first
-    result = OpenTox::Descriptor::Smarts.count c, smarts
-    counts = [10,6,2,0,2,10,0]
-    assert_equal counts, result.first
-  end
-
 end

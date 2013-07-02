@@ -10,7 +10,7 @@ end
 class ModelTest < MiniTest::Test
 
   def test_01_create_and_set_parameters
-    a = OpenTox::Model.new nil, SUBJECTID
+    a = OpenTox::Model::Generic.new nil, SUBJECTID
     a.title = "test model"
     a.parameters = [
       {RDF::DC.title => "test", RDF::OT.paramScope => "mandatory"},
@@ -26,7 +26,7 @@ class ModelTest < MiniTest::Test
     a[RDF::OT.dependentVariables] = "http://webservices.in-silico.ch/feature/LC50_mmol"
     a[RDF::OT.featureDataset] = "http://webservices.in-silico.ch/dataset/4964"
     a.put
-    a = OpenTox::Model.new a.uri, SUBJECTID
+    a = OpenTox::Model::Generic.new a.uri, SUBJECTID
     assert_equal "test model", a.title
     assert_equal 2, a.parameters.size
     p = a.parameters.collect{|p| p if p[RDF::DC.title] == "test"}.compact.first
