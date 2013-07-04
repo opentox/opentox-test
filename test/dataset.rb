@@ -49,6 +49,7 @@ class DatasetTest < MiniTest::Test
     d.put
     response = `curl -Lki -H subjectid:#{SUBJECTID} #{d.uri}`
     assert_match /200/, response
+    d.delete
   end
 
   def test_client_create
@@ -117,6 +118,14 @@ class DatasetTest < MiniTest::Test
     assert_equal "EPAFHM.mini.csv",  d.title
     d.delete 
     assert_equal false, URI.accessible?(d.uri, SUBJECTID)
+  end
+
+  def test_create_from_file_with_wrong_smiles_compound_entries
+    d = OpenTox::Dataset.new nil, SUBJECTID
+    d.upload File.join(DATA_DIR,"wrong_dataset.csv")
+    refute_nil d[RDF::OT.Warnings]
+    assert_match /2|3|4|5|6|7/, d[RDF::OT.Warnings]
+    d.delete
   end
 
   def test_multicolumn_csv
