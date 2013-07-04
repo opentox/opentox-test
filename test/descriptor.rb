@@ -17,7 +17,7 @@ class DescriptorTest < MiniTest::Test
     skip "TODO: Test descriptor lookup"
   end
 
-  def test_match_smarts
+  def test_smarts
     c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
     result = OpenTox::Algorithm::Descriptor.smarts_match c, "FF"
     assert_equal 1, result[c.uri]["FF"]
@@ -31,66 +31,58 @@ class DescriptorTest < MiniTest::Test
 
   def test_compound_openbabel_single
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    result = OpenTox::Algorithm::Descriptor.openbabel c, ["logP"]
+    result = OpenTox::Algorithm::Descriptor.physchem c, ["Openbabel.logP"]
     assert_equal 1, result[c.uri].size
-    assert_equal 1.12518, result[c.uri]["logP"]
+    assert_equal 1.12518, result[c.uri]["Openbabel.logP"]
   end
 
   def test_compound_cdk_single
     c = OpenTox::Compound.from_smiles "c1ccccc1"
-    result = OpenTox::Algorithm::Descriptor.cdk c, ["AtomCount"]
-    assert_equal 12, result[c.uri]["nAtom"]
+    result = OpenTox::Algorithm::Descriptor.physchem c, ["Cdk.AtomCount"]
+    assert_equal 12, result[c.uri]["Cdk.AtomCount.nAtom"]
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    result = OpenTox::Algorithm::Descriptor.cdk c, ["AtomCount"]
-    assert_equal 17, result[c.uri]["nAtom"]
-    result = OpenTox::Algorithm::Descriptor.cdk c, ["CarbonTypes"]
-    c_types = {"C1SP1"=>1, "C2SP1"=>0, "C1SP2"=>0, "C2SP2"=>1, "C3SP2"=>0, "C1SP3"=>2, "C2SP3"=>1, "C3SP3"=>1, "C4SP3"=>0}
+    result = OpenTox::Algorithm::Descriptor.physchem c, ["Cdk.AtomCount"]
+    assert_equal 17, result[c.uri]["Cdk.AtomCount.nAtom"]
+    result = OpenTox::Algorithm::Descriptor.physchem c, ["Cdk.CarbonTypes"]
+    c_types = {"Cdk.CarbonTypes.C1SP1"=>1, "Cdk.CarbonTypes.C2SP1"=>0, "Cdk.CarbonTypes.C1SP2"=>0, "Cdk.CarbonTypes.C2SP2"=>1, "Cdk.CarbonTypes.C3SP2"=>0, "Cdk.CarbonTypes.C1SP3"=>2, "Cdk.CarbonTypes.C2SP3"=>1, "Cdk.CarbonTypes.C3SP3"=>1, "Cdk.CarbonTypes.C4SP3"=>0}
     assert_equal c_types, result[c.uri]
   end
 
   def test_compound_joelib_single
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    result = OpenTox::Algorithm::Descriptor.joelib c, ["LogP"]
-    puts result[c.uri]
-    assert_equal 2.65908, result[c.uri]["LogP"]
+    result = OpenTox::Algorithm::Descriptor.physchem c, ["Joelib.LogP"]
+    assert_equal 2.65908, result[c.uri]["Joelib.LogP"]
   end
 
   def test_compound_all
-    a = OpenTox::Algorithm::Generic.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    dataset_uri = a.run :compound_uri => c.uri
-    d = OpenTox::Dataset.new dataset_uri, SUBJECTID
-    assert_equal 340, d.data_entries[0].size
-    d.delete
+    result = OpenTox::Algorithm::Descriptor.physchem c
+    assert_equal 317, result[c.uri].size
+    {
+      "Cdk.LongestAliphaticChain.nAtomLAC"=>5,
+      "Joelib.count.HeavyBonds"=>7,
+      "Openbabel.MR"=>30.905,
+      #"Cdk.LengthOverBreadthDescriptor.LOBMAX"=>1.5379006098352144,
+      #"Joelib.GeometricalShapeCoefficient"=>5.210533887682899,
+    }.each do |d,v|
+      assert_equal v, result[c.uri][d]
+    end
   end
 
   def test_compound_descriptor_parameters
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    result = OpenTox::Algorithm::Descriptor.physchem c, [ "openbabel.logP", "cdk.AtomCount", "cdk.CarbonTypes", "joelib.LogP" ]
-    puts result.inspect
-    assert_equal 12, result[0].size
-    assert_equal [[1.12518, 17.0, 1.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0.0, 2.65908]], result
+    result = OpenTox::Algorithm::Descriptor.physchem c, [ "Openbabel.logP", "Cdk.AtomCount", "Cdk.CarbonTypes", "Joelib.LogP" ]
+    assert_equal 12, result[c.uri].size
+    expect = {"Openbabel.logP"=>1.12518, "Cdk.AtomCount.nAtom"=>17, "Cdk.CarbonTypes.C1SP1"=>1, "Cdk.CarbonTypes.C2SP1"=>0, "Cdk.CarbonTypes.C1SP2"=>0, "Cdk.CarbonTypes.C2SP2"=>1, "Cdk.CarbonTypes.C3SP2"=>0, "Cdk.CarbonTypes.C1SP3"=>2, "Cdk.CarbonTypes.C2SP3"=>1, "Cdk.CarbonTypes.C3SP3"=>1, "Cdk.CarbonTypes.C4SP3"=>0, "Joelib.LogP"=>2.65908}
+    assert_equal expect, result[c.uri]
   end
 
   def test_dataset_descriptor_parameters
     dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
-    d = OpenTox::Algorithm::Descriptor.physchem dataset, [ "openbabel.logP", "cdk.AtomCount", "cdk.CarbonTypes", "joelib.LogP" ]
-    puts d.uri
-    #d = OpenTox::Dataset.new result_uri, SUBJECTID
+    d = OpenTox::Algorithm::Descriptor.physchem dataset, [ "Openbabel.logP", "Cdk.AtomCount", "Cdk.CarbonTypes", "Joelib.LogP" ]
     assert_equal dataset.compounds.size, d.data_entries.size
     assert_equal 12, d.data_entries[0].size
-    d.delete
-  end
-
-  def test_dataset_all
-    a = OpenTox::Algorithm::Generic.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
-    dataset = OpenTox::Dataset.new nil, SUBJECTID
-    dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
-    result_uri = a.run :dataset_uri => dataset.uri
-    d = OpenTox::Dataset.new result_uri, SUBJECTID
-    assert_equal dataset.compounds.size, d.data_entries.size
-    assert_equal 340, d.data_entries[0].size
     d.delete
   end
 

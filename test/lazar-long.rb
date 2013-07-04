@@ -6,10 +6,9 @@ class LazarExtendedTest < MiniTest::Test
     dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     assert_equal dataset.uri.uri?, true
-    lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar"), SUBJECTID
-    model_uri = lazar.run :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 5
+    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 5
     assert_equal model_uri.uri?, true
-    model = OpenTox::Model.new model_uri, SUBJECTID
+    model = OpenTox::Model::Lazar.new model_uri, SUBJECTID
     assert_equal model.uri.uri?, true
     feature_dataset_uri = model[RDF::OT.featureDataset]
     feature_dataset = OpenTox::Dataset.new feature_dataset_uri , SUBJECTID
@@ -33,10 +32,9 @@ class LazarExtendedTest < MiniTest::Test
     dataset = OpenTox::Dataset.new nil, SUBJECTID
     dataset.upload File.join(DATA_DIR,"multi_cell_call_no_dup.csv")
     assert_equal dataset.uri.uri?, true
-    lazar = OpenTox::Algorithm.new File.join($algorithm[:uri],"lazar"), SUBJECTID
-    model_uri = lazar.run :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 75
+    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 75
     assert_equal model_uri.uri?, true
-    model = OpenTox::Model.new model_uri, SUBJECTID
+    model = OpenTox::Model::Lazar.new model_uri, SUBJECTID
     assert_equal model.uri.uri?, true
     feature_dataset_uri = model[RDF::OT.featureDataset]
     feature_dataset = OpenTox::Dataset.new feature_dataset_uri , SUBJECTID

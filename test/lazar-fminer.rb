@@ -7,8 +7,6 @@ class LazarFminerTest < MiniTest::Test
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     assert_equal dataset.uri.uri?, true
     model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc")
-    #model_uri = "http://localhost:8086/model/1fec26fe-1df1-4746-95bd-7d90dd8dd172"
-    puts model_uri
     assert_equal model_uri.uri?, true
     model = OpenTox::Model::Lazar.new model_uri, SUBJECTID
     assert_equal model.uri.uri?, true
