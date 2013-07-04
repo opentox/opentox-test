@@ -7,7 +7,7 @@ class LazarPcDescriptorTest < MiniTest::Test
     dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     assert_equal dataset.uri.uri?, true
 
-    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"descriptor","openbabel"), :descriptors => [ "atoms", "bonds", "dbonds", "HBA1", "HBA2", "HBD", "MP", "MR", "MW", "nF", "sbonds", "tbonds", "TPSA"]
+    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"descriptor","physchem"), :descriptors => [ "Openbabel.atoms", "Openbabel.bonds", "Openbabel.dbonds", "Openbabel.HBA1", "Openbabel.HBA2", "Openbabel.HBD", "Openbabel.MP", "Openbabel.MR", "Openbabel.MW", "Openbabel.nF", "Openbabel.sbonds", "Openbabel.tbonds", "Openbabel.TPSA"]
 
     puts model_uri
     model = OpenTox::Model::Lazar.new model_uri, SUBJECTID
