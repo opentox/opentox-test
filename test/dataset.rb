@@ -124,7 +124,7 @@ class DatasetTest < MiniTest::Test
     d = OpenTox::Dataset.new nil, SUBJECTID
     d.upload File.join(DATA_DIR,"wrong_dataset.csv")
     refute_nil d[RDF::OT.Warnings]
-    assert_match /2|3|4|5|6|7/, d[RDF::OT.Warnings]
+    assert_match /2|3|4|5|6|7|8/, d[RDF::OT.Warnings]
     d.delete
   end
 
