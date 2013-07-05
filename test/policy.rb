@@ -62,6 +62,7 @@ class PolicyTest < MiniTest::Test
   end
 
   def test_04_group_user
+    return unless $aa[:uri]
     policies = OpenTox::Policies.new()
     policies.load_default_policy($aa[:user], TEST_URI, "member")
     assert_equal "member", policies.policies["policy_group"].group
@@ -69,6 +70,7 @@ class PolicyTest < MiniTest::Test
   end
 
   def test_05_DN
+    return unless $aa[:uri]
     policies = OpenTox::Policies.new()
     policies.new_policy(POLICY_NAME)
     policy = policies.policies[policies.names[0]]

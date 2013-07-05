@@ -4,6 +4,7 @@ TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
 
 class TestOpenToxAuthorizationBasic < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
+  exit unless $aa[:uri] # no authorization tests without opensso server.
  
   def test_01_server
     @aaserver = $aa[:uri]
@@ -36,13 +37,11 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end
-=begin
+
   def test_07_unauthorized
-    assert_raises OpenTox::UnauthorizedError do
-      result = OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", SUBJECTID).to_s
-    end
+    assert_equal false, OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", SUBJECTID)
   end
-=end
+
 end
 
 class TestOpenToxAuthorizationLDAP < MiniTest::Test
