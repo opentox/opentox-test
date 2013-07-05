@@ -4,8 +4,11 @@ TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
 
 class TestOpenToxAuthorizationBasic < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
-  exit unless $aa[:uri] # no authorization tests without opensso server.
- 
+
+  def setup
+     skip unless $aa[:uri] # no authorization tests without opensso server.
+  end
+
   def test_01_server
     @aaserver = $aa[:uri]
     assert_equal(@aaserver, OpenTox::Authorization.server)
@@ -57,6 +60,10 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Test
 end
 
 class TestOpenToxAuthorizationLDAP < MiniTest::Test
+
+  def setup
+     skip unless $aa[:uri] # no authorization tests without opensso server.
+  end
 
   def test_01_create_check_delete_default_policies
     res = OpenTox::Authorization.send_policy(TEST_URI, SUBJECTID)
