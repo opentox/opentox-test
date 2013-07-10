@@ -34,13 +34,13 @@ class FeatureRestTest < MiniTest::Test
     
     @formats.each do |f|
       @uris << subject.to_s
-      OpenTox::RestClientWrapper.put(subject.to_s, serialize(@rdf, f[0]), {:subjectid => SUBJECTID, :content_type => f[1]}).chomp
-      assert_equal true, URI.accessible?(@uris.last, SUBJECTID), "URI is not accessible uri: #{@uris.last}"
+      OpenTox::RestClientWrapper.put(subject.to_s, serialize(@rdf, f[0]), {:content_type => f[1]}).chomp
+      assert_equal true, URI.accessible?(@uris.last), "URI is not accessible uri: #{@uris.last}"
     end
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list").split("\n")
 
     @uris.each do |uri|
-      assert_equal true, URI.accessible?(uri, SUBJECTID), "URI is not accessible uri: #{uri}"
+      assert_equal true, URI.accessible?(uri), "URI is not accessible uri: #{uri}"
       assert_equal true, r.include?(uri)
       @formats.each do |f|
         rdf = OpenTox::RestClientWrapper.get(uri, {}, :accept => f[1])
@@ -61,7 +61,7 @@ class FeatureRestTest < MiniTest::Test
     @formats.each do |f|
       @uris.each do |uri|
         OpenTox::RestClientWrapper.put(uri, serialize(@rdf,f[0]), :content_type => f[1])
-        assert_equal true, URI.accessible?(uri, SUBJECTID), "URI is not accessible uri: #{uri}"
+        assert_equal true, URI.accessible?(uri), "URI is not accessible uri: #{uri}"
         refute_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
       end
     end
@@ -75,24 +75,24 @@ class FeatureRestTest < MiniTest::Test
   end
 
   def test_opentox_feature
-    @feature = OpenTox::Feature.new nil, SUBJECTID
+    @feature = OpenTox::Feature.new
     @feature.title = "tost"
     @feature.put
     uri = @feature.uri
-    assert_equal true, URI.accessible?(@feature.uri, SUBJECTID), "URI is not accessible uri: #{@feature.uri}"
+    assert_equal true, URI.accessible?(@feature.uri), "URI is not accessible uri: #{@feature.uri}"
 
-    list = OpenTox::Feature.all SUBJECTID
+    list = OpenTox::Feature.all 
     listsize1 = list.length
     assert_equal true, list.collect{|f| f.uri}.include?(@feature.uri)
 
     # modify feature
-    @feature2 = OpenTox::Feature.new @feature.uri, SUBJECTID
+    @feature2 = OpenTox::Feature.new @feature.uri
     assert_equal "tost", @feature2.title
     assert_equal RDF::OT.Feature, @feature[RDF.type]
 
     @feature2.title = "feature2"
     @feature2.put
-    list = OpenTox::Feature.all SUBJECTID
+    list = OpenTox::Feature.all 
     listsize2 = list.length
     assert_match "feature2", OpenTox::RestClientWrapper.get(@feature2.uri)
     refute_match "tost", OpenTox::RestClientWrapper.get(@feature2.uri)
@@ -100,7 +100,7 @@ class FeatureRestTest < MiniTest::Test
 
     uri = @feature2.uri
     @feature2.delete
-    assert_equal false, URI.accessible?(uri, SUBJECTID), "URI is still accessible uri: #{uri}"
+    assert_equal false, URI.accessible?(uri), "URI is still accessible uri: #{uri}"
   end
 
   def test_duplicated_features
@@ -109,8 +109,8 @@ class FeatureRestTest < MiniTest::Test
       RDF.type => [RDF::OT.Feature, RDF::OT.StringFeature],
       RDF::DC.description => "feature duplication test"
     }
-    feature = OpenTox::Feature.create metadata, SUBJECTID
-    dup_feature = OpenTox::Feature.find_or_create metadata, SUBJECTID
+    feature = OpenTox::Feature.create metadata
+    dup_feature = OpenTox::Feature.find_or_create metadata
     assert_equal feature.uri, dup_feature.uri
     feature.delete
   end

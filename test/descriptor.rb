@@ -78,7 +78,7 @@ class DescriptorTest < MiniTest::Test
   end
 
   def test_dataset_descriptor_parameters
-    dataset = OpenTox::Dataset.new nil, SUBJECTID
+    dataset = OpenTox::Dataset.new 
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
     d = OpenTox::Algorithm::Descriptor.physchem dataset, [ "Openbabel.logP", "Cdk.AtomCount", "Cdk.CarbonTypes", "Joelib.LogP" ]
     assert_equal dataset.compounds.size, d.data_entries.size

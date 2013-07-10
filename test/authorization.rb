@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-TEST_URI  = "http://only_a_test/test/" + rand(1000000).to_s
+TEST_URI  ||= "http://only_a_test/test/" + rand(1000000).to_s
 
 class TestOpenToxAuthorizationBasic < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
@@ -15,7 +15,7 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
   end
  
   def test_02_get_token
-    refute_nil SUBJECTID
+    refute_nil OpenTox::SUBJECTID
   end
   
   def test_03_is_valid_token
@@ -32,17 +32,17 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
   end
   
   def test_05_list_policies
-    assert_kind_of Array, OpenTox::Authorization.list_policies(SUBJECTID)
+    assert_kind_of Array, OpenTox::Authorization.list_policies(OpenTox::SUBJECTID)
   end
 
   def test_06_bad_login
-    assert_raises OpenTox::ResourceNotFoundError do
+    assert_raises OpenTox::BadRequestError do
       subjectid = OpenTox::Authorization.authenticate("blahhshshshsshsh", "blubbbbb")
     end
   end
 
   def test_07_unauthorized
-    assert_equal false, OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", SUBJECTID)
+    assert_equal false, OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT", OpenTox::SUBJECTID)
   end
 
 end
@@ -50,11 +50,11 @@ end
 class TestOpenToxAuthorizationLDAP < MiniTest::Test
 
   def test_01_list_user_groups
-    assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user], SUBJECTID)
+    assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user], OpenTox::SUBJECTID)
   end
   
   def test_02_get_user
-    assert_equal $aa[:user], OpenTox::Authorization.get_user(SUBJECTID)
+    assert_equal $aa[:user], OpenTox::Authorization.get_user(OpenTox::SUBJECTID)
   end
 
 end
@@ -66,47 +66,47 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Test
   end
 
   def test_01_create_check_delete_default_policies
-    res = OpenTox::Authorization.send_policy(TEST_URI, SUBJECTID)
+    res = OpenTox::Authorization.send_policy(TEST_URI, OpenTox::SUBJECTID)
     assert res
-    assert OpenTox::Authorization.uri_has_policy(TEST_URI, SUBJECTID)
-    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, SUBJECTID)
+    assert OpenTox::Authorization.uri_has_policy(TEST_URI, OpenTox::SUBJECTID)
+    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, OpenTox::SUBJECTID)
     assert_kind_of Array, policies
     policies.each do |policy|
-      assert OpenTox::Authorization.delete_policy(policy, SUBJECTID)
+      assert OpenTox::Authorization.delete_policy(policy, OpenTox::SUBJECTID)
     end
-    assert_equal false, OpenTox::Authorization.uri_has_policy(TEST_URI, SUBJECTID)
+    assert_equal false, OpenTox::Authorization.uri_has_policy(TEST_URI, OpenTox::SUBJECTID)
   end
 
   def test_02_check_policy_rules
     tok_anonymous = OpenTox::Authorization.authenticate("anonymous","anonymous")
     refute_nil tok_anonymous
-    res = OpenTox::Authorization.send_policy(TEST_URI, SUBJECTID)
+    res = OpenTox::Authorization.send_policy(TEST_URI, OpenTox::SUBJECTID)
     assert res
-    assert OpenTox::Authorization.uri_has_policy(TEST_URI, SUBJECTID)
+    assert OpenTox::Authorization.uri_has_policy(TEST_URI, OpenTox::SUBJECTID)
     owner_rights = {"GET" => true, "POST" => true, "PUT" => true, "DELETE" => true}
     groupmember_rights = {"GET" => true, "POST" => false, "PUT" => false, "DELETE" => false}
     owner_rights.each do |request, right|
-      assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request, SUBJECTID), "#{$aa[:user]} requests #{request} to #{TEST_URI}"
+      assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request, OpenTox::SUBJECTID), "#{$aa[:user]} requests #{request} to #{TEST_URI}"
     end
     groupmember_rights.each do |request, r|
       assert_equal r, OpenTox::Authorization.authorize(TEST_URI, request, tok_anonymous), "anonymous requests #{request} to #{TEST_URI}"
     end
     
-    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, SUBJECTID)
+    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, OpenTox::SUBJECTID)
     assert_kind_of Array, policies
     policies.each do |policy|
-      assert OpenTox::Authorization.delete_policy(policy, SUBJECTID)
+      assert OpenTox::Authorization.delete_policy(policy, OpenTox::SUBJECTID)
     end
     logout(tok_anonymous)
   end
 
   def test_03_check_different_uris
-    res = OpenTox::Authorization.send_policy(TEST_URI, SUBJECTID)
-    assert OpenTox::Authorization.uri_has_policy(TEST_URI, SUBJECTID)
-    assert OpenTox::Authorization.authorize(TEST_URI, "GET", SUBJECTID), "GET request"
-    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, SUBJECTID)
+    res = OpenTox::Authorization.send_policy(TEST_URI, OpenTox::SUBJECTID)
+    assert OpenTox::Authorization.uri_has_policy(TEST_URI, OpenTox::SUBJECTID)
+    assert OpenTox::Authorization.authorize(TEST_URI, "GET", OpenTox::SUBJECTID), "GET request"
+    policies = OpenTox::Authorization.list_uri_policies(TEST_URI, OpenTox::SUBJECTID)
     policies.each do |policy|
-      assert OpenTox::Authorization.delete_policy(policy, SUBJECTID)
+      assert OpenTox::Authorization.delete_policy(policy, OpenTox::SUBJECTID)
     end
  
   end  

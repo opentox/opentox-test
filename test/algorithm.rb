@@ -10,7 +10,7 @@ end
 class AlgorithmTest < MiniTest::Test
 
   def test_set_parameters
-    a = OpenTox::Algorithm::Generic.new nil, SUBJECTID
+    a = OpenTox::Algorithm::Generic.new 
     a.parameters = [
       {RDF::DC.title => "test", RDF::OT.paramScope => "mandatory"},
       {RDF::DC.title => "test2", RDF::OT.paramScope => "optional"}

@@ -21,7 +21,7 @@ end
 class TaskTest < MiniTest::Test
 
   def test_01_create_and_complete
-    task = OpenTox::Task.run __method__,nil,SUBJECTID do
+    task = OpenTox::Task.run __method__ do
       sleep 1
       $task[:uri]
     end
@@ -46,7 +46,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_03_create_and_cancel
-    task = OpenTox::Task.run __method__,nil,SUBJECTID do
+    task = OpenTox::Task.run __method__ do
       sleep 2
       $task[:uri]
     end
@@ -60,7 +60,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_04_create_and_fail
-    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
       sleep 2
       raise "A runtime error occured"
     end
@@ -79,7 +79,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_05_create_and_fail_with_opentox_error
-    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
       sleep 1
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
@@ -96,7 +96,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_06_create_and_fail_with_not_found_error
-    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
       sleep 1
       resource_not_found_error "An OpenTox::ResourceNotFoundError occured",  "http://test.org/fake_creator"
     end
@@ -114,7 +114,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_07_create_and_fail_with_rest_not_found_error
-    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
       sleep 1
       OpenTox::Feature.new.get
     end
@@ -130,7 +130,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_08_create_and_fail_with_restclientwrapper_error
-    task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+    task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
       sleep 1
       OpenTox::RestClientWrapper.get "invalid uri"
     end
@@ -147,7 +147,7 @@ class TaskTest < MiniTest::Test
 
   def test_09_check_resultURIs
     resulturi = "http://resulturi/test/1"
-    task = OpenTox::Task.run __method__,nil,SUBJECTID do
+    task = OpenTox::Task.run __method__ do
       sleep 1
       resulturi
     end
@@ -164,7 +164,7 @@ class TaskTest < MiniTest::Test
   end
 
   def test_10_uri_with_credentials
-    task = OpenTox::Task.run __method__,nil,SUBJECTID do
+    task = OpenTox::Task.run __method__,nil do
       sleep 1
       resource_not_found_error "test", "http://username:password@test.org/fake_uri"
     end
@@ -181,7 +181,7 @@ class TaskTest < MiniTest::Test
       File.join($algorithm[:uri],'test/wait_for_error_in_task')
     ].each do |uri|
         
-      task_uri = OpenTox::RestClientWrapper.post uri, nil, {:subjectid => SUBJECTID}
+      task_uri = OpenTox::RestClientWrapper.post uri
       assert(URI.task?(task_uri) ,"no task uri: #{task_uri}")
       task = OpenTox::Task.new task_uri
       
@@ -207,7 +207,7 @@ class TaskTest < MiniTest::Test
       
       error_msg = "raising a #{ex}"
       
-      task = OpenTox::Task.run __method__,"http://test.org/fake_creator",SUBJECTID do
+      task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
         sleep 2
         raise ex,error_msg
       end

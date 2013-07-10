@@ -11,8 +11,8 @@ class DescriptorLongTest < MiniTest::Test
 
 
   def test_dataset_all
-    a = OpenTox::Algorithm::Generic.new File.join($algorithm[:uri],"descriptor"), SUBJECTID
-    dataset = OpenTox::Dataset.new nil, SUBJECTID
+    a = OpenTox::Algorithm::Generic.new File.join($algorithm[:uri],"descriptor")
+    dataset = OpenTox::Dataset.new 
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
     d = OpenTox::Algorithm::Descriptor.physchem dataset
     assert_equal dataset.compounds.size, d.data_entries.size

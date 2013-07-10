@@ -14,12 +14,12 @@ class ValidationTestUtil
   @@dataset_uris = {}
   @@prediction_features = {}
 
-  def self.upload_dataset(file, subjectid=nil, dataset_service=$dataset[:uri])
+  def self.upload_dataset(file, dataset_service=$dataset[:uri])
     internal_server_error "File not found: "+file.path.to_s unless File.exist?(file.path)
     if @@dataset_uris[file.path.to_s]==nil
       puts "uploading file: "+file.path.to_s
       if (file.path =~ /csv$/)
-        d = OpenTox::Dataset.new nil, subjectid
+        d = OpenTox::Dataset.new
         d.upload file.path
         internal_server_error "num features not 1 (="+d.features.size.to_s+"), what to predict??" if d.features.size != 1
         @@prediction_features[file.path.to_s] = d.features[0].uri
