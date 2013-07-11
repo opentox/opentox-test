@@ -47,10 +47,11 @@ class LazarExtendedTest < MiniTest::Test
     assert_equal prediction_dataset.uri.uri?, true
     prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == compound.uri}.first
     assert_equal "0", prediction[:value]
+    assert_in_delta 0.025, prediction[:confidence], 0.001
     #assert_equal 0.025885845574483608, prediction[:confidence]
     # with compound change in training_dataset see:
     # https://github.com/opentox/opentox-test/commit/0e78c9c59d087adbd4cc58bab60fb29cbe0c1da0
-    assert_equal 0.02422364949075546, prediction[:confidence]
+    #assert_equal 0.02422364949075546, prediction[:confidence]
     dataset.delete
     model.delete
     feature_dataset.delete
