@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class LazarPcDescriptorTest < MiniTest::Test
+class LazarPhyschemDescriptorTest < MiniTest::Test
 
   def test_lazar_pc_descriptors
     dataset = OpenTox::Dataset.new 

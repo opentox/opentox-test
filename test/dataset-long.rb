@@ -8,12 +8,13 @@ rescue
   exit
 end
 
-class DatasetLargeTest < MiniTest::Test
+class DatasetLongTest < MiniTest::Test
 
   def test_01_upload_epafhm
     f = File.join DATA_DIR, "EPAFHM.csv"
     d = OpenTox::Dataset.new 
     d.upload f
+    puts d.uri
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
