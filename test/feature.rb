@@ -35,12 +35,12 @@ class FeatureRestTest < MiniTest::Test
     @formats.each do |f|
       @uris << subject.to_s
       OpenTox::RestClientWrapper.put(subject.to_s, serialize(@rdf, f[0]), {:content_type => f[1]}).chomp
-      assert_equal true, URI.accessible?(@uris.last), "URI is not accessible uri: #{@uris.last}"
+      assert_equal true, URI.accessible?(@uris.last), "#{@uris.last} is not accessible."
     end
     r = OpenTox::RestClientWrapper.get($feature[:uri], {}, :accept => "text/uri-list").split("\n")
 
     @uris.each do |uri|
-      assert_equal true, URI.accessible?(uri), "URI is not accessible uri: #{uri}"
+      assert_equal true, URI.accessible?(uri), "#{uri} is not accessible."
       assert_equal true, r.include?(uri)
       @formats.each do |f|
         rdf = OpenTox::RestClientWrapper.get(uri, {}, :accept => f[1])
@@ -61,7 +61,7 @@ class FeatureRestTest < MiniTest::Test
     @formats.each do |f|
       @uris.each do |uri|
         OpenTox::RestClientWrapper.put(uri, serialize(@rdf,f[0]), :content_type => f[1])
-        assert_equal true, URI.accessible?(uri), "URI is not accessible uri: #{uri}"
+        assert_equal true, URI.accessible?(uri), "#{uri} is not accessible."
         refute_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
       end
     end
@@ -79,7 +79,7 @@ class FeatureRestTest < MiniTest::Test
     @feature.title = "tost"
     @feature.put
     uri = @feature.uri
-    assert_equal true, URI.accessible?(@feature.uri), "URI is not accessible uri: #{@feature.uri}"
+    assert_equal true, URI.accessible?(@feature.uri), "#{@feature.uri} is not accessible."
 
     list = OpenTox::Feature.all 
     listsize1 = list.length
@@ -100,7 +100,7 @@ class FeatureRestTest < MiniTest::Test
 
     uri = @feature2.uri
     @feature2.delete
-    assert_equal false, URI.accessible?(uri), "URI is still accessible uri: #{uri}"
+    assert_equal false, URI.accessible?(uri), "#{uri} is still accessible."
   end
 
   def test_duplicated_features

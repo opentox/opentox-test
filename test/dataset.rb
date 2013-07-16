@@ -47,7 +47,7 @@ class DatasetTest < MiniTest::Test
     d = OpenTox::Dataset.new nil
     d.title = "head test"
     d.put
-    response = `curl -Lki -H subjectid:#{OpenTox::SUBJECTID} #{d.uri}`
+    response = `curl -Lki -H subjectid:#{OpenTox::RestClientWrapper.subjectid} #{d.uri}`
     assert_match /200/, response
     d.delete
   end

@@ -45,18 +45,9 @@ class ValidationTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def global_setup
-=begin
-    # SUBJECTID is set in setup.rb
+    # subjectid is set in setup.rb
     puts "login and upload datasets"
-    if $aa[:uri]
-      SUBJECTID = OpenTox::Authorization.authenticate($aa[:user],$aa[:password])
-      internal_server_error "could not log in" unless SUBJECTID
-      puts "logged in: "+SUBJECTID.to_s
-    else
-      puts "AA disabled"
-      SUBJECTID = nil
-    end
-=end
+    OpenTox::RestClientWrapper.subjectid ? puts("logged in: "+OpenTox::RestClientWrapper.subjectid.to_s) : puts("AA disabled")
     FILES.each do |file,type|
       DATA << { :type => type,
         :data => ValidationTestUtil.upload_dataset(file),
@@ -71,15 +62,12 @@ class ValidationTest < MiniTest::Test
       [:data, :train_data, :test_data].each do |d|
         DATA.each do |data| 
           OpenTox::Dataset.new(data[d]).delete if data[d] and data[:delete]
-          # CH: Dataset.exist? has been removed, find checks if uri is accessible
-          # and OpenTox::Dataset.exist?(data[d], SUBJECTID)
         end
       end
       @@vs.each{|v| v.delete} if defined?@@vs
       @@cvs.each{|cv| cv.delete} if defined?@@cvs
       @@reports.each{|report| report.delete} if defined?@@reports
     end
-    #OpenTox::Authorization.logout(SUBJECTID) if $aa[:uri]
   end  
 
   def test_validation_list

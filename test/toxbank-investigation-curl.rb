@@ -1,4 +1,4 @@
-require_relative "setup.rb"
+require_relative "toxbank-setup.rb"
 
 begin
   puts "Service URI is: #{$investigation[:uri]}"

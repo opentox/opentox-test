@@ -1,4 +1,4 @@
-require_relative "setup.rb"
+require_relative "toxbank-setup.rb"
 require File.join(File.expand_path(File.dirname(__FILE__)),"..","..","toxbank-investigation","tbaccount.rb")
 
 class TBAccountBasicTest < MiniTest::Test
