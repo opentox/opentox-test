@@ -503,7 +503,7 @@ class TBInvestigationREST < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
     # check for guest policy
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", OpenTox::SUBJECTID)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", OpenTox::RestClientWrapper.subjectid)
   end
 
   # check how many policies,
