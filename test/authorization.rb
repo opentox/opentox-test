@@ -81,7 +81,6 @@ class TestOpenToxAuthorizationPolicy < MiniTest::Test
   end
 
   def test_01_create_check_delete_default_policies
-    login
     res = OpenTox::Authorization.send_policy(TEST_URI)
     assert res
     assert OpenTox::Authorization.uri_has_policy(TEST_URI)
@@ -91,12 +90,9 @@ class TestOpenToxAuthorizationPolicy < MiniTest::Test
       assert OpenTox::Authorization.delete_policy(policy)
     end
     assert_equal false, OpenTox::Authorization.uri_has_policy(TEST_URI)
-    logout
   end
 
   def test_02_check_policy_rules
-    logout
-    assert OpenTox::Authorization.authenticate("anonymous","anonymous")
     res = OpenTox::Authorization.send_policy(TEST_URI)
     assert res
     assert OpenTox::Authorization.uri_has_policy(TEST_URI)
@@ -105,10 +101,13 @@ class TestOpenToxAuthorizationPolicy < MiniTest::Test
     owner_rights.each do |request, right|
       assert_equal right, OpenTox::Authorization.authorize(TEST_URI, request), "#{$aa[:user]} requests #{request} to #{TEST_URI}"
     end
+    logout
+    assert OpenTox::Authorization.authenticate("anonymous","anonymous")
     groupmember_rights.each do |request, r|
       assert_equal r, OpenTox::Authorization.authorize(TEST_URI, request), "anonymous requests #{request} to #{TEST_URI}"
     end
-    
+    logout
+    login
     policies = OpenTox::Authorization.list_uri_policies(TEST_URI)
     assert_kind_of Array, policies
     policies.each do |policy|
