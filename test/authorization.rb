@@ -6,6 +6,11 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
 
   def setup
      skip unless $aa[:uri] # no authorization tests without opensso server.
+     login
+  end
+
+  def teardown
+    logout
   end
 
   def test_01_server
@@ -14,29 +19,20 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
   end
  
   def test_02_get_token
-    login
     refute_nil OpenTox::RestClientWrapper.subjectid
-    logout
   end
   
   def test_03_is_valid_token
-    res = login
-    assert res
     assert OpenTox::Authorization.is_token_valid(OpenTox::RestClientWrapper.subjectid), "Token is not valid for user: #{$aa[:user]}, password: #{$aa[:password]}"
-    logout
   end
   
   def test_04_logout
-    login 
     assert logout
     assert_equal false, OpenTox::Authorization.is_token_valid(OpenTox::RestClientWrapper.subjectid)
-    logout
   end
   
   def test_05_list_policies
-    login
     assert_kind_of Array, OpenTox::Authorization.list_policies
-    logout
   end
 
   def test_06_bad_login
@@ -47,9 +43,7 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
   end
 
   def test_07_unauthorized
-    login
     assert_equal false, OpenTox::Authorization.authorize("http://somthingnotexitstin/bla/8675940", "PUT")
-    logout
   end
 
 end
@@ -57,7 +51,12 @@ end
 class TestOpenToxAuthorizationLDAP < MiniTest::Test
 
   def setup
+    skip unless $aa[:uri] # no authorization tests without opensso server.
     login
+  end
+
+  def teardown
+    logout
   end
 
   def test_01_list_user_groups
@@ -70,10 +69,15 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Test
 
 end
 
-class TestOpenToxAuthorizationLDAP < MiniTest::Test
+class TestOpenToxAuthorizationPolicy < MiniTest::Test
 
   def setup
      skip unless $aa[:uri] # no authorization tests without opensso server.
+     login
+  end
+
+  def teardown
+    logout
   end
 
   def test_01_create_check_delete_default_policies
@@ -110,11 +114,9 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Test
     policies.each do |policy|
       assert OpenTox::Authorization.delete_policy(policy)
     end
-    logout
   end
 
   def test_03_check_different_uris
-    login
     res = OpenTox::Authorization.send_policy(TEST_URI)
     assert OpenTox::Authorization.uri_has_policy(TEST_URI)
     assert OpenTox::Authorization.authorize(TEST_URI, "GET"), "GET request"
@@ -122,7 +124,6 @@ class TestOpenToxAuthorizationLDAP < MiniTest::Test
     policies.each do |policy|
       assert OpenTox::Authorization.delete_policy(policy)
     end
- 
   end  
 end
 
