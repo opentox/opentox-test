@@ -55,7 +55,11 @@ class TestOpenToxAuthorizationBasic < MiniTest::Test
 end
 
 class TestOpenToxAuthorizationLDAP < MiniTest::Test
-  login
+
+  def setup
+    login
+  end
+
   def test_01_list_user_groups
     assert_kind_of Array, OpenTox::Authorization.list_user_groups($aa[:user])
   end
