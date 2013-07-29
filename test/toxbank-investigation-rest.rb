@@ -536,7 +536,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_90_try_to_delete_id_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.delete @@uri.to_s
+      OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $guestid}
     end
   end
 
@@ -544,7 +544,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_91_try_to_delete_id_file_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt"
+      OpenTox::RestClientWrapper.delete "#{@@uri.to_s}/a_proteome.txt", {}, {:subjectid => $guestid}
     end
   end
 
@@ -552,7 +552,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect OpenTox::UnauthorizedError
   def test_92_try_to_update_id_as_guest
     assert_raises OpenTox::UnauthorizedError do
-      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"}
+      OpenTox::RestClientWrapper.put @@uri.to_s, {:published => "true"}, {:subjectid => $guestid}
     end
   end
 
