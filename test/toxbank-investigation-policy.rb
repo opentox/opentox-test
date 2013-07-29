@@ -101,7 +101,7 @@ class TBAccountBasicTest < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "DELETE")
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET"])
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET")
     test_98_delete_policies
   end
 
@@ -111,12 +111,8 @@ class TBAccountBasicTest < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "DELETE")
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "GET")
-    # delete the policies in 12c!
-  end
-
-  def test_12c_pi_policy_subject_name
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri)
-    assert_equal policies.size, 1
+    assert_equal 1, policies.size
     xml = OpenTox::Authorization.list_policy(policies[0])
     policy = OpenTox::Policies.new
     policy.load_xml(xml)
@@ -132,10 +128,6 @@ class TBAccountBasicTest < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", OpenTox::RestClientWrapper.subjectid)
     assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", OpenTox::RestClientWrapper.subjectid)
     assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", OpenTox::RestClientWrapper.subjectid)
-    # delete policies in 13b!
-  end
-
-  def test_13b_guest_policy_subject_name
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri)
     assert_equal policies.size, 1
     xml = OpenTox::Authorization.list_policy(policies[0])
