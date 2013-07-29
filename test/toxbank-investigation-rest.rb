@@ -54,7 +54,7 @@ class TBInvestigationREST < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
   def test_00_pre_01_check_subjectids
-    assert OpenTox::Authorization.is_token_valid(OpenTox.RestClientWrapper.subjectid), "Subjectid for default test user is not valid."
+    assert OpenTox::Authorization.is_token_valid(OpenTox::RestClientWrapper.subjectid), "Subjectid for default test user is not valid."
     assert OpenTox::Authorization.is_token_valid($pi[:subjectid]), "Subjectid for user: #{$pi[:subjectid]} is not valid."
     assert OpenTox::Authorization.is_token_valid($secondpi[:subjectid]), "Subjectid for user: #{$secondpi[:subjectid]} is not valid."
   end
@@ -457,15 +457,11 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::TB.hasAuthor)
-    assert @g.has_predicate?(RDF::DC.title)
-    assert @g.has_predicate?(RDF::DC.abstract)
-    assert @g.has_predicate?(RDF::TB.hasKeyword)
-    assert @g.has_predicate?(RDF::TB.hasOwner)
-    assert @g.has_predicate?(RDF::TB.isPublished)
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
-    assert @g.has_predicate?(RDF::TB.hasProject)
-    assert @g.has_predicate?(RDF::TB.hasOrganisation)
+
+    [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::ISA.hasAccessionID,RDF::TB.hasProject,RDF::TB.hasOrganisation]. each do |pred|
+      assert @g.has_predicate?(pred), "Graph do not have predicate #{pred}"
+    end
+
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match /U271/, r[2].to_s.split("/").last}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
@@ -516,7 +512,7 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect two policies,
   #   one for owner, one for group
   def test_31_check_policies
-    OpenTox::Authorization.subjectid = $pi[:subjectid]
+    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s).class
     assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s).size
   end
