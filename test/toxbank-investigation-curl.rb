@@ -31,7 +31,7 @@ class UploadTest < MiniTest::Test
 
   def test_03_valid_zip_upload
     # upload
-    OpenTox::Authorization.subjectid = $pi[:subjectid]
+    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     ["BII-I-1-tb2.zip","E-MTAB-798_philippe-tb2.zip"].each do |f|
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
@@ -67,7 +67,7 @@ class UploadTest < MiniTest::Test
     end
   end
   def test_04_invalid_zip_upload
-    OpenTox::Authorization.subjectid = $pi[:subjectid]
+    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.zip"
     response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
