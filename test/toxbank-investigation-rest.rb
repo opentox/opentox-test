@@ -53,6 +53,12 @@ end
 class TBInvestigationREST < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
+  def test_00_pre_01_check-subjectids
+    assert OpenTox::Autorization.is_token_valid(OpenTox.RestClientWrapper.subjectid), "Subjectid for default test user is not valid."
+    assert OpenTox::Autorization.is_token_valid($pi[:subjectid]), "Subjectid for user: #{$pi[:subjectid]} is not valid."
+    assert OpenTox::Autorization.is_token_valid($secondpi[:subjectid]), "Subjectid for user: #{$secondpi[:subjectid]} is not valid."
+  end
+
   # check if the userservice is available
   # @note return the secondpi user URI
   def test_00_pre_get_user_from_userservice

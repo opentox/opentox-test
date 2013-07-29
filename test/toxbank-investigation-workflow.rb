@@ -25,6 +25,10 @@ class TBInvestigationWorkflow < MiniTest::Test
 # Download        y      n      y      y      n      n      n
 # Search          ?      n      n      y      n      n      y
 
+  def setup
+    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid] # set pi as the logged in user
+  end
+
   # create a new investigation by uploading a zip file,
   # owner is $pi, Summary is not searchable, access=custom(owner only), not published
   def test_01_post_investigation
@@ -283,7 +287,7 @@ class TBInvestigationWorkflow < MiniTest::Test
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
-    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
   end
 
 end
