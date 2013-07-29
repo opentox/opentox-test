@@ -53,10 +53,10 @@ end
 class TBInvestigationREST < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
 
-  def test_00_pre_01_check-subjectids
-    assert OpenTox::Autorization.is_token_valid(OpenTox.RestClientWrapper.subjectid), "Subjectid for default test user is not valid."
-    assert OpenTox::Autorization.is_token_valid($pi[:subjectid]), "Subjectid for user: #{$pi[:subjectid]} is not valid."
-    assert OpenTox::Autorization.is_token_valid($secondpi[:subjectid]), "Subjectid for user: #{$secondpi[:subjectid]} is not valid."
+  def test_00_pre_01_check_subjectids
+    assert OpenTox::Authorization.is_token_valid(OpenTox.RestClientWrapper.subjectid), "Subjectid for default test user is not valid."
+    assert OpenTox::Authorization.is_token_valid($pi[:subjectid]), "Subjectid for user: #{$pi[:subjectid]} is not valid."
+    assert OpenTox::Authorization.is_token_valid($secondpi[:subjectid]), "Subjectid for user: #{$secondpi[:subjectid]} is not valid."
   end
 
   # check if the userservice is available
@@ -123,7 +123,7 @@ class TBInvestigationREST < MiniTest::Test
     assert @@uri.host == URI($investigation[:uri]).host
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID)
+    assert @g.has_predicate?(RDF::ISA.hasAccessionID), "Metadata Graph don't have predicate #{RDF::ISA.hasAccessionID}"
     @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1b/, r[2].to_s}
   end
 
@@ -516,8 +516,9 @@ class TBInvestigationREST < MiniTest::Test
   # @note expect two policies,
   #   one for owner, one for group
   def test_31_check_policies
-    assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).class
-    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s, $pi[:subjectid]).size
+    OpenTox::Authorization.subjectid = $pi[:subjectid]
+    assert_equal Array, OpenTox::Authorization.list_uri_policies(@@uri.to_s).class
+    assert_equal 3, OpenTox::Authorization.list_uri_policies(@@uri.to_s).size
   end
 
   # check if the UI index responses with 200
@@ -590,7 +591,7 @@ class TBInvestigationREST < MiniTest::Test
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
-    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s, $pi[:subjectid])
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
   end
 
   # check if @@uri is indexed
