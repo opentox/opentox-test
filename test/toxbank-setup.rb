@@ -7,4 +7,5 @@ unless $aa[:uri].to_s == ""
   unauthorized_error "Failed to authenticate user \"#{$aa[:user]}\"." unless OpenTox::Authorization.is_token_valid $pi[:subjectid]
   unauthorized_error "Failed to authenticate user \"#{$aa[:user]}\"." unless OpenTox::Authorization.is_token_valid $secondpi[:subjectid]
   OpenTox::Authorization.authenticate($aa[:user], $aa[:password])
+  $guestid = OpenTox::RestClientWrapper.subjectid
 end

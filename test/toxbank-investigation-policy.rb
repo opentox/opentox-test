@@ -74,10 +74,10 @@ class TBAccountBasicTest < MiniTest::Test
     guest = OpenTox::TBAccount.new("#{RDF::TBU.U2}") #PI creates policies
     guest.send_policy(@@fake_uri)
     assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST")
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT")
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE")
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET")
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "POST", $guestid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "PUT", $guestid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", $guestid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", $guestid)
     test_98_delete_policies
   end
 
@@ -124,10 +124,10 @@ class TBAccountBasicTest < MiniTest::Test
     guest = OpenTox::TBAccount.new("#{RDF::TBU.U2}") #PI creates policies
     guest.send_policy(@@fake_uri, "readwrite")
     assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST")
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT")
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE")
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET")
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", $guestid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", $guestid)
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", $guestid)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", $guestid)
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri)
     assert_equal policies.size, 1
     xml = OpenTox::Authorization.list_policy(policies[0])
