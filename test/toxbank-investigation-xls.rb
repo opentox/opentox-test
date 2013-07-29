@@ -10,6 +10,7 @@ class ExcelUploadTest < MiniTest::Test
 
   def test_01_invalid_xls_upload 
     # upload
+    OpenTox::Authorization.subjectid = $pi[:subjectid]
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.xls"
     response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
@@ -25,6 +26,7 @@ class ExcelUploadTest < MiniTest::Test
     response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
+    OpenTox::Authorization.subjectid = $pi[:subjectid]
     t = OpenTox::Task.new(uri)
     t.wait
     puts t.uri
