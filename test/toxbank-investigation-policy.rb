@@ -123,11 +123,11 @@ class TBAccountBasicTest < MiniTest::Test
   def test_13a_create_guest_rw_policy
     guest = OpenTox::TBAccount.new("#{RDF::TBU.U2}") #PI creates policies
     guest.send_policy(@@fake_uri, "readwrite")
-    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri, OpenTox::RestClientWrapper.subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST", OpenTox::RestClientWrapper.subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT", OpenTox::RestClientWrapper.subjectid)
-    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE", OpenTox::RestClientWrapper.subjectid)
-    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET", OpenTox::RestClientWrapper.subjectid)
+    assert_equal true, OpenTox::Authorization.uri_has_policy(@@fake_uri)
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "POST")
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri, "PUT")
+    assert_equal false, OpenTox::Authorization.authorize(@@fake_uri, "DELETE")
+    assert_equal true, OpenTox::Authorization.authorize(@@fake_uri,"GET")
     policies = OpenTox::Authorization.list_uri_policies(@@fake_uri)
     assert_equal policies.size, 1
     xml = OpenTox::Authorization.list_policy(policies[0])
