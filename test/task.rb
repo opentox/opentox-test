@@ -22,7 +22,7 @@ class TaskTest < MiniTest::Test
 
   def test_01_create_and_complete
     task = OpenTox::Task.run __method__ do
-      sleep 1
+      sleep 2
       $task[:uri]
     end
     assert_equal true,  task.running?
@@ -80,7 +80,7 @@ class TaskTest < MiniTest::Test
 
   def test_05_create_and_fail_with_opentox_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 1
+      sleep 2
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
     assert task.running?
@@ -97,7 +97,7 @@ class TaskTest < MiniTest::Test
 
   def test_06_create_and_fail_with_not_found_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 1
+      sleep 2
       resource_not_found_error "An OpenTox::ResourceNotFoundError occured",  "http://test.org/fake_creator"
     end
     assert task.running?
@@ -131,7 +131,7 @@ class TaskTest < MiniTest::Test
 
   def test_08_create_and_fail_with_restclientwrapper_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 1
+      sleep 2
       OpenTox::RestClientWrapper.get "invalid uri"
     end
     assert task.running?
@@ -148,7 +148,7 @@ class TaskTest < MiniTest::Test
   def test_09_check_resultURIs
     resulturi = "http://resulturi/test/1"
     task = OpenTox::Task.run __method__ do
-      sleep 1
+      sleep 2
       resulturi
     end
     assert_equal "Running", task.hasStatus
@@ -172,11 +172,39 @@ class TaskTest < MiniTest::Test
     refute_match %r{username|password},  task.error_report[RDF::OT.actor]
   end
 
+  def test_11a_plain_errors
+    tests = [ { :uri=>File.join($dataset[:uri],'test/plain_error'),
+                :error=>OpenTox::BadRequestError,
+                :msg=>"plain_bad_request_error",
+                :line=>"16" },
+              { :uri=>File.join($dataset[:uri],'test/plain_no_ot_error'),
+                :error=>OpenTox::InternalServerError,
+                :msg=>"undefined method `no_method_for_nil' for nil:NilClass",
+                :line=>"20" } ]
+    tests.each do |test|
+      begin
+        OpenTox::RestClientWrapper.get test[:uri]
+        assert false,"there should have been an error"
+      rescue => ex
+        assert ex.is_a?(test[:error]),"error type should be a #{test[:error]}, but is a #{ex.class}"
+        assert ex.message==test[:msg],"message should be #{test[:msg]}, but is #{ex.message}"
+        assert ex.error_cause=~/test.rb:#{test[:line]}/,"code line number test.rb:#{test[:line]} is lost or wrong: #{ex.error_cause}"
+      end
+    end
+  end
+
   def test_11_wait_for_error_task
     # testing two uris:
     # ../dataset/test/error_in_task starts a task that produces an internal-error with message 'error_in_task_message'  
     # ../algorithm/test/wait_for_error_in_task starts a task that waits for ../dataset/test/error_in_task
     # TODO: remove test uris from services, e.g. dynamically instantiate Sinatra routes instead
+    
+    def check_msg(msg,complete)
+      assert msg=~/bad_request_error_in_task/,"orignial task error message ('bad_request_error_in_task') is lost: #{msg}"
+      assert((msg=~/\\/)==nil,"no backslashes please!")
+      assert complete=~/test.rb:9/,"code line number test.rb:9 is lost"
+    end
+    
     [ File.join($dataset[:uri],'test/error_in_task'),
       File.join($algorithm[:uri],'test/wait_for_error_in_task')
     ].each do |uri|
@@ -190,15 +218,17 @@ class TaskTest < MiniTest::Test
         wait_for_task task_uri
         assert false,"should have thrown an error because there was an error in the task we have waited for"
       rescue => ex
-        assert ex.message=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
+        assert ex.is_a?(OpenTox::BadRequestError),"not a bad request error, instead: #{ex.class}"
+        check_msg(ex.message,ex.error_cause)
       end
 
-      # test2: test if task is set accordingly
+      ## test2: test if task is set accordingly
       assert task.error?
-      assert task.error_report[RDF::OT.message]=~/error_in_task_message/,"orignial task error message ('error_in_task_message') is lost"
+      assert task.error_report[RDF::OT.errorCode]==OpenTox::BadRequestError.to_s,"errorCode should be #{OpenTox::BadRequestError.to_s}, but is #{task.error_report[RDF::OT.errorCode]}"
+      check_msg(task.error_report[RDF::OT.message],task.error_report[RDF::OT.errorCause])
     end
   end
-  
+
   def test_12_non_runtime_errors
 
     [RuntimeError, ThreadError, StopIteration, LocalJumpError, EOFError, IOError, RegexpError, 
