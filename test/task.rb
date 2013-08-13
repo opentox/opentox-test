@@ -131,11 +131,11 @@ class TaskTest < MiniTest::Test
 
   def test_08_create_and_fail_with_restclientwrapper_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 1
+      sleep 2
       OpenTox::RestClientWrapper.get "invalid uri"
     end
     assert task.running?
-    assert_equal "Running", task.hasStatus
+    assert_equal "Running", task.hasStatus, "Expected Task Running has status: #{task.hasStatus} - #{task.uri}"
     assert_equal 202, task.code
     task.wait
     assert task.error?

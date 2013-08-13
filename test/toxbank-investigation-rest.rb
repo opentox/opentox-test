@@ -106,7 +106,7 @@ class TBInvestigationREST < MiniTest::Test
   # @todo TODO create by uploading text/tab-separated-values
   # @todo TODO create by uploading application/vnd.ms-excel
   # @note return metadata as application/rdf+xml,
-  #   check for title/AccessionID "BII-I-1b"
+  #   check for title "BII-I-1b"
   def test_02_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
@@ -123,8 +123,8 @@ class TBInvestigationREST < MiniTest::Test
     assert @@uri.host == URI($investigation[:uri]).host
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
-    assert @g.has_predicate?(RDF::ISA.hasAccessionID), "Metadata Graph don't have predicate #{RDF::ISA.hasAccessionID}"
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1b/, r[2].to_s}
+    assert @g.has_predicate?(RDF::DC.title), "Metadata Graph don't have predicate #{RDF::DC.title}"
+    @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
   end
 
   # check that policy files not listed in uri-list 
@@ -255,15 +255,14 @@ class TBInvestigationREST < MiniTest::Test
 
   # get investigation/{id}/metadata in rdf+xml 
   # @note check nodes and content: title, abstract, 
-  #   hasKeyword, hasOwner, isPublished, isSummarySearchable,
-  #   hasAccessionID, hasOrganisation
+  #   hasKeyword, hasOwner, isPublished, isSummarySearchable, hasOrganisation
   # @note accept:application/rdf+xml
   def test_05a_check_metadata
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::DC.modified){|r| @@modified_time = r[2].to_s}
-    predicates_to_check = [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::TB.isSummarySearchable,RDF::ISA.hasAccessionID,RDF::TB.hasProject,RDF::TB.hasOrganisation,RDF::DC.modified]
+    predicates_to_check = [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::TB.isSummarySearchable,RDF::TB.hasProject,RDF::TB.hasOrganisation,RDF::DC.modified]
     predicates_to_check.each do |pred|
       assert @g.has_predicate?(pred), "Metadata do not have Predicate #{pred}"
     end
@@ -271,7 +270,6 @@ class TBInvestigationREST < MiniTest::Test
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match /U271/, r[2].to_s.split("/").last}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
     @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match /G176/, r[2].to_s.split("/").last}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match /G2/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/, r[2].to_s.split("#").last}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /true/, r[2].to_s}
@@ -400,7 +398,6 @@ class TBInvestigationREST < MiniTest::Test
     res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
   end
@@ -458,7 +455,7 @@ class TBInvestigationREST < MiniTest::Test
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
 
-    [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::ISA.hasAccessionID,RDF::TB.hasProject,RDF::TB.hasOrganisation]. each do |pred|
+    [RDF::TB.hasAuthor,RDF::DC.title,RDF::DC.abstract,RDF::TB.hasKeyword,RDF::TB.hasOwner,RDF::TB.isPublished,RDF::TB.hasProject,RDF::TB.hasOrganisation]. each do |pred|
       assert @g.has_predicate?(pred), "Graph do not have predicate #{pred}"
     end
 
@@ -466,7 +463,6 @@ class TBInvestigationREST < MiniTest::Test
     @g.query(:predicate => RDF::TB.hasOwner){|r| assert_match /U271/, r[2].to_s.split("/").last}
     #@g.query(:predicate => RDF::TB.hasOwner){|r| assert_match r[2].to_s.split("/").last, /U115/}
     @g.query(:predicate => RDF::TB.hasOrganisation){|r| assert_match /G176/, r[2].to_s.split("/").last}
-    @g.query(:predicate => RDF::ISA.hasAccessionID){|r| assert_match /BII-I-1/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match /G2/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasKeyword){|r| assert_match /[Epigenetics|CellViabilityAssay|CellMigrationAssays]/, r[2].to_s.split("#").last}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /true/, r[2].to_s}
