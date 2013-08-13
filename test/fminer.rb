@@ -2,9 +2,8 @@ require_relative "setup.rb"
 
 class FminerTest < MiniTest::Test
 
-  def test_fminer
-
-    dataset = OpenTox::Dataset.new 
+  def test_fminer_bbrc
+    dataset = OpenTox::Dataset.new
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     assert_equal dataset.uri.uri?, true
 
@@ -19,9 +18,18 @@ class FminerTest < MiniTest::Test
     match = OpenTox::Algorithm::Descriptor.smarts_match compounds, smarts
     compounds.each_with_index do |c,i|
       smarts.each_with_index do |s,j|
-        assert_equal match[c.uri][s], feature_dataset.data_entries[i][j].to_i 
+        assert_equal match[c.uri][s], feature_dataset.data_entries[i][j].to_i
       end
     end
+
+    dataset.delete
+    feature_dataset.delete
+  end
+
+  def test_fminer_last
+    dataset = OpenTox::Dataset.new
+    dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    assert_equal dataset.uri.uri?, true
 
     dataset_uri = OpenTox::Algorithm::Fminer.last :dataset_uri => dataset.uri
     feature_dataset = OpenTox::Dataset.new dataset_uri
