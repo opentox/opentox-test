@@ -102,7 +102,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_bootstrapping_validation(p, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::UnauthorizedError do
+          assert_unauthorized do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -145,7 +145,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_training_test_split(p, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::UnauthorizedError do
+          assert_unauthorized do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -199,7 +199,7 @@ class ValidationTest < MiniTest::Test
         v = OpenTox::Validation.create_training_test_validation(p, t)
         assert v.uri.uri?
         if $aa[:uri]
-          assert_rest_call_error OpenTox::UnauthorizedError do
+          assert_unauthorized do
             OpenTox::Validation.find(v.uri)
           end
         end
@@ -228,7 +228,7 @@ class ValidationTest < MiniTest::Test
       assert defined?v,"no validation defined"
       assert_kind_of OpenTox::Validation,v
       if $aa[:uri]
-        assert_rest_call_error OpenTox::UnauthorizedError do
+        assert_unauthorized do
           OpenTox::ValidationReport.create(v.uri)
         end
       end
@@ -238,7 +238,7 @@ class ValidationTest < MiniTest::Test
       report = OpenTox::ValidationReport.create(v.uri,params)
       assert report.uri.uri?
       if $aa[:uri]
-        assert_rest_call_error OpenTox::UnauthorizedError do
+        assert_unauthorized do
           OpenTox::ValidationReport.find(report.uri)
         end
       end
@@ -295,7 +295,7 @@ class ValidationTest < MiniTest::Test
           cv = OpenTox::Crossvalidation.create(p, t)
           assert cv.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::UnauthorizedError do
+            assert_unauthorized do
               OpenTox::Crossvalidation.find(cv.uri)
             end
           end
@@ -303,7 +303,7 @@ class ValidationTest < MiniTest::Test
           assert_valid_date cv
           assert cv.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::UnauthorizedError do
+            assert_unauthorized do
               cv.statistics(cv)
             end
           end
@@ -344,7 +344,7 @@ class ValidationTest < MiniTest::Test
       #  OpenTox::CrossvalidationReport.find_for_crossvalidation(cv.uri)
       #end
       if $aa[:uri]
-        assert_rest_call_error OpenTox::UnauthorizedError do
+        assert_unauthorized do
           OpenTox::CrossvalidationReport.create(cv.uri)
         end
       end
@@ -352,7 +352,7 @@ class ValidationTest < MiniTest::Test
       report = OpenTox::CrossvalidationReport.create(cv.uri)
       assert report.uri.uri?
       if $aa[:uri]
-        assert_rest_call_error OpenTox::UnauthorizedError do
+        assert_unauthorized do
           OpenTox::CrossvalidationReport.find(report.uri)
         end
       end
@@ -379,7 +379,7 @@ class ValidationTest < MiniTest::Test
           hash = { @@cv_identifiers[i] => [@@cvs[i].uri],
                    @@cv_identifiers[j] => [@@cvs[j].uri] }
           if $aa[:uri]
-            assert_rest_call_error OpenTox::UnauthorizedError do
+            assert_unauthorized do
               OpenTox::AlgorithmComparisonReport.create hash,{}
             end
           end
@@ -390,7 +390,7 @@ class ValidationTest < MiniTest::Test
           report = OpenTox::AlgorithmComparisonReport.create hash,params
           assert report.uri.uri?
           if $aa[:uri]
-            assert_rest_call_error OpenTox::UnauthorizedError do
+            assert_unauthorized do
               OpenTox::AlgorithmComparisonReport.find(report.uri)
             end
           end
@@ -437,6 +437,23 @@ class ValidationTest < MiniTest::Test
     end
   end  
   
+  def assert_unauthorized
+    unless $aa[:uri]
+      puts "AA disabled: skipping test for not authorized"
+      return
+    else
+      subjectid = OpenTox::RestClientWrapper.subjectid
+      OpenTox::RestClientWrapper.subjectid = nil
+      begin
+        res = yield
+        assert false,"no un-authorized error thrown, result is #{res}"
+      rescue => e
+        assert ex.is_a?(OpenTox::UnauthorizedError),"not unauthorized error, instead: #{ex.class}"
+      ensure
+        OpenTox::RestClientWrapper.subjectid = subjectid
+      end
+    end
+  end
   
   # hack to have a global_setup and global_teardown 
   def teardown
