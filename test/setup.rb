@@ -11,3 +11,15 @@ unless $aa[:uri].to_s == ""
   OpenTox::Authorization.authenticate($aa[:user], $aa[:password])
   unauthorized_error "Failed to authenticate user \"#{$aa[:user]}\"." unless OpenTox::Authorization.is_token_valid
 end
+
+class OpenTox::Error
+  def to_s
+    s = super.to_s
+    if error_cause
+      s << "\nerror-cause:\n"
+      s << error_cause
+      s << "\n"
+    end
+    s
+  end
+end
