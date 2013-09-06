@@ -447,7 +447,7 @@ class ValidationTest < MiniTest::Test
       begin
         res = yield
         assert false,"no un-authorized error thrown, result is #{res}"
-      rescue => e
+      rescue => ex
         assert ex.is_a?(OpenTox::UnauthorizedError),"not unauthorized error, instead: #{ex.class}"
       ensure
         OpenTox::RestClientWrapper.subjectid = subjectid
