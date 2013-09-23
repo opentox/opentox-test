@@ -50,7 +50,6 @@ ClC(=CCl)Cl,inactive
 O=C1OC2=C(C=CC=C2)C=C1,inactive
 O=C2C1=C(OC)C=C(OC)C(Cl)=C1O[C@]32C(OC)=CC(C[C@@](C)3[H])=O,inactive
 C1=C(C=CC(=C1)C(C2=CC=C(N)C(=C2)C)=C3C=CC(=N)C=C3)N.[H]Cl,inactive
-,inactive
 [Cl-].[Cd+2].[Cl-],inactive
 C1=C2C(=CC=C1NC3=CC=CC=C3)C=CC=C2,inactive
 O=C1C(C2=CC=CC=C2)(C(=O)NC(=O)N1)CC,inactive

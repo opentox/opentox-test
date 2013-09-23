@@ -38,7 +38,6 @@ S=C1NCCN1,active
 NC1=NC(C2=CC=C([N+]([O-])=O)O2)=CS1,active
 O=NN(C(=O)N)CCC,active
 Nc1cc(Cl)c(N)cc1.OS(O)(=O)=O,active
-NC1=CC=CC(C)=C1.[H]Cl,active
 NC1=CC=C3C(N=C2C=C(C=CC2=C3)N)=C1.NC4=CC=C6C(N=C5C=C(C=CC5=C6)N)=C4.Cl.Cl.O,active
 NC1=CC2=C(C=CC=C2)C=C1,active
 NC1=CC=CC2=C1C=CC=C2,active
@@ -160,7 +159,6 @@ O=N[O-].[Na+],active
 O=NN(CCC)CCC,active
 O=NN(CC=C1)CC1,active
 C1(=C(C=CC=C1)N)N.[H]Cl.[H]Cl,active
-O=P(H)(OC)OC,active
 [O-][N+](C2=CC=C(O2)C1=CSC(NN(C)C)=N1)=O,active
 O=P(OC(CCl)CCl)(OC(CCl)CCl)OC(CCl)CCl,active
 O=NN1CCCC1,active
@@ -318,7 +316,6 @@ CC=C,active
 C1=C2C(=CC=C1NC3=CC=C(C=C3)NC4=CC=C5C(=C4)C=CC=C5)C=CC=C2,active
 [Se]=S,active
 O=P([O-])([O-])[O-].O=P([O-])([O-])[O-].O=P([O-])([O-])[O-].O=P([O-])([O-])[O-].Cl[O-].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+].[Na+],active
-CC(=C)CCl,active
 C1OC1C2CO2,active
 C1=C2C=CC3=CC=CC=C3C2=CC4=CC=C5C(=C14)C=CC=C5,active
 C\C1=C\N(C(=O)NC1=O)[C@H]2C[C@H](/N=[N+]=[N-])[C@@H](CO)O2,active
@@ -631,7 +628,6 @@ CC(=C)[C@@H]1CCC(=CC1)C,inactive
 C=CCC1=CC=C(C=C1)OC,inactive
 CNNCC1=CC=C(C=C1)C(=O)NC(C)C,inactive
 O=C(CCC(=O)O)NN(C)C,inactive
-CC(=C)CCl,inactive
 NC1=CC=CC=C1,inactive
 CC(=C)C#N,inactive
 CN1N(C2=CC=CC=C2)C(=O)C=C1C,inactive
@@ -734,7 +730,6 @@ NC1=NC(=NC(=N1)N)N,inactive
 N1=CC=CC=C1,inactive
 [Na+].O=C([O-])[C@@H](N)CCC(O)=O,inactive
 C1=C(CO)OC=C1,inactive
-C1=C(C=CC=C1N)C.[H]Cl,inactive
 O=C1C23C4C5C6(C(=O)C7=C(O)C(C)=CC(=C7C(C6=C(C2C5O)O)=O)O)C(C4O)C(=C3C(=O)C8=C1C(O)=C(C)C=C8O)O,inactive
 C1(CCNC(NC(N)=N)=N)=CC=CC=C1.[H]Cl,inactive
 O.[Na+].O.O.CCN(CC)C([S-])=S,inactive
