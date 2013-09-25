@@ -4,20 +4,21 @@ class LazarModelTest < MiniTest::Test
 
   MODELS = []
   # test hamster
-#  MODELS << {
-#    :titel => "hamster_carcinogenicity",
-#    :file => File.join(DATA_DIR,"hamster_carcinogenicity.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 2,
-#    :test_values => {
-#      :feature_size => 54,
-#      :first_feature => "[#6&A]-[#6&A]-[#6&A]=[#6&A]",
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"false",0.25281385281385277],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"false",0.3639589577089577]
-#    }
-#  }
-
+=begin
+  MODELS << {
+    :titel => "hamster_carcinogenicity",
+    :file => File.join(DATA_DIR,"hamster_carcinogenicity.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 2,
+    :test_values => {
+      :feature_size => 54,
+      :first_feature => "[#6&A]-[#6&A]-[#6&A]=[#6&A]",
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"false",0.25281385281385277],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"false",0.3639589577089577]
+    }
+  }
+=end
   # Hamster
   MODELS << {
     :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Hamster",
@@ -32,84 +33,84 @@ class LazarModelTest < MiniTest::Test
       :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
     }
   }
+=begin
+  # Mutagenicity
+  MODELS << {
+    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Mutagenicity",
+    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Mutagenicity_no_duplicates.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 8,
+    :test_values => {
+      :feature_size => 58,
+      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
+    }
+  }
 
-#  # Mutagenicity
-#  MODELS << {
-#    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Mutagenicity",
-#    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Mutagenicity_no_duplicates.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 8,
-#    :test_values => {
-#      :feature_size => 58,
-#      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
-#    }
-#  }
-#
-#  # Mouse
-#  MODELS << {
-#    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Mouse",
-#    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Mouse.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 10,
-#    :test_values => {
-#      :feature_size => 58,
-#      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
-#    }
-#  }
-#
-#  # Rat
-#  MODELS << {
-#    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Rat",
-#    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Rat.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 12,
-#    :test_values => {
-#      :feature_size => 58,
-#      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
-#    }
-#  }
-#
-#
-# # MultiCellCall
-#  MODELS << {
-#    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_MultiCellCall",
-#    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_MultiCellCall_no_duplicates.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 11,
-#    :test_values => {
-#      :feature_size => 58,
-#      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
-#    }
-#  }
-#
-#
-#  # SingleCellCall
-#  MODELS << {
-#    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_SingleCellCall",
-#    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_SingleCellCall.csv"),
-#    :type => "classification",
-#    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
-#    :min_frequency => 15,
-#    :test_values => {
-#      :feature_size => 58,
-#      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
-#      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
-#      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
-#    }
-#  }
+  # Mouse
+  MODELS << {
+    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Mouse",
+    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Mouse.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 10,
+    :test_values => {
+      :feature_size => 58,
+      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
+    }
+  }
 
+  # Rat
+  MODELS << {
+    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_Rat",
+    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_Rat.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 12,
+    :test_values => {
+      :feature_size => 58,
+      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
+    }
+  }
+
+
+ # MultiCellCall
+  MODELS << {
+    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_MultiCellCall",
+    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_MultiCellCall_no_duplicates.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 11,
+    :test_values => {
+      :feature_size => 58,
+      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
+    }
+  }
+
+
+  # SingleCellCall
+  MODELS << {
+    :titel => "DSSTox_Carcinogenic_Potency_DBS_v5d_SingleCellCall",
+    :file => File.join(DATA_DIR,"CPDBAS_v5d_cleaned","DSSTox_Carcinogenic_Potency_DBS_SingleCellCall.csv"),
+    :type => "classification",
+    :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"),
+    :min_frequency => 15,
+    :test_values => {
+      :feature_size => 58,
+      :first_feature => '[#6&A]-[#6&A]-[#6&A]=[#6&A]',
+      :prediction1 => [OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H").uri,"inactive",0.23658008658008656],
+      :prediction2 => [OpenTox::Compound.from_smiles("c1ccccc1NN").uri,"inactive",0.34980297480297484]
+    }
+  }
+=end
 
 
 
