@@ -111,8 +111,6 @@ CCCCC/C=N/N(C=O)C,active
 NC1=C(C=CC(=C1)NC(=O)C)OCC,active
 O=C2C1=C(OC)C=C(OC)C(Cl)=C1O[C@]32C(OC)=CC(C[C@@](C)3[H])=O,active
 O=C1N2CC3=CC=CC=C3C(=O)N2CC4C=CC=CC1=4,active
-Cl\C=C\CCl,active
-Cl\C=C\CCl,active
 O=C1NC(=O)NC=C1,active
 ClCCN(CCCl)[P]1(=O)NCCCO1,active
 O=C1OC(C2=C1C=CC=C2)(C3=CC=C(C=C3)O)C4=CC=C(C=C4)O,active
