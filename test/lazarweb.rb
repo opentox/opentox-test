@@ -1,44 +1,37 @@
-=begin
-require 'test/unit'
+require 'minitest/autorun'
 require 'capybara/dsl'
 require 'capybara-webkit'
-require 'capybara_minitest_spec'
 
 Capybara.default_driver = :selenium
 Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
+Capybara.app_host = 'https://services.in-silico.ch/predict'
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
   
   include Capybara::DSL
 
-  @@uri = "http://istva:8080/toxcreate"
-
-  
-  def test_00_start
-    `Xvfb :1 -screen 0 1024x768x16 -nolisten inet6 &`
+  def test_00_xsetup
+    `Xvfb :1 -screen 0 1024x768x16 2>/dev/null &`
     sleep 2
   end
 
-  def test_01_a_visit
-    visit(@@uri)
+  def test_01_visit
+    visit('/')
     assert page.has_content?('Lazar Toxicity Predictions')
   end
-
-# temporarily disabled html/css validation
-
+=begin
   def test_01_b_validate_html
-    visit(@@uri)
+    visit('/')
     html = page.source
-    puts "\n#{page.source}\n"
-    visit('http://validator.w3.org/#validate-by-input')
+    visit('http://validator.w3.org/#validate_by_input')
     within_fieldset('validate-by-input') do
-      fill_in 'fragment', :with => html
+      fill_in('fragment', :with => html)
     end
-    first(:button, 'Check').click
-    assert page.has_content?('This document was successfully checked as XHTML 1.0 Transitional!'), "true"
+    click_button('Check')
+    assert page.has_content?('This document was successfully checked as HTML5'), "true"
   end
 
   def test_01_c_validate_css
@@ -61,261 +54,100 @@ class LazarWebTest < MiniTest::Test
     first(:button, 'Check').click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
-
-  def test_02_a_insert_wrong_smiles
-    visit(@@uri)
+=end
+  def test_02_insert_wrong_smiles
+    visit('/')
     page.fill_in 'identifier', :with => "blahblah"
-    check('model6')
-    first(:button, 'Predict').click
-    assert page.has_content?('OpenTox::RestCallError')
-    visit(@@uri)
-    page.fill_in 'identifier', :with => "N9N7N8"
-    check('model6')
-    first(:button, 'Predict').click
-    assert page.has_content?('OpenTox::RestCallError')
+    check('selection[Hamster]')
+    first(:button, '>>').click
+    assert page.has_content?('Attention')
   end
-  
-  def test_02_b_check_all_links_exists
-    visit(@@uri)
-    links = ['Prediction', '(help)', 'JME Editor', 'SMILES', 'in silico toxicology gmbh', 'Validation']
+
+  def test_03_check_all_links_exists
+    visit('/')
+    links = ['Details', 'SMILES', 'in-silico toxicology gmbh']
     links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
   end
 
-  def test_03_MOU
-    visit(@@uri)
+  def test_04_predict
+    visit('/')
     page.fill_in('identifier', :with => "NNc1ccccc1")
-    check('model6')
-    first(:button, 'Predict').click
-    assert page.has_content?('MOU (pTD50)'), "true"
-    assert page.has_content?('3.1809'), "true"
-    assert page.has_content?('TD50'), "true"
-    assert page.has_content?('71.4481'), "true"
-    assert page.has_link?('Measured activity'), "true"
-    first(:link, 'Measured activity').click
-    assert page.has_content?('Experimental result(s) from the training dataset.'), "true"
-  end
-
-  def test_04_RAT
-    visit(@@uri)
-    page.fill_in('identifier', :with => "NNc1ccccc1")
-    check('model9')
-    first(:button, 'Predict').click
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody') do
-      assert page.has_content?('RAT (pTD50)'), "true"
-      assert page.has_content?('4.8504'), "true"
-      assert page.has_content?('TD50'), "true"
-      assert page.has_content?('1.5275 '), "true"
-      assert page.has_link?('Confidence'), "true"
-      assert page.has_content?('0.585'), "true"
-      assert page.has_button?('Details'), "true"
-      first(:button, 'Details').click
+    check('selection[Hamster]')
+    first(:button, '>>').click
+    assert page.has_content?('DSSTox Carcinogenic Potency DBS ActivityOutcome Hamster (CPDBAS)'), "true"
+    assert page.has_content?('Type: classification'), "true"
+    assert page.has_content?('Result: inactive'), "true"
+    assert page.has_content?('Confidence: 0.35'), "true"
+    assert page.has_content?('Neighbors'), "true"
+    assert page.has_link?('Significant fragments'), "true"
+    assert page.has_link?('v'), "true"
+    # open sf view
+    find_link('linkPredictionSf').click
+    sleep 5
+    within_frame('iframe_overview') do
+      assert page.has_content?('Predominantly in compounds with activity "inactive"'), "true"
+      assert page.has_content?('Predominantly in compounds with activity "active"'), "true"
+      assert page.has_content?('p value'), "true"
+      # inactive
+      assert page.has_content?('[#6&a]:[#6&a]:[#6&a]:[#6&a]:[#6&a]-[#7&A]'), "true"
+      assert page.has_content?('0.98674'), "true"
+      assert page.has_content?('[#6&a]:[#6&a](-[#7&A])(:[#6&a]:[#6&a]:[#6&a])'), "true"
+      assert page.has_content?('0.97699'), "true"
+      assert page.has_content?('[#6&a]:[#6&a](-[#7&A])(:[#6&a]:[#6&a])'), "true"
+      assert page.has_content?('0.97699'), "true"
+      assert page.has_content?('[#6&a]:[#6&a](-[#7&A])(:[#6&a])'), "true"
+      assert page.has_content?('0.97699'), "true"
+      assert page.has_content?('[#6&a]:[#6&a]'), "true"
+      assert page.has_content?('0.99605'), "true"
+      assert page.has_content?('[#6&a]:[#6&a]:[#6&a]:[#6&a]'), "true"
+      assert page.has_content?('0.99791'), "true"
+      assert page.has_content?('[#6&a]:[#6&a]:[#6&a]:[#6&a]:[#6&a]'), "true"
+      assert page.has_content?('0.99985'), "true"
+      # active
+      assert page.has_content?('[#7&A]-[#7&A]'), "true"
+      assert page.has_content?('0.99993'), "true"
+      # close sf view
+      find_button('closebutton').click
     end
-    # check lazar help is shown
-    within('html body div.content div.lazar-predictions dl#lazar_algorithm') do
-      links = ['similar', 'Physico chemical descriptors', 'activity specific similarities']
-      links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
-    end
-    # check prediction table links
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody') do
-      links = ['Prediction', 'Confidence', 'Names and synonyms', 'Physico chemical descriptors', 'Measured activity', 'Similarity']
-      links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
-    end
-    # check thead
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead') do
-      content = ['pTD50', 'Supporting information']
-      content.each{|c| puts c.to_s; assert page.has_content?(c), "true"}
-      links = ['Prediction', 'Confidence']
-      links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[2]') do
-      content = ['4.85', 'TD50', '1.5275', '0.585']
-      content.each{|c| puts c.to_s; assert page.has_content?(c), "true"}
-      links = ['Names and synonyms', 'Physico chemical descriptors']
-      links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
-    end
-    # check for neighbors 
-    within(:xpath, '//*[@id="neighbors"]') do
-      content = ['Neighbors', '(1-5/64)']
-      content.each{|c| puts c.to_s; assert page.has_content?(c), "true"}
-    end
-    # click Descriptors
-    find('html body div.content div.lazar-predictions table thead tr td ul li a#js_link12').click
-    assert page.has_xpath?('//*[@id="fragments"]'), "true"
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr') do
-      assert page.has_content?('Descriptors'), "true"
-      assert page.has_content?('Values'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[2]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/ALogP'), "true"
-      assert page.has_content?('-0.0593000017106533'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[3]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/ALogp2'), "true"
-      assert page.has_content?('0.00351649010553956'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[4]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/AMR'), "true"
-      assert page.has_content?('38.8675994873047'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[5]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/LipinskiFailures'), "true"
-      assert page.has_content?('0.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[6]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/MLogP'), "true"
-      assert page.has_content?('1.89999997615814'), "true"
-    end
-     within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[7]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/XLogP'), "true"
-      assert page.has_content?('0.105999998748302'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[8]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nAromBond'), "true"
-      assert page.has_content?('6.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[9]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nAtom'), "true"
-      assert page.has_content?('16.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[10]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nAtomLAC'), "true"
-      assert page.has_content?('0.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[11]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nAtomLC'), "true"
-      assert page.has_content?('2.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[12]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nAtomP'), "true"
-      assert page.has_content?('8.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[13]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nB'), "true"
-      assert page.has_content?('8.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[14]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/nRotB'), "true"
-      assert page.has_content?('1.0'), "true"
-    end
-    within(:xpath, '/html/body/div[3]/div[3]/table/thead/tr[4]/td/table/tbody/tr[15]') do
-      assert page.has_content?('http://istva:8080/dataset/10/feature/naAromAtom'), "true"
-      assert page.has_content?('6.0'), "true"
+    find_link('link0').click
+    sleep 2
+    assert page.has_content?('Compound'), "true"
+    assert page.has_content?('Measured Activity'), "true"
+    assert page.has_content?('Similarity'), "true"
+    assert page.has_content?('Supporting information'), "true"
+    first(:link, 'linkCompound').click
+    sleep 5
+    within_frame('iframe_overview') do
+      assert page.has_content?('SMILES:'), "true"
+      assert page.has_content?('c1ccc(cc1)NN'), "true"
+      assert page.has_content?('InChI:'), "true"
+      assert page.has_content?('1S/C6H8N2/c7-8-6-4-2-1-3-5-6/h1-5,8H,7H2'), "true"
+      assert page.has_content?('Names:'), "true"
+      assert page.has_content?('Phenylhydrazine'), "true"
+      assert page.has_link?('PubChem read across'), "true"
+      find_button('closebutton').click
     end
   end
 
-  def test_05_prediction_on_four_models_parallel
-    visit(@@uri)
-    page.fill_in('identifier', :with => "NNc1ccccc1")
-    check('model6')
-    check('model9')
-    check('model10')
-    check('model11')
-    first(:button, 'Predict').click
-    # check table headline
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr/th') do
-      assert page.has_content?('NNc1ccccc1')
-    end
-    # check for image
-    #within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td') do
-    assert page.has_xpath?('/html/body/div[3]/div[3]/table/tbody/tr[2]/td/img')
-    #end
-    # check for MOU (pTD50)
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td[2]') do
-      assert page.has_content?('MOU (pTD50):')
-      assert page.has_content?('3.1809')
-      assert page.has_content?('TD50: 71.4481')
-      assert page.has_link?('Measured activity')
-    end
-    # check for LOAEL (log(mmol/kg bw/day))
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td[3]') do
-      assert page.has_content?('LOAEL (log(mmol/kg bw/day)):')
-      assert page.has_content?('2.519')
-      assert page.has_content?('mg/kg bw/day: 326.581')
-      assert page.has_content?('0.634')
-      assert page.has_link?('Confidence'), "true"
-      assert page.has_button?('Details'), "true"
-    end
-    # check for RAT (pTD50)
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td[4]') do
-      assert page.has_content?('RAT (pTD50):')
-      assert page.has_content?('4.8504')
-      assert page.has_content?('TD50: 1.5275')
-      assert page.has_content?('0.585')
-      assert page.has_link?('Confidence'), "true"
-      assert page.has_button?('Details'), "true"
-    end
-    # check for LOAEL (log(mg/kg bw/day))
-    within(:xpath, '/html/body/div[3]/div[3]/table/tbody/tr[2]/td[5]') do
-      assert page.has_content?('LOAEL (log(mg/kg bw/day)):')
-      assert page.has_content?('2.2527')
-      assert page.has_content?('mg/kg bw/day: 177.8279')
-      assert page.has_content?('0.634')
-      assert page.has_link?('Confidence'), "true"
-      assert page.has_button?('Details'), "true"
-    end
-  end
-
-  def test_06_multithread_visit_and_predict
+  def test_05_multithread_visit_and_predict
     threads = []
-    5.times do |t|
+    2.times do |t|
       threads << Thread.new(t) do |up|
-        session = Capybara::Session.new(:webkit)
+        session = Capybara::Session.new(:selenium)
         puts "Start Time >> " << (Time.now).to_s
-        session.visit(@@uri)
-        #session.within(:xpath, '/html/body/div[3]/div[3]/form/fieldset') do
+        session.visit('/')
         session.fill_in 'identifier', :with => 'NNc1ccccc1'
-        #end
-        session.check('model6')
-        session.check('model9')
-        session.check('model10')
-        session.check('model11')
-        session.first(:button, 'Predict').click
+        session.check('selection[LC50-mmol]')
+        session.check('selection[Hamster]')
+        session.check('selection[Mutagenicity]')
+        session.first(:button, '>>').click
         # check for Prediction page
-        assert session.has_content?('NNc1ccccc1'), "true"
-        assert session.has_no_content?('Error'), "true"
+        assert session.has_content?('Prediction Results'), "true"
+        assert session.has_no_content?('502'), "true"
         puts "Predict Time >> " << (Time.now).to_s
       end
     end
     threads.each {|aThread| aThread.join}
-  end
-
-  def test_07_validation
-    visit(@@uri)
-    click_on 'Validation'
-    models = ['//*[@id="model_11"]', '//*[@id="model_10"]', '//*[@id="model_9"]', '//*[@id="model_6"]']
-    models.each{|m| assert page.has_xpath?(m), "true"}
-    within(:xpath, models[0]) do
-      assert page.has_content?('Completed'), "true"
-      assert page.has_content?('Training compounds'), "true"
-      assert page.has_content?('439'), "true"
-      assert page.has_content?('Number of predictions'), "true"
-      assert page.has_content?('562'), "true"
-      assert page.has_link?('regression'), "true"
-    end
-    within(:xpath, models[1]) do
-      assert page.has_content?('Completed'), "true"
-      assert page.has_content?('Training compounds'), "true"
-      assert page.has_content?('439'), "true"
-      assert page.has_content?('Number of predictions'), "true"
-      assert page.has_content?('561'), "true"
-      assert page.has_link?('regression'), "true"
-    end
-    within(:xpath, models[2]) do
-      assert page.has_content?('Completed'), "true"
-      assert page.has_content?('Training compounds'), "true"
-      assert page.has_content?('460'), "true"
-      assert page.has_content?('Number of predictions'), "true"
-      assert page.has_content?('42'), "true"
-      assert page.has_link?('regression'), "true"
-    end
-    within(:xpath, models[3]) do
-      assert page.has_content?('Completed'), "true"
-      assert page.has_content?('Training compounds'), "true"
-      assert page.has_content?('361'), "true"
-      assert page.has_content?('Number of predictions'), "true"
-      assert page.has_content?('29'), "true"
-      assert page.has_link?('regression'), "true"
-    end
   end
 
   def test_99_kill
@@ -323,4 +155,3 @@ class LazarWebTest < MiniTest::Test
   end
 
 end
-=end
