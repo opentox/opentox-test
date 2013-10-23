@@ -22,11 +22,10 @@ class ExcelUploadTest < MiniTest::Test
   
   def test_02_valid_xls_upload
     # upload
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/isa_TB_BII.xls"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid/BII-I-1-tb2.xls"
     response = `curl -Lk -X POST -i -F file="@#{file};type=application/vnd.ms-excel" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
     assert_match /202/, response
     uri = response.split("\n")[-1]
-    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     t = OpenTox::Task.new(uri)
     t.wait
     puts t.uri
@@ -63,5 +62,5 @@ class ExcelUploadTest < MiniTest::Test
     response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
     assert_match /404/, response
   end
-  
+
 end

@@ -33,12 +33,14 @@ class UploadTest < MiniTest::Test
     # upload
     OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     ["BII-I-1-tb2.zip","E-MTAB-798_philippe-tb2.zip"].each do |f|
+      puts f
       file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", f
       response = `curl -Lk -X POST -i -F file="@#{file};type=application/zip" -H "subjectid:#{$pi[:subjectid]}" #{$investigation[:uri]}`.chomp
       assert_match /202/, response
       taskuri = response.split("\n")[-1]
       t = OpenTox::Task.new taskuri
       t.wait
+      puts t.uri
       assert_equal true, t.completed?
       assert_match t.hasStatus, "Completed"
       uri = t.resultURI
@@ -52,7 +54,7 @@ class UploadTest < MiniTest::Test
       # get isatab files
       urilist = `curl -Lk -H "subjectid:#{$pi[:subjectid]}" -H "Accept:text/uri-list" #{uri}`.split("\n")
       urilist.each do |u|
-        unless u.match(/[n3|zip]$/)
+        unless u.match(/[nt|zip]$/)
           response = `curl -Lk -i -H "Accept:text/tab-separated-values" -H "subjectid:#{$pi[:subjectid]}" #{u}`
           assert_match /HTTP\/1.1 200 OK/, response.to_s.encode!('UTF-8', 'UTF-8', :invalid => :replace) 
         end
@@ -62,10 +64,9 @@ class UploadTest < MiniTest::Test
       assert_match /200/, response
       response = `curl -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
       assert_match /401|404/, response
-      response = `curl -I -Lk -i -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{uri}`
-      assert_match /404|404/, response
     end
   end
+
   def test_04_invalid_zip_upload
     OpenTox::RestClientWrapper.subjectid = $pi[:subjectid]
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid/isa_TB_ACCUTOX.zip"
@@ -74,6 +75,7 @@ class UploadTest < MiniTest::Test
     uri = response.split("\n")[-1]
     t = OpenTox::Task.new(uri)
     t.wait
+    puts t.uri
     assert_match t.hasStatus, "Error"
     # TODO: test errorReport, rdf output of tasks has to be fixed for that purpose
   end
