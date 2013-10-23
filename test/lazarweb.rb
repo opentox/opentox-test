@@ -1,16 +1,25 @@
-require 'minitest/autorun'
-require 'capybara/dsl'
-require 'capybara-webkit'
+require_relative "setup.rb"
+#require 'capybara/dsl'
+#require 'capybara-webkit'
 
-Capybara.default_driver = :selenium
-Capybara.default_wait_time = 20
-Capybara.javascript_driver = :webkit
-Capybara.run_server = false
-Capybara.app_host = 'https://services.in-silico.ch/predict'
+#Capybara.default_driver = :webkit
+#Capybara.default_wait_time = 20
+#Capybara.javascript_driver = :webkit
+#Capybara.run_server = false
+#Capybara.app_host = 'https://services.in-silico.ch/predict'
 
 class LazarWebTest < MiniTest::Test
-  i_suck_and_my_tests_are_order_dependent!
-  
+  #i_suck_and_my_tests_are_order_dependent!
+
+  def test_online
+    response = `curl -ki http://services.in-silico.ch`
+    assert_match /301/, response
+    response = `curl -ki https://services.in-silico.ch`
+    assert_match /302/, response
+    assert_match /predict/, response
+  end
+
+=begin  
   include Capybara::DSL
 
   def test_00_xsetup
@@ -22,7 +31,7 @@ class LazarWebTest < MiniTest::Test
     visit('/')
     assert page.has_content?('Lazar Toxicity Predictions')
   end
-=begin
+
   def test_01_b_validate_html
     visit('/')
     html = page.source
@@ -54,7 +63,7 @@ class LazarWebTest < MiniTest::Test
     first(:button, 'Check').click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
-=end
+
   def test_02_insert_wrong_smiles
     visit('/')
     page.fill_in 'identifier', :with => "blahblah"
@@ -153,5 +162,5 @@ class LazarWebTest < MiniTest::Test
   def test_99_kill
     `pidof Xvfb|xargs kill`
   end
-
+=end
 end

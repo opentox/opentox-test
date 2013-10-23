@@ -48,7 +48,7 @@ class UploadTest < MiniTest::Test
     50.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
-        response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=#{$four_store[:user]}/test#{t}.n3'`.chomp
+        response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=#{$four_store[:user]}/test#{t}.nt'`.chomp
         assert_match /201/, response
       end
     end
@@ -73,7 +73,7 @@ class UploadTest < MiniTest::Test
     50.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
-        response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/#{$four_store[:user]}/test#{t}.n3'`.chomp
+        response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/#{$four_store[:user]}/test#{t}.nt'`.chomp
         assert_match /200/, response
       end
     end
