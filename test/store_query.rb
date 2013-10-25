@@ -12,10 +12,10 @@ class UploadTest < MiniTest::Test
   
   def test_02_add_data
     # upload invalid data
-    response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/invalid/BII-invalid.n3"}' '#{$four_store[:uri]}/data/?graph=#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1.n3'`.chomp
+    response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/invalid/BII-invalid.n3"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1.n3'`.chomp
     assert_match /400/, response
     # upload valid data
-    response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1-test.nt'`.chomp
+    response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1-test.nt'`.chomp
     assert_match /201/, response
   end
   
@@ -31,7 +31,7 @@ class UploadTest < MiniTest::Test
   def test_04_query_sparqle
     response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} '#{$four_store[:uri]}/sparql/'`.chomp
     assert_match /500/, response
-    response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -H 'Accept:application/sparql-results+xml' -d "query=CONSTRUCT { ?s ?p ?o } FROM <#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1-test.nt> WHERE {?s ?p ?o} LIMIT 10" '#{$four_store[:uri]}/sparql/'`.chomp
+    response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -H 'Accept:application/sparql-results+xml' -d "query=CONSTRUCT { ?s ?p ?o } FROM <https://this.is-atesturi.net/BII-I-1-test.nt> WHERE {?s ?p ?o} LIMIT 10" '#{$four_store[:uri]}/sparql/'`.chomp
     assert_match /200/, response
     assert_match /rdf\:RDF/, response
     assert_match /rdf\:Description/, response
@@ -39,7 +39,7 @@ class UploadTest < MiniTest::Test
   end
   
   def test_05_delete_data
-    response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=#{$four_store[:uri]}/data/#{$four_store[:user]}/BII-I-1-test.nt'`.chomp
+    response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1-test.nt'`.chomp
     assert_match /200/, response
   end
 
@@ -48,7 +48,7 @@ class UploadTest < MiniTest::Test
     50.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
-        response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=#{$four_store[:user]}/test#{t}.nt'`.chomp
+        response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/test#{t}.nt'`.chomp
         assert_match /201/, response
       end
     end
@@ -73,7 +73,7 @@ class UploadTest < MiniTest::Test
     50.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
-        response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/#{$four_store[:user]}/test#{t}.nt'`.chomp
+        response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/test#{t}.nt'`.chomp
         assert_match /200/, response
       end
     end
