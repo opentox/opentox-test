@@ -67,7 +67,12 @@ class ModelTest < MiniTest::Test
     c = OpenTox::Model::Generic.new b.uri
     c.metadata
     assert c.type.to_s =~ /Endpoint/
-    
+    puts c.uri
+    # necessary since model.all method is abolished
+    urilist = `curl -k GET -H accept:text/plain #{$model[:uri]}`.chomp
+    assert_match c.uri, urilist
     a.delete
+    urilist = `curl -k GET -H accept:text/plain #{$model[:uri]}`.chomp
+    refute_match c.uri, urilist 
   end
 end
