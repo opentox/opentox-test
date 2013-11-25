@@ -127,10 +127,12 @@ class TBInvestigationREST < MiniTest::Test
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
   end
 
-  # check that policy files not listed in uri-list 
+  # check that policy files not listed in uri-list
+  # check that log, modified, published, searchable helper files not listed in uri-list
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
     assert result.grep(/user_policies/).size == 0
+    assert result.grep(/log|modified|published|searchable/i).size == 0
   end
 
   # check for uri-list as text/uri-list
