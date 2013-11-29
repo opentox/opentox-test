@@ -19,8 +19,9 @@ class TBSPARQLTest < MiniTest::Test
 
   # initial tests to be changed
   def test_01_initial_nonexisting_template
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/not_existing_template", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    assert_equal 404, response.code
+    assert_raises OpenTox::ResourceNotFoundError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/not_existing_template", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    end
   end
 
   def test_02_initial_existing_template
