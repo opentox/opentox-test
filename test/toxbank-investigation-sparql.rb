@@ -17,9 +17,14 @@ class TBSPARQLTest < MiniTest::Test
     @@uri = URI(uri)
   end  
 
-  # initial test to be changed
-  def test_01_initial
+  # initial tests to be changed
+  def test_01_initial_nonexisting_template
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/not_existing_template", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    assert_equal 404, response.code
+  end
+
+  def test_02_initial_existing_template
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/investigation_details", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
   end
 
