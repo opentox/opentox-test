@@ -67,30 +67,57 @@ class TBSPARQLTest < Minitest::Unit::TestCase
   end
 
   def test_investigation_and_characteristics
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_and_characteristics", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
   def test_investigations_and_protocols
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_protocols", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
   def test_investigations_and_factors
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
   def test_protocols_by_factors
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "['']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
-  def test_invetsigation_by_factors
+  def test_investigation_by_factors
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "['']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
-  def test_investigation_by_factorend
+  def test_investigation_by_factor
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {:value => "http://purl.obolibrary.org/chebi/CHEBI:28748"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
-  def test_investigation_by_characteristic_valueend
+  def test_investigation_by_characteristic_value
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_value", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
   def test_investigation_by_characteristic_name
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_name", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
   def test_investigation_by_characteristic
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    #puts response
+    assert_equal 200, response.code
   end
 
 
