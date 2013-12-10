@@ -1,7 +1,7 @@
 require_relative "toxbank-setup.rb"
 
 # Test API extension SPARQL templates 
-class TBSPARQLTest < Minitest::Unit::TestCase
+class TBSPARQLTest < MiniTest::Test
 
   i_suck_and_my_tests_are_order_dependent!
 
