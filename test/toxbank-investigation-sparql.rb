@@ -66,63 +66,102 @@ class TBSPARQLTest < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/investigation_endpoint_technology", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     endpointtechnologies = result["results"]["bindings"].map {|n|  "#{n["endpoint"]["value"]}:::#{n["technology"]["value"]}"}
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000424:::http://purl.org/obo/owl/OBI#0400148")
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000366:::http://purl.org/obo/owl/OBI#OBI_0000470")
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#OBI_0000615:::http://purl.org/obo/owl/OBI#OBI_0000470")
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000424:::http://purl.org/obo/owl/OBI#0400148")
     assert_equal endpointtechnologies.size, 4
   end
 
   def test_07_investigation_and_characteristics
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_and_characteristics", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    result = JSON.parse(response)
+    inv_chars = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["propname"]["value"]}:::#{n["propValue"]["value"]}:::#{n["ontouri"]["value"]}"}
+    assert inv_chars.include?("#{@@uri}:::Label:::#{@@uri}/CV2:::http://purl.obolibrary.org/chebi/15956")
+    assert inv_chars.include?("#{@@uri}:::organism:::#{@@uri}/CV4:::http://purl.obolibrary.org/obo/NEWT_4932")
     assert_equal 200, response.code
   end
 
   def test_08_investigations_and_protocols
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_protocols", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    result = JSON.parse(response)
+    inv_protocols = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["protocol"]["value"]}:::#{n["label"]["value"]}"}
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P2:::biotin labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P6:::EukGE-WS4")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P1:::metabolite extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P5:::mRNA extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P9:::mRNA extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P8:::ITRAQ labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P4:::protein extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P3:::EukGE-WS4")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P10:::biotin labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P7:::growth protocol")
     assert_equal 200, response.code
   end
 
+  #TODO assertions
   def test_09_investigations_and_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     assert_equal 200, response.code
   end
 
+  #TODO assertions
   def test_10_protocols_by_factors
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "['']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "[]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     assert_equal 200, response.code
   end
 
+  #TODO assertions
   def test_11_investigation_by_factors
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "['']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "[]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     assert_equal 200, response.code
   end
 
+  #TODO assertions
   def test_12_investigation_by_factor
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {:value => "http://purl.obolibrary.org/chebi/CHEBI:28748"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     assert_equal 200, response.code
   end
 
   def test_13_investigation_by_characteristic_value
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_value", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_value", {:value => "Saccharomyces cerevisiae (Baker's yeast)"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    char_value = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["propname"]["value"]}:::#{n["ontoURI"]["value"]}"}
+    assert char_value.include?("#{@@uri}:::organism:::http://purl.obolibrary.org/obo/NEWT_4932")
     assert_equal 200, response.code
   end
 
   def test_14_investigation_by_characteristic_name
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_name", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_name", {:value => "organism"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    char_name = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["value"]["value"]}:::#{n["ontoURI"]["value"]}"}
+    assert char_name.include?("#{@@uri}:::Saccharomyces cerevisiae (Baker's yeast):::http://purl.obolibrary.org/obo/NEWT_4932")
     assert_equal 200, response.code
   end
 
   def test_15_investigation_by_characteristic
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic", {:value => "http://purl.obolibrary.org/obo/NEWT_4932"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    inv_char = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["propname"]["value"]}:::#{n["value"]["value"]}"}
+    assert inv_char.include?("#{@@uri}:::organism:::Saccharomyces cerevisiae (Baker's yeast)")
     assert_equal 200, response.code
   end
 
+  def test_30_empty_factorValues_search
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+  end
+
+  def test_31_empty_value_search
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+  end
 
   # delete investigation/{id}
   # @note expect code 200
