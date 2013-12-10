@@ -17,6 +17,7 @@ class TBSPARQLTest < Minitest::Unit::TestCase
     uri = task.resultURI
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     @@uri = URI(uri)
+    OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :summarySearchable => "true"}, { :subjectid => $pi[:subjectid] }
   end  
 
   # initial tests to be changed
