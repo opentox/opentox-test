@@ -150,6 +150,36 @@ class TBSPARQLTest < MiniTest::Test
     assert inv_char.include?("#{@@uri}:::organism:::Saccharomyces cerevisiae (Baker's yeast)")
     assert_equal 200, response.code
   end
+  
+  #TODO assertions
+  def test_16_investigation_by_pvalue
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_pvalue", {:value => "0.05"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    #inv_pvalue = result["results"]["bindings"].map{|n| ""}
+    #assert inv_pvalue.include?("")
+    assert_equal 200, response.code
+  end
+  
+  #TODO assertions
+  def test_17_investigation_by_qvalue
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_qvalue", {:value => "0.05"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    #inv_qvalue = result["results"]["bindings"].map{|n| ""}
+    #assert inv_qvalue.include?("")
+    assert_equal 200, response.code
+  end
+  
+  #TODO assertions
+  def test_18_investigation_by_foldchange
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_foldchange", {:value => "1.5"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    #inv_foldchange = result["results"]["bindings"].map{|n| ""}
+    #assert inv_qvalue.include?("")
+    assert_equal 200, response.code
+  end
 
   def test_30_empty_factorValues_search
     assert_raises OpenTox::BadRequestError do
