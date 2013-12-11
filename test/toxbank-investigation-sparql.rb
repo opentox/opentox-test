@@ -37,6 +37,7 @@ class TBSPARQLTest < MiniTest::Test
     assert_equal 200, response.code
   end
 
+  # Retrieves all factors (name, value, ontology URI of the value) given an investigation URI
   def test_04_factors_by_investigation
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/factors_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
@@ -100,13 +101,15 @@ class TBSPARQLTest < MiniTest::Test
   end
 
   #TODO assertions
+  # Retrieves investigation URI and factors (name, value, ontology URI of the value)
   def test_09_investigations_and_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    puts response
     assert_equal 200, response.code
   end
 
   #TODO assertions
+  # Retrieves protocol URI containing any of the factor value URI (e.g. two compound URIs)
   def test_10_protocols_by_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "[]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
@@ -114,6 +117,7 @@ class TBSPARQLTest < MiniTest::Test
   end
 
   #TODO assertions
+  # Retrieves investigation URI containing any of the factor value URI (e.g. two compound URIs)
   def test_11_investigation_by_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "[]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
@@ -121,8 +125,10 @@ class TBSPARQLTest < MiniTest::Test
   end
 
   #TODO assertions
+  #TODO test uri: http://factor.value/uri return results
+  # Retrieves investigation URI given a factor value URI (e.g. compound URI)
   def test_12_investigation_by_factor
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {:value => ""}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factor", {:value => "http://factor.value/uri"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     assert_equal 200, response.code
   end
