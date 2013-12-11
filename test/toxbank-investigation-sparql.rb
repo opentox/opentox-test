@@ -104,7 +104,7 @@ class TBSPARQLTest < MiniTest::Test
   # Retrieves investigation URI and factors (name, value, ontology URI of the value)
   def test_09_investigations_and_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_factors", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    puts response
+    #puts response
     assert_equal 200, response.code
   end
 
@@ -125,7 +125,6 @@ class TBSPARQLTest < MiniTest::Test
   end
 
   #TODO assertions
-  #TODO test uri: http://factor.value/uri return results
   # Retrieves investigation URI given a factor value URI (e.g. compound URI)
   def test_12_investigation_by_factor
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factor", {:value => "http://factor.value/uri"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
