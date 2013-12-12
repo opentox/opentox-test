@@ -182,7 +182,17 @@ class TBSPARQLTest < MiniTest::Test
     result = JSON.parse(response)
     #puts result
     #inv_foldchange = result["results"]["bindings"].map{|n| ""}
-    #assert inv_qvalue.include?("")
+    #assert inv_foldchange.include?("")
+    assert_equal 200, response.code
+  end
+  
+  #TODO assertions
+  def test_19_investigation_by_genes
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_genes", {:geneIdentifiers => "[uniprot:P10809,genesymbol:HSPD1,unigene:Hs.595053,refseq:NM_002156,entrez:3329]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    #inv_genes = result["results"]["bindings"].map{|n| ""}
+    #assert inv_genes.include?("")
     assert_equal 200, response.code
   end
 
