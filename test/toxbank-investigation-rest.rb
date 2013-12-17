@@ -140,7 +140,6 @@ class TBInvestigationREST < MiniTest::Test
   # check that log, modified, published, searchable helper files not listed in uri-list
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
-    puts result
     assert result.grep(/user_policies/).size == 0
     assert result.grep(/log|modified|published|searchable/i).size == 0
   end
