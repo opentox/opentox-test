@@ -101,6 +101,15 @@ class TBInvestigationREST < MiniTest::Test
     puts "empty file: #{task.uri} \n"
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   end
+  
+  # post a zip file with whitespace in title,
+  # @note expect OpenTox::BadRequestError
+  def test_01d_upload_zip_with_whitespace_in_title
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "BII\ I\ 1\ tb2.zip" 
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    end
+  end
 
   # create an investigation by uploading a zip file,
   # @todo TODO create by uploading text/tab-separated-values
@@ -131,6 +140,7 @@ class TBInvestigationREST < MiniTest::Test
   # check that log, modified, published, searchable helper files not listed in uri-list
   def test_02a_check_policy_file_not_listed
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
+    puts result
     assert result.grep(/user_policies/).size == 0
     assert result.grep(/log|modified|published|searchable/i).size == 0
   end
