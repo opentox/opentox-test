@@ -41,6 +41,13 @@ class TBSPARQLTest < MiniTest::Test
   def test_04_factors_by_investigation
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/factors_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
+    headvars = result["head"]["vars"]
+    assert headvars.include?("factorname")
+    assert headvars.include?("value")
+    assert headvars.include?("ontouri")
+    assert headvars.include?("unitOnto")
+    assert headvars.include?("unit")
+    assert headvars.include?("unitID")
     factorvalues = result["results"]["bindings"].map {|n|  "#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
     assert factorvalues.include?("limiting nutrient:::phosphorus")
     assert factorvalues.include?("limiting nutrient:::glucose")
