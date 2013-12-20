@@ -107,6 +107,13 @@ class TBSPARQLTest < MiniTest::Test
     assert_equal 200, response.code
   end
 
+  def test_09_files_by_investigation
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/files_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    files = result["results"]["bindings"].map{|n| "#{n["file"]["value"]}"}
+    assert_equal 180, files.size
+  end
+
   def test_13_investigation_by_characteristic_value
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_value", {:value => "Saccharomyces cerevisiae (Baker's yeast)"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
