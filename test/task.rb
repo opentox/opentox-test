@@ -238,7 +238,7 @@ class TaskTest < MiniTest::Test
       error_msg = "raising a #{ex}"
       
       task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-        sleep 2
+        sleep 5
         raise ex,error_msg
       end
       

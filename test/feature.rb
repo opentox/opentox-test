@@ -51,7 +51,7 @@ class FeatureRestTest < MiniTest::Test
 
     uri = @uris.first
     new_rdf = RDF::Graph.new
-    new_rdf << RDF::Statement.new(RDF::Node.new, RDF::DC.author, "XYZ")
+    new_rdf << RDF::Statement.new(RDF::Node.new, RDF::DC.title, "XYZ")
     @formats.each do |f|
       OpenTox::RestClientWrapper.post(uri, serialize(new_rdf,f[0]), :content_type => f[1])
       assert_match /XYZ/, OpenTox::RestClientWrapper.get(uri,{},:accept => f[1])
