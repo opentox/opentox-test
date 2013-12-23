@@ -302,11 +302,6 @@ class ValidationTest < MiniTest::Test
           cv = OpenTox::Crossvalidation.find(cv.uri)
           assert_valid_date cv
           assert cv.uri.uri?
-          if $aa[:uri]
-            assert_unauthorized do
-              cv.statistics(cv)
-            end
-          end
           stats_val = cv.statistics
           assert_kind_of OpenTox::Validation,stats_val
           assert_prob_correct(stats_val)

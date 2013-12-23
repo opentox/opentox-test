@@ -69,10 +69,10 @@ class ModelTest < MiniTest::Test
     assert c.type.to_s =~ /Endpoint/
     puts c.uri
     # necessary since model.all method is abolished
-    urilist = `curl -k GET -H accept:text/plain #{$model[:uri]}`.chomp
+    urilist = `curl -k GET -H accept:text/plain -H 'subjectid:#{OpenTox::RestClientWrapper.subjectid}' #{$model[:uri]}`.chomp
     assert_match c.uri, urilist
     a.delete
-    urilist = `curl -k GET -H accept:text/plain #{$model[:uri]}`.chomp
+    urilist = `curl -k GET -H accept:text/plain  -H 'subjectid:#{OpenTox::RestClientWrapper.subjectid}' #{$model[:uri]}`.chomp
     refute_match c.uri, urilist 
   end
 end

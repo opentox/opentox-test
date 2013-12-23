@@ -22,7 +22,7 @@ class TaskTest < MiniTest::Test
 
   def test_01_create_and_complete
     task = OpenTox::Task.run __method__ do
-      sleep 2
+      sleep 5
       $task[:uri]
     end
     assert_equal true,  task.running?
@@ -47,7 +47,7 @@ class TaskTest < MiniTest::Test
 
   def test_03_create_and_cancel
     task = OpenTox::Task.run __method__ do
-      sleep 2
+      sleep 5
       $task[:uri]
     end
     assert_equal true, task.running?
@@ -61,7 +61,7 @@ class TaskTest < MiniTest::Test
 
   def test_04_create_and_fail
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 2
+      sleep 5
       raise "A runtime error occured"
     end
     assert_equal true, task.running?
@@ -80,7 +80,7 @@ class TaskTest < MiniTest::Test
 
   def test_05_create_and_fail_with_opentox_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 2
+      sleep 5
       raise OpenTox::Error.new 500, "An OpenTox::Error occured"
     end
     assert task.running?
@@ -97,7 +97,7 @@ class TaskTest < MiniTest::Test
 
   def test_06_create_and_fail_with_not_found_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 2
+      sleep 5
       resource_not_found_error "An OpenTox::ResourceNotFoundError occured",  "http://test.org/fake_creator"
     end
     assert task.running?
@@ -115,7 +115,7 @@ class TaskTest < MiniTest::Test
 
   def test_07_create_and_fail_with_rest_not_found_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 1
+      sleep 5
       OpenTox::Feature.new.get
     end
     assert task.running?
@@ -131,7 +131,7 @@ class TaskTest < MiniTest::Test
 
   def test_08_create_and_fail_with_restclientwrapper_error
     task = OpenTox::Task.run __method__,"http://test.org/fake_creator" do
-      sleep 2
+      sleep 5
       OpenTox::RestClientWrapper.get "invalid uri"
     end
     assert task.running?
@@ -148,7 +148,7 @@ class TaskTest < MiniTest::Test
   def test_09_check_resultURIs
     resulturi = "http://resulturi/test/1"
     task = OpenTox::Task.run __method__ do
-      sleep 2
+      sleep 5
       resulturi
     end
     assert_equal "Running", task.hasStatus
@@ -241,7 +241,6 @@ class TaskTest < MiniTest::Test
         sleep 5
         raise ex,error_msg
       end
-      
       assert task.running?
       assert_equal "Running", task.hasStatus
       assert_equal 202, task.code
