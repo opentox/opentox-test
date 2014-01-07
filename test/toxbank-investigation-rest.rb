@@ -344,6 +344,12 @@ class TBInvestigationREST < MiniTest::Test
     assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
+  # check that linked FTP file has mime_type
+  def test_06b_check_ftpfiles_type
+    result = OpenTox::RestClientWrapper.get("#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, {:subjectid => $pi[:subjectid]}).split("\n")
+    assert_equal "text/plain", result.headers[:content_type]
+  end
+
   # get investigation/{id}
   # @note accept:application/zip
   def test_07_get_investigation_zip
