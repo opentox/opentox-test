@@ -338,6 +338,12 @@ class TBInvestigationREST < MiniTest::Test
     assert_equal "text/uri-list", result.headers[:content_type]
   end
 
+  # check that linked FTP file is listed in uri-list
+  def test_06a_check_ftpfiles
+    result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
+    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result
+  end
+
   # get investigation/{id}
   # @note accept:application/zip
   def test_07_get_investigation_zip
