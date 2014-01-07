@@ -346,8 +346,8 @@ class TBInvestigationREST < MiniTest::Test
 
   # check that linked FTP file has mime_type
   def test_06b_check_ftpfiles_type
-    result = OpenTox::RestClientWrapper.get("#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, {:subjectid => $pi[:subjectid]}).split("\n")
-    assert_equal "text/plain", result.headers[:content_type]
+    result = OpenTox::RestClientWrapper.get("#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, {:subjectid => $pi[:subjectid]})
+    assert_match "text/plain", result.headers[:content_type]
   end
 
   # get investigation/{id}
