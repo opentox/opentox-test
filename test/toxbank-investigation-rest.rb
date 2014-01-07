@@ -341,7 +341,7 @@ class TBInvestigationREST < MiniTest::Test
   # check that linked FTP file is listed in uri-list
   def test_06a_check_ftpfiles
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
-    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result
+    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
   # get investigation/{id}
