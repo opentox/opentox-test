@@ -480,8 +480,11 @@ class TBInvestigationREST < MiniTest::Test
 
   # @note data is available with policy
   def test_10_i_guest_can_get
-    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml"}
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $guestid}
     assert_match /<\?xml/, res
+    #guest is authorized to get ftp file
+    result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $guestid}).split("\n")
+    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
   # get investigation/{id}/metadata in rdf and check content
