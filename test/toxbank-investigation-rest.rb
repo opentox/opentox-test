@@ -111,6 +111,21 @@ class TBInvestigationREST < MiniTest::Test
     end
   end
 
+  def test_01e_upload_zip_with_whitespace_in_file_title
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2_whitespaces.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    urilist = OpenTox::RestClientWrapper.get( uri, {}, {:accept => 'text/uri-list', :subjectid => $pi[:subjectid] }).split("\n")
+    assert_match /a_micro%20array\.txt/, urilist.to_s
+    singlefile = OpenTox::RestClientWrapper.get "#{uri}/isatab/a_micro%20array.txt", {}, {:accept => 'text/plain', :subjectid => $pi[:subjectid] }
+    assert_equal singlefile.code.to_s, "200"
+    OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $pi[:subjectid]}
+  end
+
   # create an investigation by uploading a zip file,
   # @todo TODO create by uploading text/tab-separated-values
   # @todo TODO create by uploading application/vnd.ms-excel
