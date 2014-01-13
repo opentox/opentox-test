@@ -208,24 +208,11 @@ class TBSPARQLTestExtended < MiniTest::Test
 
   # Retrieves protocol URI containing any of the factor value URI (e.g. two compound URIs)
   def test_10_protocols_by_factors
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "[]"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    #puts response
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "['http://purl.obolibrary.org/chebi/CHEBI:28748']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     protocol_factors = result["results"]["bindings"].map{|n| "#{n["protocol"]["value"]}:::#{n["label"]["value"]}:::#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
     #puts protocol_factors
     assert_equal 200, response.code
-    assert protocol_factors.include?("#{@@uri}/P4:::labeling:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P3:::RNA extraction:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P2:::normalization data transformation:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P1:::data transformation:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P5:::data collection:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P6:::nucleic acid hybridization:::dose:::0")
-    assert protocol_factors.include?("#{@@uri}/P4:::labeling:::sample TimePoint:::8")
-    assert protocol_factors.include?("#{@@uri}/P3:::RNA extraction:::sample TimePoint:::8")
-    assert protocol_factors.include?("#{@@uri}/P2:::normalization data transformation:::sample TimePoint:::8")
-    assert protocol_factors.include?("#{@@uri}/P1:::data transformation:::sample TimePoint:::8")
-    assert protocol_factors.include?("#{@@uri}/P5:::data collection:::sample TimePoint:::8")
-    assert protocol_factors.include?("#{@@uri}/P6:::nucleic acid hybridization:::sample TimePoint:::8")
     assert protocol_factors.include?("#{@@uri}/P4:::labeling:::compound:::DOXORUBICIN")
     assert protocol_factors.include?("#{@@uri}/P3:::RNA extraction:::compound:::DOXORUBICIN")
     assert protocol_factors.include?("#{@@uri}/P2:::normalization data transformation:::compound:::DOXORUBICIN")
