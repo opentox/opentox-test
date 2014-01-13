@@ -103,12 +103,15 @@ class TBInvestigationREST < MiniTest::Test
   end
   
   # post a zip file with whitespace in title,
-  # @note expect OpenTox::BadRequestError
   def test_01d_upload_zip_with_whitespace_in_title
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "BII\ I\ 1\ tb2.zip" 
-    assert_raises OpenTox::BadRequestError do
-      response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
-    end
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    OpenTox::RestClientWrapper.delete uri.to_s, {}, {:subjectid => $pi[:subjectid]}
   end
 
   def test_01e_upload_zip_with_whitespace_in_file_title
