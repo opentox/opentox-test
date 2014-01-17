@@ -62,7 +62,7 @@ class TBInvestigationWorkflow < MiniTest::Test
   # check all permissions for owner
   def test_04a_all_permission
     ["GET","POST","PUT","DELETE"].each do |permission|
-      response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $pi[:subjectid]
+      response = OpenTox::Authorization.authorize "#{@@uri}", permission, $pi[:subjectid]
       assert_equal true, response
     end
   end
@@ -79,39 +79,39 @@ class TBInvestigationWorkflow < MiniTest::Test
     assert_equal 200, response.code
   end
 
-  def test_04d_get_download_pi
+  def test_04d_get_download_owner
     response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $pi[:subjectid]}
     assert_equal 200, response.code
   end
 
-  # no get permission for user2
+  # no get permission for user1
   def test_05a_no_get_permission
     response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $secondpi[:subjectid]
     assert_equal false, response
   end
 
-  # do not get metadata for user2
+  # do not get metadata for user1
   def test_05b_get_metadata_secondpi
     assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
-  # do not get protocol for user2
+  # do not get protocol for user1
   def test_05c_get_protocol_secondpi
     assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end
   end
 
-  # do not get download for user2
+  # do not get download for user1
   def test_05d_get_download_secondpi
     assert_raises OpenTox::UnauthorizedError do
       response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
     end
   end
 
-  # no post/put/delete permission for user2
+  # no post/put/delete permission for user1
   def test_05e_no_cud_permission
     ["POST", "PUT", "DELETE"].each do |permission|
       response = OpenTox::Authorization.authorize "#{@@uri}", permission, $secondpi[:subjectid]
@@ -176,13 +176,13 @@ class TBInvestigationWorkflow < MiniTest::Test
     end
   end
 
-  # get metadata for owner
+  # get metadata for user1
   def test_09e_get_metadata_user1
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     assert_equal 200, response.code
   end
 
-  # get related protocol uris for owner
+  # get related protocol uris for user1
   def test_09f_get_protocol_user1
     response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     assert_equal 200, response.code
@@ -239,17 +239,17 @@ class TBInvestigationWorkflow < MiniTest::Test
     test_11b_is_indexed
   end
 
+  # get metadata for user1
   def test_13c_get_metadata_second_pi
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     assert_equal 200, response.code
   end
 
-  # get related protocol uris for owner
+  # get related protocol uris for user1
   def test_13d_get_protocol_second_pi
     response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     assert_equal 200, response.code
   end
-
 
   def test_20_update_modified_time
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
@@ -267,26 +267,39 @@ class TBInvestigationWorkflow < MiniTest::Test
     assert t_end > t_start, "modified time is not updated"
   end
 
-  # update flag "isSummarySearchable" to "true",
-  def test_98b_put_summary_searchable
-    response = OpenTox::RestClientWrapper.put @@uri.to_s,{ :summarySearchable => "true" },{ :subjectid => $pi[:subjectid] }
-    task_uri = response.chomp
-    task = OpenTox::Task.new task_uri
-    task.wait
-    uri = task.resultURI
-    assert_equal uri, @@uri.to_s
-    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
-    @g = RDF::Graph.new
-    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
-    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
-  end
-
   # delete investigation/{id}
   # @note expect code 200
   def test_99_a_delete_investigation
     result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
+    assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
+  end
+
+  # create an investigation
+  def test_99_b_post_investigation
+    @@uri = ""
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :summarySearchable => "true"}, {:subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    @@uri = URI(uri)
+  end
+
+  #TODO user2 can get metadata of an unpublished investigation, this is wrong workflow
+  def test_99_c_get_metadata_for_user2
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $guestid}
+    assert_equal 200, response.code
+  end
+
+  # delete investigation/{id}
+  # @note expect code 200
+  def test_99_d_delete_investigation
+    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
+    assert_equal 200, result.code
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
   end
 
