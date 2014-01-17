@@ -413,7 +413,7 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
     assert_raises OpenTox::UnauthorizedError do
-      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml"}
+      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     end #Guest can not get
   end
 
@@ -428,15 +428,17 @@ class TBInvestigationREST < MiniTest::Test
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, response #PI can get
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
-    assert_match /<\?xml/, res #secondpi can get if isSS
+    #secondpi can not get unless published
+    assert_raises OpenTox::UnauthorizedError do
+      res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    end
   end
 
   # check title has changed by update
   # @note expect title after update is "BII-I-1"
   def test_10_d_check_if_title_has_changed_by_update
     # check content
-    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(res.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
@@ -462,6 +464,9 @@ class TBInvestigationREST < MiniTest::Test
     # check owner can get
     res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
     assert_match /<\?xml/, res
+    # check guest can get now metadata
+    res = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    assert_match /<\?xml/, res
   end
 
   # @note expect data is still not reachable without policy
@@ -473,7 +478,7 @@ class TBInvestigationREST < MiniTest::Test
 
   # update policy 
   def test_10_h_update_guest_policy
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "#{$user_service[:uri]}/user/U2"},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, {:allowReadByUser => "#{$user_service[:uri]}/user/U479"},{:subjectid => $pi[:subjectid]}
     task_uri = response.chomp
     puts "update Policy: #{task_uri}"
     task = OpenTox::Task.new task_uri
@@ -483,10 +488,10 @@ class TBInvestigationREST < MiniTest::Test
 
   # @note data is available with policy
   def test_10_i_guest_can_get
-    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $guestid}
+    res = OpenTox::RestClientWrapper.get @@uri.to_s, {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
     assert_match /<\?xml/, res
     #guest is authorized to get ftp file
-    result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $guestid}).split("\n")
+    result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $secondpi[:subjectid]}).split("\n")
     assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
@@ -545,7 +550,7 @@ class TBInvestigationREST < MiniTest::Test
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "DELETE", $pi[:subjectid])
     assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $pi[:subjectid])
     # check for guest policy
-    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", OpenTox::RestClientWrapper.subjectid)
+    assert_equal true, OpenTox::Authorization.authorize(@@uri.to_s, "GET", $secondpi[:subjectid])
   end
 
   # check how many policies,

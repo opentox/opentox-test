@@ -25,16 +25,22 @@ class TBInvestigationWorkflow < MiniTest::Test
 # Download        y      n      y      y      n      n      n
 # Search          ?      n      n      y      n      n      y
 
+  # define different users
+  @@owner = $pi[:subjectid]
+  @@user1 = $secondpi[:subjectid]
+  @@user2 = $guestid
+
   def setup
-    OpenTox::RestClientWrapper.subjectid = $pi[:subjectid] # set pi as the logged in user
+    OpenTox::RestClientWrapper.subjectid = @@owner #set owner as the logged in user
   end
 
+  ## Owner keeps all private
   # create a new investigation by uploading a zip file,
-  # owner is $pi, Summary is not searchable, access=custom(owner only), not published
+  # Summary is not searchable, not published. { access=custom(owner only) in the GUI }
   def test_01_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -45,7 +51,7 @@ class TBInvestigationWorkflow < MiniTest::Test
 
   # check if @@uri is not in search-index
   def test_02_investigation_not_in_searchindex
-    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@owner}
     assert_equal 200, response.code
     refute_match /#{@@uri}/, response.to_s
   end
@@ -53,75 +59,130 @@ class TBInvestigationWorkflow < MiniTest::Test
   # check for flag "isPublished" is false,
   # @note default behaviour on new investigations
   def test_03_check_published_false
-    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner}
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   end
 
+  # check for flag "isSummarySearchable" is false,
+  # @note default behaviour on new investigations
+  def test_03b_check_searchable_false
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
+  end
+
   # check all permissions for owner
   def test_04a_all_permission
     ["GET","POST","PUT","DELETE"].each do |permission|
-      response = OpenTox::Authorization.authorize "#{@@uri}", permission, $pi[:subjectid]
+      response = OpenTox::Authorization.authorize "#{@@uri}", permission, @@owner
       assert_equal true, response
     end
   end
 
   # get metadata for owner
   def test_04b_get_metadata_pi
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner}
     assert_equal 200, response.code
   end
 
   # get related protocol uris for owner
   def test_04c_get_protocol_pi
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => @@owner}
     assert_equal 200, response.code
   end
 
   def test_04d_get_download_owner
-    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => @@owner}
     assert_equal 200, response.code
   end
 
+  ## now check permissions for user1
+  ## expect nothing allowed
+  ##################################
+
   # no get permission for user1
   def test_05a_no_get_permission
-    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $secondpi[:subjectid]
+    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", @@user1
     assert_equal false, response
   end
 
   # do not get metadata for user1
-  def test_05b_get_metadata_secondpi
+  def test_05b_get_metadata
     assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@user1}
     end
   end
 
   # do not get protocol for user1
-  def test_05c_get_protocol_secondpi
+  def test_05c_get_protocol
     assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => @@user1}
     end
   end
 
   # do not get download for user1
-  def test_05d_get_download_secondpi
+  def test_05d_get_download
     assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
+      response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => @@user1}
     end
   end
 
   # no post/put/delete permission for user1
   def test_05e_no_cud_permission
     ["POST", "PUT", "DELETE"].each do |permission|
-      response = OpenTox::Authorization.authorize "#{@@uri}", permission, $secondpi[:subjectid]
+      response = OpenTox::Authorization.authorize "#{@@uri}", permission, @@user1
+      assert_equal false, response
+    end
+  end
+  
+  ## now check permissions for user2
+  ## expect nothing allowed
+  ##################################
+
+  # do not get for user2
+  def test_06a_get_permission
+    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", @@user2
+    assert_equal false, response
+  end
+
+  # do not get metadata for user2
+  def test_06b_get_metadata
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@user2}
+    end
+  end
+
+  # do not get protocol for user2
+  def test_06c_get_protocol
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => @@user2}
+    end
+  end
+
+  # do not get download for user2
+  def test_06d_get_download
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => @@user2}
+    end
+  end
+
+  # no post/put/delete permission for user2
+  def test_06e_no_cud_permission
+    ["POST", "PUT", "DELETE"].each do |permission|
+      response = OpenTox::Authorization.authorize "#{@@uri}", permission, @@user2
       assert_equal false, response
     end
   end
 
-  def test_06_put_group_access
-    @@toxbank_uri = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{$pi[:subjectid]}" #{$user_service[:uri]}/project?search=ToxBank`.chomp.sub("\n","")
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => "#{@@toxbank_uri}"},{ :subjectid => $pi[:subjectid] }
+  # give the investigation a tb-group membership access by policy
+  ###############################################################
+
+  def test_08_put_group_access
+    @@toxbank_uri = `curl -Lk -X GET -H "Accept:text/uri-list" -H "subjectid:#{@@owner}" #{$user_service[:uri]}/project?search=ToxBank`.chomp.sub("\n","")
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => "#{@@toxbank_uri}"},{ :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -130,22 +191,25 @@ class TBInvestigationWorkflow < MiniTest::Test
   end
 
   # get permission for user1
-  def test_07a_get_permission
-    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", $secondpi[:subjectid]
+  def test_08a_get_permission
+    response = OpenTox::Authorization.authorize "#{@@uri}", "GET", @@user1
     assert_equal true, response
   end
 
   # repeat with permissions for toxbank group
-  def test_07b_repeat_05bcd
-    test_05b_get_metadata_secondpi
-    test_05c_get_protocol_secondpi
-    test_05d_get_download_secondpi
+  def test_08b_repeat_05bcd
+    test_05b_get_metadata
+    test_05c_get_protocol
+    test_05d_get_download
     test_05e_no_cud_permission
     test_02_investigation_not_in_searchindex
   end
 
-  def test_08_put_published
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true"},{ :subjectid => $pi[:subjectid] }
+  ## make publish
+  ###############
+
+  def test_09_put_published
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true"},{ :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -153,43 +217,53 @@ class TBInvestigationWorkflow < MiniTest::Test
     assert_equal uri, @@uri.to_s
   end
 
+  ## check changes for user1
+  ##########################
+
+  # allowed
   def test_09a_get_user1
-    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
-    assert_equal 200, response.code
-  end
-
-  def test_09b_put_user1
-    assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.put "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
-    end
-  end
-
-  def test_09c_post_user1
-    assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.post "#{@@uri}", {}, {:published => "true", :subjectid => $secondpi[:subjectid]}
-    end
-  end
-
-  def test_09d_delete_user1
-    assert_raises OpenTox::UnauthorizedError do
-      response = OpenTox::RestClientWrapper.delete "#{@@uri}", {}, {:subjectid => $secondpi[:subjectid]}
-    end
-  end
-
-  # get metadata for user1
-  def test_09e_get_metadata_user1
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
-    assert_equal 200, response.code
-  end
-
-  # get related protocol uris for user1
-  def test_09f_get_protocol_user1
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => @@user1}
     assert_equal 200, response.code
   end
   
+  # denied
+  def test_09b_put_user1
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.put "#{@@uri}", {}, {:published => "true", :subjectid => @@user1}
+    end
+  end
+
+  # denied
+  def test_09c_post_user1
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.post "#{@@uri}", {}, {:published => "true", :subjectid => @@user1}
+    end
+  end
+
+  # denied
+  def test_09d_delete_user1
+    assert_raises OpenTox::UnauthorizedError do
+      response = OpenTox::RestClientWrapper.delete "#{@@uri}", {}, {:subjectid => @@user1}
+    end
+  end
+
+  # allowed
+  # get metadata for user1
+  def test_09e_get_metadata_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@user1}
+    assert_equal 200, response.code
+  end
+
+  # allowed
+  # get related protocol uris for user1
+  def test_09f_get_protocol_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => @@user1}
+    assert_equal 200, response.code
+  end
+  
+  # allowed
   def test_09g_get_download_user1
-    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => $secondpi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}", {}, {:accept => "application/zip", :subjectid => @@user1}
     assert_equal 200, response.code
   end
 
@@ -197,8 +271,11 @@ class TBInvestigationWorkflow < MiniTest::Test
     test_02_investigation_not_in_searchindex
   end
 
+  ## make searchable
+  ##################
+
   def test_10_put_searchable
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :summarySearchable => "true"},{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :summarySearchable => "true"},{ :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -217,13 +294,13 @@ class TBInvestigationWorkflow < MiniTest::Test
   end
 
   def test_11b_is_indexed
-    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{$search_service[:uri]}/search/index/investigation?resourceUri=#{CGI.escape(@@uri.to_s)}",{},{:subjectid => @@owner}
     assert_equal 200, response.code
     assert_match /#{@@uri}/, response.to_s
   end
 
   def test_12_remove_group_access
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => ""},{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => ""},{ :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -234,32 +311,32 @@ class TBInvestigationWorkflow < MiniTest::Test
   # searchable + published without GET policy
   def test_13a_repeat_05bcd
     test_05a_no_get_permission
-    test_05d_get_download_secondpi
+    test_05d_get_download
     test_05e_no_cud_permission
     test_11b_is_indexed
   end
 
   # get metadata for user1
-  def test_13c_get_metadata_second_pi
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+  def test_13c_get_metadata_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@user1 }
     assert_equal 200, response.code
   end
 
   # get related protocol uris for user1
-  def test_13d_get_protocol_second_pi
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => $secondpi[:subjectid]}
+  def test_13d_get_protocol_user1
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/protocol", {}, {:accept => "application/rdf+xml", :subjectid => @@user1 }
     assert_equal 200, response.code
   end
 
   def test_20_update_modified_time
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner }
     g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| g << s}}
     g.query(:predicate => RDF::DC.modified){|r| @modified_time1 = r[2].to_s}
     t_start = Time.parse(@modified_time1).to_i
-    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => "#{@@toxbank_uri}"},{ :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put @@uri.to_s, { :allowReadByGroup => "#{@@toxbank_uri}"},{ :subjectid => @@owner }
     sleep 2
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid]}
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner }
     g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| g << s}}
     g.query(:predicate => RDF::DC.modified){|r| @modified_time2 = r[2].to_s}
@@ -270,17 +347,20 @@ class TBInvestigationWorkflow < MiniTest::Test
   # delete investigation/{id}
   # @note expect code 200
   def test_99_a_delete_investigation
-    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
+    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@owner}
     assert_equal 200, result.code
     #assert result.match(/^Investigation [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} deleted$/)
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
   end
+  
+  ## check for user1 and user2 with only isSum=true is set
+  ## expect no get { GUI option 'make searchable' during first upload }
+  ########################################################
 
-  # create an investigation
   def test_99_b_post_investigation
     @@uri = ""
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :summarySearchable => "true"}, {:subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :summarySearchable => "true"}, { :subjectid => @@owner }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -289,16 +369,36 @@ class TBInvestigationWorkflow < MiniTest::Test
     @@uri = URI(uri)
   end
 
-  #TODO user2 can get metadata of an unpublished investigation, this is wrong workflow
-  def test_99_c_get_metadata_for_user2
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $guestid}
-    assert_equal 200, response.code
+  # check for flag "isSummarySearchable" is true,
+  def test_99_c_check_searchable_true
+    data = OpenTox::RestClientWrapper.get "#{@@uri}/metadata", {}, {:accept => "application/rdf+xml", :subjectid => @@owner}
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(data.to_s){|r| r.each{|s| @g << s}}
+    @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /true/, r[2].to_s}
   end
 
+  ## expect no get for user1 and user2
+  ####################################
+
+  def test_99_d_repeat_tests
+    # user1
+    test_05a_no_get_permission
+    test_05b_get_metadata
+    test_05c_get_protocol
+    test_05d_get_download
+    test_05e_no_cud_permission
+    #user2
+    test_06a_get_permission
+    test_06b_get_metadata
+    test_06c_get_protocol
+    test_06d_get_download
+    test_06e_no_cud_permission
+  end
+  
   # delete investigation/{id}
   # @note expect code 200
-  def test_99_d_delete_investigation
-    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => $pi[:subjectid]}
+  def test_99_x_delete_investigation
+    result = OpenTox::RestClientWrapper.delete @@uri.to_s, {}, {:subjectid => @@owner}
     assert_equal 200, result.code
     assert !OpenTox::Authorization.uri_has_policy(@@uri.to_s)
   end
