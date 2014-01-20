@@ -12,8 +12,8 @@ class UploadTest < MiniTest::Test
   
   def test_02_add_data
     # upload invalid data
-    response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/invalid/BII-invalid.n3"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1.n3'`.chomp
-    assert_match /400/, response
+    #response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/invalid/BII-invalid.n3"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1.n3'`.chomp
+    #assert_match /400/, response
     # upload valid data
     response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/BII-I-1-test.nt'`.chomp
     assert_match /201/, response
@@ -45,7 +45,7 @@ class UploadTest < MiniTest::Test
 
   def test_06_simultaneous_uploads 
     threads = []
-    50.times do |t|
+    5.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
         response = `curl -0 -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -T '#{File.join File.dirname(__FILE__),"data/toxbank-investigation/valid/BII-I-1-test.nt"}' '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/test#{t}.nt'`.chomp
@@ -57,7 +57,7 @@ class UploadTest < MiniTest::Test
   
   def test_07_query_simultaneous
     threads = []
-    50.times do |t|
+    5.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
         response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -H 'accept:application/rdf+xml' -d 'query=CONSTRUCT { ?s ?p ?o. } WHERE {?s ?p ?o.} LIMIT 10' '#{$four_store[:uri]}/sparql/'`.chomp 
@@ -70,7 +70,7 @@ class UploadTest < MiniTest::Test
   
   def test_08_delete_simultaneous 
     threads = []
-    50.times do |t|
+    5.times do |t|
       threads << Thread.new(t) do |up|
         #puts "Start Time >> " << (Time.now).to_s
         response = `curl -i -k -u #{$four_store[:user]}:#{$four_store[:password]} -X DELETE '#{$four_store[:uri]}/data/?graph=https://this.is-atesturi.net/test#{t}.nt'`.chomp
