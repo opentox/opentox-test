@@ -111,7 +111,9 @@ class TBSPARQLTest < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/files_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     files = result["results"]["bindings"].map{|n| "#{n["file"]["value"]}"}
-    assert_equal 180, files.size
+    assert_equal 242, files.size
+    downloaduris = result["results"]["bindings"].map{|n| "#{n["downloaduri"]["value"]}"}
+    assert_match /#{@@uri}\/files\/JIC37_Ethanol_0\.07_Internal_1_3\.txt/, downloaduris.to_s
   end
 
   def test_13_investigation_by_characteristic_value

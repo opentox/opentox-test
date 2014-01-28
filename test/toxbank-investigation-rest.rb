@@ -359,7 +359,7 @@ class TBInvestigationREST < MiniTest::Test
   # check that linked FTP file is listed in uri-list
   def test_06a_check_ftpfiles
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}).split("\n")
-    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
+    assert_match "#{@@uri}/files/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
   # check that linked FTP file has mime_type
@@ -492,7 +492,7 @@ class TBInvestigationREST < MiniTest::Test
     assert_match /<\?xml/, res
     #guest is authorized to get ftp file
     result = OpenTox::RestClientWrapper.get("#{@@uri}", {}, {:accept => "text/uri-list", :subjectid => $secondpi[:subjectid]}).split("\n")
-    assert_match "#{@@uri}/isatab/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
+    assert_match "#{@@uri}/files/JIC37_Ethanol_0.07_Internal_1_3.txt", result.to_s
   end
 
   # get investigation/{id}/metadata in rdf and check content
@@ -625,7 +625,7 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
-
+=begin
   # delete investigation/{id}
   # @note expect code 200
   def test_99_a_delete_investigation
@@ -649,6 +649,6 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     refute_match /#{@@uri}/, response.to_s
   end
-
+=end
 end
 
