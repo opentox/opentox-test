@@ -625,7 +625,7 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     assert response.index(@@uri.to_s) != nil, "URI: #{@@uri} is not in uri-list"
   end
-=begin
+
   # delete investigation/{id}
   # @note expect code 200
   def test_99_a_delete_investigation
@@ -649,6 +649,6 @@ class TBInvestigationREST < MiniTest::Test
     response = OpenTox::RestClientWrapper.get $investigation[:uri], {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
     refute_match /#{@@uri}/, response.to_s
   end
-=end
+
 end
 
