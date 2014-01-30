@@ -9,7 +9,7 @@ class TBSPARQLTest < MiniTest::Test
   def test_00_create_investigation
     OpenTox::RestClientWrapper.subjectid = $pi[:subjectid] # set pi as the logged in user
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1b-tb2.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2_ftp.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -94,16 +94,16 @@ class TBSPARQLTest < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_protocols", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     inv_protocols = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["protocol"]["value"]}:::#{n["label"]["value"]}"}
+    #puts inv_protocols
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P2:::biotin labeling")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P6:::EukGE-WS4")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P1:::metabolite extraction")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P5:::mRNA extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P9:::mRNA extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P8:::ITRAQ labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P9:::biotin labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P8:::mRNA extraction")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P4:::protein extraction")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P3:::EukGE-WS4")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P10:::biotin labeling")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P7:::growth protocol")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P7:::ITRAQ labeling")
     assert_equal 200, response.code
   end
 
@@ -280,6 +280,24 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert inv_genes.include?("#{@@uri}:::http://onto.toxbank.net/isa/bii/data_types/microarray_derived_data:::q-value[Low.8hr-Control.8hr]:::http://onto.toxbank.net/isa/qvalue:::0.911237")
   end
 
+  def test_20_investigation_by_gene_and_pvalue
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_pvalue", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts response
+    inv = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
+    assert_equal 200, response.code
+    assert inv.include?("#{@@uri}")
+  end
+
+  def test_21_investigation_by_gene_and_pvalue
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_pvalue", {:geneIdentifiers => "['entrez:3075']", :value => "0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts response
+    inv = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
+    assert_equal 200, response.code
+    assert inv.include?("#{@@uri}")
+  end
+  
   # delete investigation/{id}
   # @note expect code 200
   def test_90_delete_investigation
