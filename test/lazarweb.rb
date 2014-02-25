@@ -1,15 +1,19 @@
 require_relative "setup.rb"
 #require 'capybara/dsl'
-#require 'capybara-webkit'
+require 'capybara'
+require 'capybara-webkit'
 
-#Capybara.default_driver = :webkit
-#Capybara.default_wait_time = 20
-#Capybara.javascript_driver = :webkit
-#Capybara.run_server = false
-#Capybara.app_host = 'https://services.in-silico.ch/predict'
+Capybara.register_driver :webkit do |app|
+  Capybara::Webkit::Driver.new(app).tap{|d| d.browser.ignore_ssl_errors}
+end
+Capybara.default_driver = :webkit
+Capybara.default_wait_time = 20
+Capybara.javascript_driver = :webkit
+Capybara.run_server = false
+Capybara.app_host = 'https://services.in-silico.ch'
 
 class LazarWebTest < MiniTest::Test
-  #i_suck_and_my_tests_are_order_dependent!
+  i_suck_and_my_tests_are_order_dependent!
 
   def test_online
     response = `curl -ki http://services.in-silico.ch`
@@ -19,7 +23,6 @@ class LazarWebTest < MiniTest::Test
     assert_match /predict/, response
   end
 
-=begin  
   include Capybara::DSL
 
   def test_00_xsetup
@@ -28,10 +31,12 @@ class LazarWebTest < MiniTest::Test
   end
 
   def test_01_visit
-    visit('/')
+    visit('/predict')
     assert page.has_content?('Lazar Toxicity Predictions')
+    assert page.has_content?('DSSTox Carcinogenic Potency DBS ActivityOutcome Hamster (CPDBAS)')
   end
-
+=begin
+  #TODO sometimes failes
   def test_01_b_validate_html
     visit('/')
     html = page.source
@@ -39,31 +44,24 @@ class LazarWebTest < MiniTest::Test
     within_fieldset('validate-by-input') do
       fill_in('fragment', :with => html)
     end
-    click_button('Check')
+    find(:xpath, "/html/body/div[2]/div/fieldset[3]/form/p[2]/a").click
+    sleep 5
     assert page.has_content?('This document was successfully checked as HTML5'), "true"
   end
-
+=begin
+  #TODO fix stylesheet route
   def test_01_c_validate_css
     # style.css
-    visit(@@uri + '/stylesheets/style.css')
+    visit('/predict/stylesheets/style.css')
     html = page.source
     visit('http://jigsaw.w3.org/css-validator/validator.html.en#validate_by_input')
     within_fieldset('validate-by-input') do
       fill_in 'text', :with => html
     end
-    first(:button, 'Check').click
-    assert page.has_content?('Congratulations! No Error Found.'), "true"
-    # progressbar.css
-    visit(@@uri + '/progressbar/progressbar.css')
-    html = page.source
-    visit('http://jigsaw.w3.org/css-validator/validator.html.en#validate_by_input')
-    within_fieldset('validate-by-input') do
-      fill_in 'text', :with => html
-    end
-    first(:button, 'Check').click
+    find(:xpath, "/html/body/div[2]/div/fieldset[3]/form/p[3]/label/a").click
     assert page.has_content?('Congratulations! No Error Found.'), "true"
   end
-
+=end
   def test_02_insert_wrong_smiles
     visit('/')
     page.fill_in 'identifier', :with => "blahblah"
@@ -93,7 +91,7 @@ class LazarWebTest < MiniTest::Test
     # open sf view
     find_link('linkPredictionSf').click
     sleep 5
-    within_frame('iframe_overview') do
+    within_frame('details_overview') do
       assert page.has_content?('Predominantly in compounds with activity "inactive"'), "true"
       assert page.has_content?('Predominantly in compounds with activity "active"'), "true"
       assert page.has_content?('p value'), "true"
@@ -126,7 +124,7 @@ class LazarWebTest < MiniTest::Test
     assert page.has_content?('Supporting information'), "true"
     first(:link, 'linkCompound').click
     sleep 5
-    within_frame('iframe_overview') do
+    within_frame('details_overview') do
       assert page.has_content?('SMILES:'), "true"
       assert page.has_content?('c1ccc(cc1)NN'), "true"
       assert page.has_content?('InChI:'), "true"
@@ -134,10 +132,9 @@ class LazarWebTest < MiniTest::Test
       assert page.has_content?('Names:'), "true"
       assert page.has_content?('Phenylhydrazine'), "true"
       assert page.has_link?('PubChem read across'), "true"
-      find_button('closebutton').click
     end
   end
-
+=begin
   def test_05_multithread_visit_and_predict
     threads = []
     2.times do |t|
@@ -158,9 +155,9 @@ class LazarWebTest < MiniTest::Test
     end
     threads.each {|aThread| aThread.join}
   end
-
+=end
   def test_99_kill
     `pidof Xvfb|xargs kill`
   end
-=end
+
 end

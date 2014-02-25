@@ -18,6 +18,8 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'minitest'
   gem.add_runtime_dependency "opentox-client"
+  gem.add_runtime_dependency 'capybara'
+  gem.add_runtime_dependency 'capybara-webkit'
   gem.post_install_message = "Please configure test in ~/.opentox/config/test.rb"
 
 end
