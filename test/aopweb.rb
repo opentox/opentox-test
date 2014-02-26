@@ -3,6 +3,14 @@ require_relative "setup.rb"
 require 'capybara'
 require 'capybara-webkit'
 
+begin
+  puts "Service URI is: #{$aop[:uri]}"
+rescue
+  puts "Configuration Error: $aop[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
+
+
 Capybara.register_driver :webkit do |app|
   Capybara::Webkit::Driver.new(app).tap{|d| d.browser.ignore_ssl_errors}
 end
@@ -10,7 +18,7 @@ Capybara.default_driver = :webkit
 Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
-Capybara.app_host = 'http://aop.in-silico.ch'
+Capybara.app_host = $aop[:uri]
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
