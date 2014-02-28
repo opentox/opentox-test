@@ -1,7 +1,8 @@
 require_relative "setup.rb"
-#require 'capybara/dsl'
 require 'capybara'
 require 'capybara-webkit'
+
+ENV['DISPLAY'] ="localhost:1.0"
 
 begin
   puts "Service URI is: #{$aop[:uri]}"

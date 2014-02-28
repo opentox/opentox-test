@@ -1,7 +1,8 @@
 require_relative "setup.rb"
-#require 'capybara/dsl'
 require 'capybara'
 require 'capybara-webkit'
+
+ENV['DISPLAY'] ="localhost:1.0"
 
 Capybara.register_driver :webkit do |app|
   Capybara::Webkit::Driver.new(app).tap{|d| d.browser.ignore_ssl_errors}
@@ -14,7 +15,7 @@ Capybara.app_host = 'https://services.in-silico.ch'
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
-
+=begin
   def test_online
     response = `curl -ki http://services.in-silico.ch`
     assert_match /301/, response
@@ -22,7 +23,7 @@ class LazarWebTest < MiniTest::Test
     assert_match /302/, response
     assert_match /predict/, response
   end
-
+=end
   include Capybara::DSL
 
   def test_00_xsetup
