@@ -107,13 +107,25 @@ class TBSPARQLTest < MiniTest::Test
     assert_equal 200, response.code
   end
 
-  def test_09_files_by_investigation
-    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/files_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+  def test_09_factorvalues_by_investigation
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/factorvalues_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
-    files = result["results"]["bindings"].map{|n| "#{n["file"]["value"]}"}
-    assert_equal 181, files.size
-    downloaduris = result["results"]["bindings"].map{|n| "#{n["downloaduri"]["value"]}"}
-    assert_match /#{@@uri}\/files\/JIC37_Ethanol_0\.07_Internal_1_3\.txt/, downloaduris.to_s
+    #puts result
+    ["sample", "factorname", "value", "ontouri", "unitOnto", "unit", "unitID"].each do |v|
+      assert result["head"]["vars"].include?(v.to_s)
+    end
+    
+    sample = result["results"]["bindings"].map{|n| "#{n["sample"]}"}
+    type = result["results"]["bindings"].map{|n| "#{n["sample"]["type"]}"}
+    assert type.include?("uri")
+    value = result["results"]["bindings"].map{|n| "#{n["sample"]["value"]}"}
+    assert value.include?("#{@@uri}/sample2409")
+    
+    factorname = result["results"]["bindings"].map{|n| "#{n["factorname"]}"}
+    type = result["results"]["bindings"].map{|n| "#{n["factorname"]["type"]}"}
+    assert type.include?("literal")
+    value = result["results"]["bindings"].map{|n| "#{n["factorname"]["value"]}"}
+    assert value.include?("limiting nutrient")
   end
 
   def test_13_investigation_by_characteristic_value
