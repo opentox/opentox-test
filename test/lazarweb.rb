@@ -1,3 +1,4 @@
+=begin
 require_relative "setup.rb"
 require 'capybara'
 require 'capybara-webkit'
@@ -15,15 +16,6 @@ Capybara.app_host = 'https://services.in-silico.ch'
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
-=begin
-  def test_online
-    response = `curl -ki http://services.in-silico.ch`
-    assert_match /301/, response
-    response = `curl -ki https://services.in-silico.ch`
-    assert_match /302/, response
-    assert_match /predict/, response
-  end
-=end
   include Capybara::DSL
 
   def test_00_xsetup
@@ -36,33 +28,6 @@ class LazarWebTest < MiniTest::Test
     assert page.has_content?('Lazar Toxicity Predictions')
     assert page.has_content?('DSSTox Carcinogenic Potency DBS ActivityOutcome Hamster (CPDBAS)')
   end
-=begin
-  #TODO sometimes failes
-  def test_01_b_validate_html
-    visit('/')
-    html = page.source
-    visit('http://validator.w3.org/#validate_by_input')
-    within_fieldset('validate-by-input') do
-      fill_in('fragment', :with => html)
-    end
-    find(:xpath, "/html/body/div[2]/div/fieldset[3]/form/p[2]/a").click
-    sleep 5
-    assert page.has_content?('This document was successfully checked as HTML5'), "true"
-  end
-=begin
-  #TODO fix stylesheet route
-  def test_01_c_validate_css
-    # style.css
-    visit('/predict/stylesheets/style.css')
-    html = page.source
-    visit('http://jigsaw.w3.org/css-validator/validator.html.en#validate_by_input')
-    within_fieldset('validate-by-input') do
-      fill_in 'text', :with => html
-    end
-    find(:xpath, "/html/body/div[2]/div/fieldset[3]/form/p[3]/label/a").click
-    assert page.has_content?('Congratulations! No Error Found.'), "true"
-  end
-=end
   def test_02_insert_wrong_smiles
     visit('/')
     page.fill_in 'identifier', :with => "blahblah"
@@ -135,30 +100,9 @@ class LazarWebTest < MiniTest::Test
       assert page.has_link?('PubChem read across'), "true"
     end
   end
-=begin
-  def test_05_multithread_visit_and_predict
-    threads = []
-    2.times do |t|
-      threads << Thread.new(t) do |up|
-        session = Capybara::Session.new(:selenium)
-        puts "Start Time >> " << (Time.now).to_s
-        session.visit('/')
-        session.fill_in 'identifier', :with => 'NNc1ccccc1'
-        session.check('selection[LC50-mmol]')
-        session.check('selection[Hamster]')
-        session.check('selection[Mutagenicity]')
-        session.first(:button, '>>').click
-        # check for Prediction page
-        assert session.has_content?('Prediction Results'), "true"
-        assert session.has_no_content?('502'), "true"
-        puts "Predict Time >> " << (Time.now).to_s
-      end
-    end
-    threads.each {|aThread| aThread.join}
-  end
-=end
   def test_99_kill
     `pidof Xvfb|xargs kill`
   end
 
 end
+=end

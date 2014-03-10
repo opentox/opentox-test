@@ -1,3 +1,4 @@
+=begin
 require_relative "setup.rb"
 require 'capybara'
 require 'capybara-webkit'
@@ -57,3 +58,4 @@ class LazarWebTest < MiniTest::Test
   end
 
 end
+=end
