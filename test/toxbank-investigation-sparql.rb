@@ -249,7 +249,16 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert factors.include?("dose:::0::::::http://purl.obolibrary.org/obo/UO_0000064:::micromolar:::UO:0000064")
     assert factors.include?("compound:::DOXORUBICIN:::http://purl.obolibrary.org/chebi/CHEBI:28748:::::::::")
   end
-  
+
+  def test_05_files_by_investigation
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/files_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    ["assay", "assayFile", "endpoint", "endpointLabel", "platform", "technology", "techLabel", "file", "term"].each do |v|
+      assert result["head"]["vars"].include?(v.to_s)
+    end
+  end
+
   # Retrieves protocol URI containing any of the factor value URI (e.g. two compound URIs)
   def test_10_protocols_by_factors
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/protocols_by_factors", {:factorValues => "['http://purl.obolibrary.org/chebi/CHEBI:28748']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
