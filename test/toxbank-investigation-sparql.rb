@@ -194,6 +194,7 @@ class TBSPARQLTest < MiniTest::Test
     ontouri = result["results"]["bindings"].map{|n| "#{n["ontouri"]["value"]}"}
     #assert value.include?("http://purl.obolibrary.org/chebi/CHEBI:28748")
   end
+  
 
   def test_30_empty_factorValues_search
     assert_raises OpenTox::BadRequestError do
@@ -258,6 +259,16 @@ class TBSPARQLTestExtended < MiniTest::Test
       assert result["head"]["vars"].include?(v.to_s)
     end
   end
+  
+  def test_06_files_and_assays_by_investigation
+    response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/files_and_assays_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    #puts result
+    ["study", "assay", "assayFile", "endpoint", "endpointLabel", "technology", "techLabel", "platform", "file", "term"].each do |v|
+      assert result["head"]["vars"].include?(v.to_s)
+    end
+  end
+  
 
   # Retrieves protocol URI containing any of the factor value URI (e.g. two compound URIs)
   def test_10_protocols_by_factors
@@ -293,7 +304,7 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert_equal 200, response.code
     assert inv_factor.include?("#{@@uri}:::compound:::DOXORUBICIN")
   end
-  
+
   def test_16_investigation_by_pvalue
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_pvalue", {:value => "0.65614"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
