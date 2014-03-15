@@ -342,24 +342,29 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert inv_genes.include?("#{@@uri}:::http://onto.toxbank.net/isa/bii/data_types/microarray_derived_data:::q-value[Low.8hr-Control.8hr]:::http://onto.toxbank.net/isa/qvalue:::0.911237")
   end
 
-  def test_20_investigation_by_gene_and_pvalue
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_pvalue", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    result = JSON.parse(response)
-    #puts response
-    inv = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
-    assert_equal 200, response.code
-    assert inv.include?("#{@@uri}")
-  end
-
-  def test_21_investigation_by_gene_and_pvalue
-    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_pvalue", {:geneIdentifiers => "['entrez:3075']", :value => "0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    result = JSON.parse(response)
-    #puts response
-    inv = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
-    assert_equal 200, response.code
-    assert inv.include?("#{@@uri}")
+  def test_20_investigation_by_gene_and_value
+    # check for FC, pValue, qValue
+    ["FC", "pvalue", "qvalue"].each do |value_type|
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "#{value_type}=0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+      result = JSON.parse(response)
+      #puts response
+      ["investigation", "datatype", "title", "value"].each do |v|
+        assert result["head"]["vars"].include?(v.to_s)
+      end
+      assert_equal 200, response.code
+    end
   end
   
+  def test_21_investigation_by_gene_and_value
+    # check valid request
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "FC0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "DC=0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+  end
+
   # delete investigation/{id}
   # @note expect code 200
   def test_90_delete_investigation
