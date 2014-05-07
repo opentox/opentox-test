@@ -225,7 +225,7 @@ class TBSPARQLTestExtended < MiniTest::Test
   def test_00_create_investigation
     OpenTox::RestClientWrapper.subjectid = $pi[:subjectid] # set pi as the logged in user
     @@uri = ""
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "IST_test_sparql.zip"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "GC-ToxBank-15_tb2.zip"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
@@ -234,6 +234,12 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     @@uri = URI(uri)
     OpenTox::RestClientWrapper.put @@uri.to_s, { :published => "true", :summarySearchable => "true"}, { :subjectid => $pi[:subjectid] }
+    subtask = OpenTox::RestClientWrapper.get "#{@@uri}/subtaskuri", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid]}
+    puts "SubTaskURI is: #{subtask}"
+    if subtask != ""
+      task = OpenTox::Task.new subtask.chomp
+      task.wait
+    end
   end  
   
   # Retrieves all factors (name, value, ontology URI of the value) given an investigation URI
