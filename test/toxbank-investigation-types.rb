@@ -8,9 +8,6 @@ rescue
   exit
 end
 
-@@uri_list_size = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
-puts "uri-list size:\t#{@@uri_list_size}"
-
 class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   
   # no file no params
@@ -224,12 +221,6 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
     #puts task_uri
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     assert_equal "'http://www.owl-ontologies.com/oxbank.owl/K727' is not a valid URI.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
-  end
-
-  def test_uri_list_size
-    puts "\ntest uri-list size is equal"
-    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
-    assert_equal @@uri_list_size, response
   end
 
 end
@@ -471,12 +462,6 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_equal "200", response.code.to_s
   end
   
-  def test_uri_list_size
-    puts "\ntest uri-list size is equal"
-    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
-    assert_equal @@uri_list_size, response
-  end
-  
   def test_post_type_nodata_put_error
     puts "\nvalid noData"
     response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16, #{$user_service[:uri]}/organisation/G32", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
@@ -496,7 +481,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task.wait
     #puts task.uri
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    assert_match "No file uploaded or parameters given.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+    assert_match "No file uploaded or any valid parameter given.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     # PUT missing title
     response =  OpenTox::RestClientWrapper.put @uri.to_s, { :type => "noData", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16, #{$user_service[:uri]}/organisation/G32", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
@@ -509,6 +494,87 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+  end
+
+end
+
+class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
+  
+  def test_change_type
+    puts "\ntype noData"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16, #{$user_service[:uri]}/organisation/G32", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task.uri
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    # check files
+    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
+    assert_equal uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should be equal to #{uri.split("/").last} but is #{response}"
+    
+    puts "\ntype ftpData"
+    response = OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16, #{$user_service[:uri]}/organisation/G32", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt, JIC37_Ethanol_0.07_Internal_1_4.txt"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task.uri
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
+    # check files#TODO check Backend output
+    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
+    assert_match uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/files/"+uri.split("/").last+".nt"} but is #{response}"
+    assert_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt", response, "uri-list should match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt"} but is #{response}"
+    assert_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
+    
+    puts "\ntype unFormatedData"
+    response = OpenTox::RestClientWrapper.put uri, {:file => File.open(file), :type => "unFormatedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16, #{$user_service[:uri]}/organisation/G32", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task.uri
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    # check files
+    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
+    assert_match uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/files/"+uri.split("/").last+".nt"} but is #{response}"
+    assert_match uri+"/files/"+"unformated.zip", response, "uri-list should match #{uri+"/files/"+"unformated.zip"} but is #{response}"
+    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt"} but is #{response}"
+    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
+    
+    puts "\ntype isatab"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2.zip"
+    response = OpenTox::RestClientWrapper.put uri, {:file => File.open(file)}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task.uri
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
+    sleep 2
+    # check files
+    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
+    #puts response
+    assert_match uri+"/isatab/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/isatab/"+uri.split("/").last+".nt"} but is #{response}"
+    assert_match uri+"/isatab/"+"BII-I-1-tb2.zip", response, "uri-list should match #{uri+"/isatab/"+"BII-I-1-tb2.zip"} but is #{response}"
+    assert_match uri+"/isatab/"+"a_metabolome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_metabolome.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"a_microarray.txt", response, "uri-list should match #{uri+"/isatab/"+"a_microarray.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"a_proteome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_proteome.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"a_transcriptome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_transcriptome.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"i_Investigation.txt", response, "uri-list should match #{uri+"/isatab/"+"i_Investigation.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"investigation_#{uri.split("/").last}.zip", response, "uri-list should match #{uri+"/isatab/"+"investigation_#{uri.split("/").last}.zip"} but is #{response}"
+    assert_match uri+"/isatab/"+"s_BII-S-1.txt", response, "uri-list should match #{uri+"/isatab/"+"s_BII-S-1.txt"} but is #{response}"
+    assert_match uri+"/isatab/"+"s_BII-S-2.txt", response, "uri-list should match #{uri+"/isatab/"+"s_BII-S-2.txt"} but is #{response}"
+    # refute
+    refute_match uri+"/files/"+"unformated.zip", response, "uri-list should match #{uri+"/files/"+"unformated.zip"} but is #{response}"
+    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
+    
+    # DELETE
+    response =  OpenTox::RestClientWrapper.delete uri, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
   end
 
