@@ -473,8 +473,8 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
     # DELETE
-    #response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
-    #assert_equal "200", response.code.to_s
+    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
   end
   
   def test_post_type_nodata_put_error
@@ -508,8 +508,8 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
 
     # DELETE
-    #response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
-    #assert_equal "200", response.code.to_s
+    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
   end
 
 end
