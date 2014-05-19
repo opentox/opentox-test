@@ -567,27 +567,9 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
-    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
-    sleep 2
-    # check files
-    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
-    #puts response
-    assert_match uri+"/isatab/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/isatab/"+uri.split("/").last+".nt"} but is #{response}"
-    assert_match uri+"/isatab/"+"BII-I-1-tb2.zip", response, "uri-list should match #{uri+"/isatab/"+"BII-I-1-tb2.zip"} but is #{response}"
-    assert_match uri+"/isatab/"+"a_metabolome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_metabolome.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"a_microarray.txt", response, "uri-list should match #{uri+"/isatab/"+"a_microarray.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"a_proteome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_proteome.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"a_transcriptome.txt", response, "uri-list should match #{uri+"/isatab/"+"a_transcriptome.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"i_Investigation.txt", response, "uri-list should match #{uri+"/isatab/"+"i_Investigation.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"investigation_#{uri.split("/").last}.zip", response, "uri-list should match #{uri+"/isatab/"+"investigation_#{uri.split("/").last}.zip"} but is #{response}"
-    assert_match uri+"/isatab/"+"s_BII-S-1.txt", response, "uri-list should match #{uri+"/isatab/"+"s_BII-S-1.txt"} but is #{response}"
-    assert_match uri+"/isatab/"+"s_BII-S-2.txt", response, "uri-list should match #{uri+"/isatab/"+"s_BII-S-2.txt"} but is #{response}"
-    # refute
-    refute_match uri+"/files/"+"unformated.zip", response, "uri-list should match #{uri+"/files/"+"unformated.zip"} but is #{response}"
-    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
-    
+    #uri = task.resultURI
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    assert_match "Unable to edit unformated investigation with ISA-TAB data.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
