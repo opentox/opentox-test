@@ -477,6 +477,31 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_equal "200", response.code.to_s
   end
   
+  def test_post_type_unformattedData_whitespace
+    puts "\nvalid unformattedData whitespace"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "un formated.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task.uri
+    uri = task.resultURI
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    
+    # GET metadata
+    response = OpenTox::RestClientWrapper.get uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+    @g = RDF::Graph.new
+    RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
+    #@g.each{|g| puts g.object}
+    @g.query(:predicate => RDF::TB.hasInvType){|r| assert_match /unformattedData/, r[2].to_s}
+    @g.query(:predicate => RDF::TB.hasDownload){|r| assert_match /#{uri}\/files\/un%20formated\.zip/, r[2].to_s}
+    
+    # DELETE
+    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+  end
+
   def test_post_type_nodata_put_error
     puts "\nvalid noData"
     response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
