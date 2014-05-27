@@ -353,12 +353,17 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     # GET file in uri-list
     response = OpenTox::RestClientWrapper.get uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
     assert_match /JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
+    assert_match /subdir\/JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
     
     # GET file
     response = OpenTox::RestClientWrapper.get uri.to_s+"/files/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
     assert_match /isttest/, response.to_s
     
+    response = OpenTox::RestClientWrapper.get uri.to_s+"/files/subdir_JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+    assert_match /isttest subdir/, response.to_s
+
     # PUT
     response =  OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
