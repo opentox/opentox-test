@@ -317,7 +317,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   def test_02_post_type_ftpdata
     puts "\nvalid ftpData"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "subdir/JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -353,7 +353,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     # GET file in uri-list
     response = OpenTox::RestClientWrapper.get uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
     assert_match /JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
-    assert_match /subdir\/JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
+    assert_match /subdir_JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
     
     # GET file
     response = OpenTox::RestClientWrapper.get uri.to_s+"/files/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
