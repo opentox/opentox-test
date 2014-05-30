@@ -39,7 +39,15 @@ class TBInvestigationFTP < MiniTest::Test
     $ftp.putbinaryfile(file)
     f = $ftp.list(File.basename(file))
     assert_equal f[0].split[8], File.basename(file), "file #{File.basename(file)} do not exist on ftp server." 
-    
+
+    response = OpenTox::RestClientWrapper.get  $investigation[:uri]+"/ftpfiles", {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+
+    files_to_check = ["subdir/JIC37_Ethanol_0.07_Internal_1_3.txt","JIC37_Ethanol_0.07_Internal_1_3.txt","subdir/isttest.txt","isttest.txt","#{$testdir}/#{File.basename(file)}"]
+    files_to_check.each do |ftc|
+      refute_nil response.match("(^|\n)#{ftc}(\n|$)"), "File: #{ftc} is not in ftpfiles"
+    end
+
     $ftp.delete(File.basename(file))
     assert_raises Net::FTPTempError do
       f = $ftp.list(File.basename(file))
@@ -52,10 +60,8 @@ class TBInvestigationFTP < MiniTest::Test
   end
 
 
-
-
   # close connection and check if it is closed
-  def test_99_delete_testdata
+  def test_99_close
     $ftp.close
     assert $ftp.closed?, "connection not closed"
   end
