@@ -52,6 +52,20 @@ class TBInvestigationFTP < MiniTest::Test
     end
   end
 
+  # check http://api.toxbank.net/index.php/Investigation#Get_a_list_of_uploaded_FTP_files
+  def test_04_check_ftpfiles_json
+    response = OpenTox::RestClientWrapper.get  $investigation[:uri]+"/ftpfiles", {}, {:accept => "application/json", :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
+    assert !!JSON.parse(response)
+    result = JSON.parse(response)
+    files_to_check = ["subdir/JIC37_Ethanol_0.07_Internal_1_3.txt","JIC37_Ethanol_0.07_Internal_1_3.txt","subdir/isttest.txt","isttest.txt","#{$testdir}/#{File.basename($testfile)}"]
+    files_to_check.each do |ftc|
+      chk = false
+      result["results"]["bindings"].find{|f| chk = true if f["filename"]["value"] == ftc}
+      assert chk, "File: #{ftc} is not in ftpfiles json list"
+    end
+  end
+
   # delete file from test_02
   def test_04_delete_file
     $ftp.delete(File.basename($testfile))
