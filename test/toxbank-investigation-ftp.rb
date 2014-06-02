@@ -52,7 +52,7 @@ class TBInvestigationFTP < MiniTest::Test
     end
   end
 
-  # check http://api.toxbank.net/index.php/Investigation#Get_a_list_of_uploaded_FTP_files
+  # validate json output
   def test_04_check_ftpfiles_json
     response = OpenTox::RestClientWrapper.get  $investigation[:uri]+"/ftpfiles", {}, {:accept => "application/json", :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -66,8 +66,15 @@ class TBInvestigationFTP < MiniTest::Test
     end
   end
 
+  # validate json output
+  def test_10_check_ftpfiles_json_empty
+    response = OpenTox::RestClientWrapper.get  $investigation[:uri]+"/ftpfiles", {}, {:accept => "application/json", :subjectid => $guestid }
+    assert_equal "200", response.code.to_s
+    assert !!JSON.parse(response)
+  end
+
   # delete file from test_02
-  def test_04_delete_file
+  def test_95_delete_file
     $ftp.delete(File.basename($testfile))
     assert_raises Net::FTPTempError do
       f = $ftp.list(File.basename($testfile))
