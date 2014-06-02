@@ -309,7 +309,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
-    
+  ensure    
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -397,7 +397,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
-
+  ensure
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -476,7 +476,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
-    
+  ensure  
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -501,7 +501,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     #@g.each{|g| puts g.object}
     @g.query(:predicate => RDF::TB.hasInvType){|r| assert_match /unformattedData/, r[2].to_s}
     @g.query(:predicate => RDF::TB.hasDownload){|r| assert_match /#{uri}\/files\/un%20formated\.zip/, r[2].to_s}
-    
+  ensure  
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -536,7 +536,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     assert_match "Parameter 'title' is required.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
 
-
+  ensure
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
@@ -600,6 +600,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     #uri = task.resultURI
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     assert_match "Unable to edit unformated investigation with ISA-TAB data.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+  ensure  
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
