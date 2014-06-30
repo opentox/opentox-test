@@ -298,7 +298,7 @@ class TBSPARQLTestExtended < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "['http://purl.obolibrary.org/chebi/CHEBI:28748']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     result = JSON.parse(response)
-    inv_factors = result["results"]["bindings"].map{|n| "#{n["inv"]["value"]}:::#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
+    inv_factors = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
     assert_equal 200, response.code
     assert inv_factors.include?("#{@@uri}:::compound:::DOXORUBICIN")
   end
