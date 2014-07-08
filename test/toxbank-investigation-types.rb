@@ -149,20 +149,6 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
     assert_equal "Parameter 'owningOrg' is required.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
   end
   
-  # missing owningPro
-  # @note expect OpenTox::BadRequestError
-  def test_attached_file_missing_owningPro
-    puts "\nattached file missing owningPro"
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
-    task_uri = response.chomp
-    task = OpenTox::Task.new task_uri
-    task.wait
-    #puts task_uri
-    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    assert_equal "Parameter 'owningPro' is required.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
-  end
-  
   # missing authors
   # @note expect OpenTox::BadRequestError
   def test_attached_file_missing_authors
@@ -240,6 +226,31 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
 end
 
 class TBInvestigationNoISADataValidPOST < MiniTest::Test
+  
+  # missing owningPro
+  def test_attached_file_without_owningPro
+    puts "\nattached file missing owningPro"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task_uri
+    assert_equal "Completed", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+  end
+  
+  # missing owningPro
+  def test_no_file_without_owningPro
+    puts "\nattached file missing owningPro"
+    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    #puts task_uri
+    assert_equal "Completed", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+  end
+
 
   def test_01_post_type_nodata
     puts "\nvalid noData"
