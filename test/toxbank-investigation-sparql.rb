@@ -350,6 +350,12 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert inv_genes.include?("#{@@uri}:::http://onto.toxbank.net/isa/bii/data_types/microarray_derived_data:::q-value[Low.8hr-Control.8hr]:::http://onto.toxbank.net/isa/qvalue:::0.911237")
   end
 
+  def test_19_b_investigation_by_genes
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_genes", {:geneIdentifiers => "['entrez3075', 'uniprot:P10809']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+  end
+  
   def test_20_investigation_by_gene_and_value
     # check for FC, pValue, qValue
     ["FC", "pvalue", "qvalue"].each do |value_type|
@@ -364,12 +370,15 @@ class TBSPARQLTestExtended < MiniTest::Test
   end
   
   def test_21_investigation_by_gene_and_value
-    # check valid request
+    # check for valid request
     assert_raises OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "FC0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     end
     assert_raises OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "DC=0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    end
+    assert_raises OpenTox::BadRequestError do
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez3075']", :value => "DC:0.7"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     end
   end
 
