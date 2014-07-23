@@ -259,16 +259,16 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
+    @uri = task.resultURI
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     
     # GET metadata
-    response = OpenTox::RestClientWrapper.get uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     #@g.each{|g| puts g.object}
     @g.query(:predicate => RDF::TB.hasInvType){|r| assert_match /noData/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.modified){|r| assert_equal uri.to_s, r[0].to_s}
+    @g.query(:predicate => RDF::DC.modified){|r| assert_equal @uri.to_s, r[0].to_s}
     expected_owner = ["#{$user_service[:uri]}/user/U271"]
     owner = @g.query(:predicate => RDF::TB.hasOwner).collect{|r| r[2].to_s}
     assert_equal owner, expected_owner
@@ -288,7 +288,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
     # PUT
-    response =  OpenTox::RestClientWrapper.put uri, {:type => "noData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:type => "noData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -322,7 +322,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure    
     # DELETE
-    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
   end
 
@@ -333,17 +333,17 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
+    @uri = task.resultURI
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     
     # GET metadata
-    response = OpenTox::RestClientWrapper.get uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     #@g.each{|g| puts g.object}
     @g.query(:predicate => RDF::TB.hasInvType){|r| assert_match /ftpData/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.modified){|r| assert_equal uri.to_s, r[0].to_s}
+    @g.query(:predicate => RDF::DC.modified){|r| assert_equal @uri.to_s, r[0].to_s}
     expected_owner = ["#{$user_service[:uri]}/user/U271"]
     owner = @g.query(:predicate => RDF::TB.hasOwner).collect{|r| r[2].to_s}
     assert_equal owner, expected_owner
@@ -362,21 +362,21 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
     # GET file in uri-list
-    response = OpenTox::RestClientWrapper.get uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
     assert_match /JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
     assert_match /subdir_JIC37_Ethanol_0.07_Internal_1_3.txt/, response.to_s
     
     # GET file
-    response = OpenTox::RestClientWrapper.get uri.to_s+"/files/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s+"/files/JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
     assert_match /isttest/, response.to_s
     
-    response = OpenTox::RestClientWrapper.get uri.to_s+"/files/subdir_JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s+"/files/subdir_JIC37_Ethanol_0.07_Internal_1_3.txt", {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
     assert_match /isttest subdir/, response.to_s
 
     # PUT
-    response =  OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:type => "ftpData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -410,7 +410,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure
     # DELETE
-    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
   end
 
@@ -422,17 +422,17 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
+    @uri = task.resultURI
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     
     # GET metadata
-    response = OpenTox::RestClientWrapper.get uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s+"/metadata", {}, {:accept => "application/rdf+xml", :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
     @g = RDF::Graph.new
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     #@g.each{|g| puts g.object}
     @g.query(:predicate => RDF::TB.hasInvType){|r| assert_match /unformattedData/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.modified){|r| assert_equal uri.to_s, r[0].to_s}
+    @g.query(:predicate => RDF::DC.modified){|r| assert_equal @uri.to_s, r[0].to_s}
     expected_owner = ["#{$user_service[:uri]}/user/U271"]
     owner = @g.query(:predicate => RDF::TB.hasOwner).collect{|r| r[2].to_s}
     assert_equal owner, expected_owner
@@ -451,11 +451,11 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
     # GET file by uri-list
-    response = OpenTox::RestClientWrapper.get uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.get @uri.to_s, {}, {:accept => "text/uri-list", :subjectid => $pi[:subjectid] }
     assert_match /files\/unformated\.zip/, response.to_s
     
     # PUT
-    response =  OpenTox::RestClientWrapper.put uri, {:file => File.open(file), :type => "unformattedData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:file => File.open(file), :type => "unformattedData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -489,7 +489,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure  
     # DELETE
-    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
   end
   
@@ -525,8 +525,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
-    @uri = uri
+    @uri = task.resultURI
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     
     # PUT missing type
@@ -537,7 +536,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task.wait
     #puts task.uri
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    assert_match "No file uploaded or any valid parameter given.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+    assert_match "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     # PUT missing title
     response =  OpenTox::RestClientWrapper.put @uri.to_s, { :type => "noData", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
@@ -549,7 +548,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   ensure
     # DELETE
-    response =  OpenTox::RestClientWrapper.delete uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
     assert_equal "200", response.code.to_s
   end
 
@@ -577,14 +576,8 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
-    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    response = OpenTox::RestClientWrapper.get($investigation[:uri], {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).split("\n").size
-    # check files#TODO check Backend output
-    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
-    assert_match uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/files/"+uri.split("/").last+".nt"} but is #{response}"
-    assert_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt", response, "uri-list should match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt"} but is #{response}"
-    assert_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    assert_equal "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     
     puts "\ntype unformattedData"
     response = OpenTox::RestClientWrapper.put uri, {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
@@ -592,14 +585,8 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     task = OpenTox::Task.new task_uri
     task.wait
     #puts task.uri
-    uri = task.resultURI
-    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    # check files
-    response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
-    assert_match uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should match #{uri+"/files/"+uri.split("/").last+".nt"} but is #{response}"
-    assert_match uri+"/files/"+"unformated.zip", response, "uri-list should match #{uri+"/files/"+"unformated.zip"} but is #{response}"
-    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_3.txt"} but is #{response}"
-    refute_match uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt", response, "uri-list should not match #{uri+"/files/"+"JIC37_Ethanol_0.07_Internal_1_4.txt"} but is #{response}"
+    assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    assert_equal "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     
     puts "\ntype isatab"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "BII-I-1-tb2.zip"
@@ -610,7 +597,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     #puts task.uri
     #uri = task.resultURI
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    assert_match "Unable to edit unformated investigation with ISA-TAB data.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+    assert_match "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
   ensure  
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri, {}, { :subjectid => $pi[:subjectid] }
