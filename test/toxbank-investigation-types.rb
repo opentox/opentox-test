@@ -228,6 +228,7 @@ end
 class TBInvestigationNoISADataValidPOST < MiniTest::Test
   
   # missing owningPro
+  # update: is allowed
   def test_attached_file_without_owningPro
     puts "\nattached file missing owningPro"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
@@ -235,20 +236,28 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
+    @uri = task.resultURI
     #puts task_uri
     assert_equal "Completed", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    # DELETE
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
   end
   
   # missing owningPro
+  # update: is allowed
   def test_no_file_without_owningPro
-    puts "\nattached file missing owningPro"
-    file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
+    puts "\nno file missing owningPro"
     response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_no_file_without_owningPro", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
+    @uri = task.resultURI
     #puts task_uri
-    assert_equal "Completed", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+    assert_equal "Completed", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."  
+    # DELETE
+    response =  OpenTox::RestClientWrapper.delete @uri.to_s, {}, { :subjectid => $pi[:subjectid] }
+    assert_equal "200", response.code.to_s
   end
 
 
