@@ -30,7 +30,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_attached_file_missing_type  
     puts "\nattached file but missing type"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81, #{$user_service[:uri]}/project/G79", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :title => "New Title", :abstract => "test_attached_file_missing_type", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81, #{$user_service[:uri]}/project/G79", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -43,7 +43,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   # @note expect OpenTox::BadRequestError
   def test_noData
     puts "\ntype noData but ftp file in params"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_noData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -57,7 +57,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_wrong_type_noData
     puts "\nattached file but type is noData"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "noData", :title => "New Title", :abstract => "test_wrong_type_noData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -71,7 +71,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_wrong_type_ftpData
     puts "\nattached file but type is ftpData"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "ftpData", :title => "New Title", :abstract => "test_wrong_type_ftpData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -84,7 +84,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   # @note expect OpenTox::BadRequestError
   def test_unknown_inv_type
     puts "\nunknown inv type"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], { :type => "Data", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], { :type => "Data", :title => "New Title", :abstract => "test_unknown_inv_type", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -98,7 +98,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_file_unknown_inv_type
     puts "\nattached file unknown inv type"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], { :file => File.open(file), :type => "Data", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], { :file => File.open(file), :type => "Data", :title => "New Title", :abstract => "test_file_unknown_inv_type", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -112,7 +112,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_attached_file_missing_title  
     puts "\nattached file missing title"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :abstract => "test_attached_file_missing_title", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -140,7 +140,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_attached_file_missing_owningOrg
     puts "\nattached file missing owningOrg"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_attached_file_missing_owningOrg", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -154,7 +154,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_attached_file_missing_authors
     puts "\nattached file missing authors"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_attached_file_missing_authors", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -168,7 +168,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_attached_file_missing_keywords
     puts "\nattached file missing keywords"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_attached_file_missing_keywords", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -184,7 +184,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_wrong_mime
     puts "\nattached file wrong mime"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "empty.zup"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "noData", :title => "New Title", :abstract => "test_wrong_mime", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -200,7 +200,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_file_larger_10mb
     puts "\nunformated data larger 10MB"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/invalid", "unformated10mb.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_file_larger_10mb", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -214,7 +214,7 @@ class TBInvestigationNoISADataInvalidPOST < MiniTest::Test
   def test_invalid_param_uri
     puts "\ninvalid param URI"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/oxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_invalid_param_uri", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/oxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -231,7 +231,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
   def test_attached_file_without_owningPro
     puts "\nattached file missing owningPro"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_attached_file_without_owningPro", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -243,7 +243,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
   def test_no_file_without_owningPro
     puts "\nattached file missing owningPro"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_no_file_without_owningPro", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727" }, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -254,7 +254,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   def test_01_post_type_nodata
     puts "\nvalid noData"
-    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_01_post_type_nodata", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -283,12 +283,12 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::TB.hasProject){|r| assert_match "#{$user_service[:uri]}/project/G81", r[2].to_s}
     @g.query(:predicate => RDF::DC.title){|r| assert_match /New Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_01_post_type_nodata/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
     # PUT
-    response =  OpenTox::RestClientWrapper.put @uri, {:type => "noData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:type => "noData", :title => "Second Title", :abstract => "test_01_post_type_nodata PUT", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -317,7 +317,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Second Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_01_post_type_nodata PUT/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure    
@@ -328,7 +328,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   def test_02_post_type_ftpdata
     puts "\nvalid ftpData"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "subdir/JIC37_Ethanol_0.07_Internal_1_3.txt,JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "ftpData", :title => "New Title", :abstract => "test_02_post_type_ftpdata", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "subdir/JIC37_Ethanol_0.07_Internal_1_3.txt,JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -357,7 +357,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::DC.title){|r| assert_match /New Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_02_post_type_ftpdata/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
@@ -376,7 +376,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_match /isttest subdir/, response.to_s
 
     # PUT
-    response =  OpenTox::RestClientWrapper.put @uri, {:type => "ftpData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:type => "ftpData", :title => "Second Title", :abstract => "test_02_post_type_ftpdata PUT", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -405,7 +405,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Second Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_02_post_type_ftpdata PUT/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure
@@ -417,7 +417,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
   def test_03_post_type_unformattedData
     puts "\nvalid unformattedData"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_03_post_type_unformattedData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -446,7 +446,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::DC.title){|r| assert_match /New Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_03_post_type_unformattedData/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
     
@@ -455,7 +455,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_match /files\/unformated\.zip/, response.to_s
     
     # PUT
-    response =  OpenTox::RestClientWrapper.put @uri, {:file => File.open(file), :type => "unformattedData", :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri, {:file => File.open(file), :type => "unformattedData", :title => "Second Title", :abstract => "test_03_post_type_unformattedData PUT", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -484,7 +484,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Second Title/, r[2].to_s}
-    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /This is a short description/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.abstract){|r| assert_match /test_03_post_type_unformattedData PUT/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isSummarySearchable){|r| assert_match /false/, r[2].to_s}
     @g.query(:predicate => RDF::TB.isPublished){|r| assert_match /false/, r[2].to_s}
   ensure  
@@ -496,7 +496,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
   def test_post_type_unformattedData_whitespace
     puts "\nvalid unformattedData whitespace"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "un formated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_post_type_unformattedData_whitespace", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -520,7 +520,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   def test_post_type_nodata_put_error
     puts "\nvalid noData"
-    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_post_type_nodata_put_error", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -530,7 +530,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     
     # PUT missing type
     puts "\nPUT missing type expect error"
-    response =  OpenTox::RestClientWrapper.put @uri.to_s, { :title => "Second Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri.to_s, { :title => "Second Title", :abstract => "test_post_type_nodata_put_error PUT missing type", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -538,7 +538,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     assert_match "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     # PUT missing title
-    response =  OpenTox::RestClientWrapper.put @uri.to_s, { :type => "noData", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.put @uri.to_s, { :type => "noData", :abstract => "test_post_type_nodata_put_error PUT missing title", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -559,7 +559,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
   def test_change_type
     puts "\ntype noData"
     file = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
-    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_change_type", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -571,7 +571,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     assert_equal uri+"/files/"+uri.split("/").last+".nt", response, "uri-list should be equal to #{uri.split("/").last} but is #{response}"
     
     puts "\ntype ftpData"
-    response = OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt, JIC37_Ethanol_0.07_Internal_1_4.txt"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "New Title", :abstract => "test_change_type type ftpData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt, JIC37_Ethanol_0.07_Internal_1_4.txt"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -580,7 +580,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     assert_equal "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
     
     puts "\ntype unformattedData"
-    response = OpenTox::RestClientWrapper.put uri, {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "This is a short description", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response = OpenTox::RestClientWrapper.put uri, {:file => File.open(file), :type => "unformattedData", :title => "New Title", :abstract => "test_change_type type unformattedData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
