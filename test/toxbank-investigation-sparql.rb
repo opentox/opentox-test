@@ -240,8 +240,8 @@ class TBSPARQLTestExtended < MiniTest::Test
       task = OpenTox::Task.new subtask.chomp
       task.wait
     end
-    puts "sleep 120s"
-    sleep 120
+    puts "sleep 12s"
+    sleep 12
   end  
   
   # Retrieves all factors (name, value, ontology URI of the value) given an investigation URI
