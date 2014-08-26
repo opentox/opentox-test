@@ -606,7 +606,21 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     #puts task.uri
     #uri = task.resultURI
     assert_equal "Error", task.hasStatus, "Task should be not completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
-    assert_match "Expected type is 'noData'.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+    assert_match "Unable to edit unformatted investigation with ISA-TAB data.", task.error_report[RDF::OT.message], "wrong error: #{task.error_report[RDF::OT.message]}."
+    
+    puts "\nset flag isPublished"
+    response = OpenTox::RestClientWrapper.put uri, {:published => "true"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
+
+    puts "\nset flag summarySearchable"
+    response = OpenTox::RestClientWrapper.put uri, {:summarySearchable => "true"}, { :subjectid => $pi[:subjectid] }
+    task_uri = response.chomp
+    task = OpenTox::Task.new task_uri
+    task.wait
+    assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
   ensure  
     # DELETE
     response =  OpenTox::RestClientWrapper.delete uri, {}, { :subjectid => $pi[:subjectid] }
