@@ -263,7 +263,7 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
 
   def test_01_post_type_nodata
     puts "\nvalid noData"
-    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_01_post_type_nodata", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727"}, { :subjectid => $pi[:subjectid] }
+    response =  OpenTox::RestClientWrapper.post $investigation[:uri], {:type => "noData", :title => "New Title", :abstract => "test_01_post_type_nodata", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :owningPro => "#{$user_service[:uri]}/project/G81", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :licenses => "http://testlicense.net/cc, plain text for license"}, { :subjectid => $pi[:subjectid] }
     task_uri = response.chomp
     task = OpenTox::Task.new task_uri
     task.wait
@@ -287,6 +287,9 @@ class TBInvestigationNoISADataValidPOST < MiniTest::Test
     expected_keywords = ["http://www.owl-ontologies.com/toxbank.owl/K124", "http://www.owl-ontologies.com/toxbank.owl/K727"]
     keywords = @g.query(:predicate => RDF::TB.hasKeyword).collect{|r| r[2].to_s}
     assert_equal keywords, expected_keywords
+    expected_licenses = ["plain text for license", "http://testlicense.net/cc"]
+    licenses = @g.query(:predicate => RDF::DC.license).collect{|r| r[2].to_s}
+    assert_equal licenses, expected_licenses
     orgs = ["#{$user_service[:uri]}/organisation/G16"]
     expected_orgs = @g.query(:predicate => RDF::TB.hasOrganisation).collect{|r| r[2].to_s}
     assert_equal orgs, expected_orgs
