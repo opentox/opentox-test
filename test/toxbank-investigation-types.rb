@@ -579,7 +579,7 @@ class TBInvestigationNoISADataValidPOSTchangeType < MiniTest::Test
     assert_equal "Completed", task.hasStatus, "Task should be completed but is: #{task.hasStatus}. Task URI is #{task_uri} ."
     # check files
     response = OpenTox::RestClientWrapper.get(uri, {}, { :accept=>"text/uri-list", :subjectid => $pi[:subjectid] }).chomp
-    assert_equal "No files to list. Please request metadata for details.", response, "uri-list should be empty but is #{response}"
+    assert_empty response, "uri-list should be empty but is #{response}"
     
     puts "\ntype ftpData"
     response = OpenTox::RestClientWrapper.put uri, {:type => "ftpData", :title => "New Title", :abstract => "test_change_type type ftpData", :owningOrg => "#{$user_service[:uri]}/organisation/G16", :authors => "#{$user_service[:uri]}/user/U271, #{$user_service[:uri]}/user/U479", :owningPro => "#{$user_service[:uri]}/project/G81", :keywords => "http://www.owl-ontologies.com/toxbank.owl/K124, http://www.owl-ontologies.com/toxbank.owl/K727", :ftpFile => "JIC37_Ethanol_0.07_Internal_1_3.txt, JIC37_Ethanol_0.07_Internal_1_4.txt"}, { :subjectid => $pi[:subjectid] }
