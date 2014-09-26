@@ -152,6 +152,7 @@ class TBInvestigationREST < MiniTest::Test
     RDF::Reader.for(:rdfxml).new(response.to_s){|r| r.each{|s| @g << s}}
     assert @g.has_predicate?(RDF::DC.title), "Metadata Graph don't have predicate #{RDF::DC.title}"
     @g.query(:predicate => RDF::DC.title){|r| assert_match /Growth control of the eukaryote cell: a systems biology study in yeast/, r[2].to_s}
+    @g.query(:predicate => RDF::DC.license){|r| assert_match /http\:\/\/testuri\.net\/license\.html/, r[2].to_s}
     #TODO add raw data for testing. Subtask is already removed at this point for this investigation
     # check subtask uri for raw data
     #assert @g.has_predicate?(RDF::ISA.hasSubTaskURI), "Metadata Graph don't have predicate #{RDF::ISA.hasSubTaskURI}"
