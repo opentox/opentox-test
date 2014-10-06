@@ -189,6 +189,7 @@ class TaskTest < MiniTest::Test
         assert ex.is_a?(test[:error]),"error type should be a #{test[:error]}, but is a #{ex.class}"
         assert ex.message=~/#{test[:msg]}/,"message should be #{test[:msg]}, but is #{ex.message}"
         assert ex.error_cause=~/test.rb:#{test[:line]}/,"code line number test.rb:#{test[:line]} is lost or wrong: #{ex.error_cause}"
+        assert ex.uri==test[:uri]
       end
     end
   end
