@@ -26,19 +26,28 @@ DATA = []
 #      :feat => "http://apps.ideaconsult.net:8080/ambit2/feature/533748",
 #      :info => "http://apps.ideaconsult.net:8080/ambit2/dataset/435293?page=0&pagesize=300" }
 
-HAMSTER_CV_FEATURE_TYPES = ["bbrc"]     
 FILES = {
   File.new(File.join(test_path,"data","hamster_carcinogenicity.csv")) => :split_validation,
-  #File.new("data/EPAFHM.medi.csv") => :split_validation
-  }
+  File.new(File.join(test_path,"data","EPAFHM.medi.csv")) => :split_validation,
+}
   
 unless defined?($short_tests)
-  #HAMSTER_CV_FEATURE_TYPES = ["bbrc", "last"]
   FILES.merge!({
     File.new(File.join(test_path,"data","hamster_carcinogenicity.csv")) => :crossvalidation,  
-  #  File.new("data/EPAFHM.csv") => :crossvalidation,
-  #  File.new("data/hamster_carcinogenicity.csv") => :bootstrap_validation
+   # File.new("data/EPAFHM.csv") => :crossvalidation,
+   # File.new("data/hamster_carcinogenicity.csv") => :bootstrap_validation
     })
+end
+
+FEAT_GEN = {}
+FILES.each do |f,t|
+  if f.path=~/hamster/
+    FEAT_GEN[f] = [ File.join($algorithm[:uri],"fminer/bbrc") ] #FEAT_GEN[f] << File.join($algorithm[:uri],"fminer/last")
+  elsif f.path=~/EPAFHM/
+    FEAT_GEN[f] = [ File.join($algorithm[:uri],"descriptor","physchem") ]
+  else
+    raise "please define feature generation uri for dataset: #{f.path}"
+  end
 end
 
 class ValidationTest < MiniTest::Test
@@ -49,10 +58,17 @@ class ValidationTest < MiniTest::Test
     puts "login and upload datasets"
     OpenTox::RestClientWrapper.subjectid ? puts("logged in: "+OpenTox::RestClientWrapper.subjectid.to_s) : puts("AA disabled")
     FILES.each do |file,type|
-      DATA << { :type => type,
-        :data => ValidationTestUtil.upload_dataset(file),
-        :feat => ValidationTestUtil.prediction_feature_for_file(file),
-        :info => file.path, :delete => true} 
+      data = { :type => type,
+          :data => ValidationTestUtil.upload_dataset(file),
+          :feat => ValidationTestUtil.prediction_feature_for_file(file),
+          :split_ratio => (file.path=~/EPAFHM/ ? 0.98 : 0.9),
+          :info => file.path, :delete => true} 
+      FEAT_GEN[file].each do |feat_gen|
+        data[:alg_params] = "feature_generation_uri="+feat_gen
++       data[:alg_params] << ";backbone=false;min_chisq_significance=0.0" if feat_gen=~/fminer/ and data[:info] =~ /mini/
+        data[:alg_params] << ";descriptors="+[ "Openbabel.atoms", "Openbabel.bonds", "Openbabel.dbonds", "Openbabel.HBA1", "Openbabel.HBA2", "Openbabel.HBD", "Openbabel.MP", "Openbabel.MR", "Openbabel.MW", "Openbabel.nF", "Openbabel.sbonds", "Openbabel.tbonds", "Openbabel.TPSA"].join(",") if feat_gen=~/physchem/
+        DATA << data
+      end
     end
   end
   
@@ -88,7 +104,7 @@ class ValidationTest < MiniTest::Test
         p = { 
           :dataset_uri => data[:data],
           :algorithm_uri => File.join($algorithm[:uri],"lazar"),
-          :algorithm_params => "feature_generation_uri="+File.join($algorithm[:uri],"fminer/bbrc"),
+          :algorithm_params => data[:alg_params],
           :prediction_feature => data[:feat],
           :random_seed => 2}
         t = OpenTox::SubTask.new(nil,0,1)
@@ -130,9 +146,9 @@ class ValidationTest < MiniTest::Test
         p = { 
           :dataset_uri => data[:data],
           :algorithm_uri => File.join($algorithm[:uri],"lazar"),
-          :algorithm_params => "feature_generation_uri="+File.join($algorithm[:uri],"fminer/bbrc"),
+          :algorithm_params => data[:alg_params],
           :prediction_feature => data[:feat],
-          :split_ratio => 0.9,
+          :split_ratio => data[:split_ratio],
           :random_seed => 2}
         t = OpenTox::SubTask.new(nil,0,1)
         def t.progress(pct)
@@ -161,7 +177,7 @@ class ValidationTest < MiniTest::Test
         train_compounds = OpenTox::Dataset.find(v.metadata[RDF::OT.trainingDataset.to_s]).compounds
         test_compounds = OpenTox::Dataset.find(v.metadata[RDF::OT.testDataset.to_s]).compounds
         orig_compounds = OpenTox::Dataset.find(data[:data]).compounds
-        assert_equal((orig_compounds.size*0.9).round,train_compounds.size)
+        assert_equal((orig_compounds.size*data[:split_ratio]).round,train_compounds.size)
         assert_equal(orig_compounds.size,(train_compounds+test_compounds).size)
         assert_equal(orig_compounds.uniq.size,(train_compounds+test_compounds).uniq.size)
         
@@ -186,7 +202,7 @@ class ValidationTest < MiniTest::Test
           :training_dataset_uri => data[:train_data],
           :test_dataset_uri => data[:test_data],
           :algorithm_uri => File.join($algorithm[:uri],"lazar"),
-          :algorithm_params => "feature_generation_uri="+File.join($algorithm[:uri],"fminer/bbrc"),
+          :algorithm_params => data[:alg_params],
           :prediction_feature => data[:feat]}
         t = OpenTox::SubTask.new(nil,0,1)
         def t.progress(pct)
@@ -273,56 +289,52 @@ class ValidationTest < MiniTest::Test
     @@cv_identifiers = []
     DATA.each do |data|
       if data[:type]==:crossvalidation
-        HAMSTER_CV_FEATURE_TYPES.each do |fminer|
-          next unless (fminer==HAMSTER_CV_FEATURE_TYPES[0] or data[:info].to_s =~ /hamster_carcinogenicity.csv/)
-          puts "test_crossvalidation "+data[:info].to_s+" "+fminer
-          p = { 
-            :dataset_uri => data[:data],
-            :algorithm_uri => File.join($algorithm[:uri],"lazar"),
-            :algorithm_params => "feature_generation_uri="+File.join($algorithm[:uri],"fminer/"+fminer)+
-             (data[:info] =~ /mini/ ? ";backbone=false;min_chisq_significance=0.0" : ""),
-            :prediction_feature => data[:feat],
-            :num_folds => 10 }
-            #:num_folds => 2 }
-          t = OpenTox::SubTask.new(nil,0,1)
-          def t.progress(pct)
-            if !defined?@last_msg or @last_msg+10<Time.new
-              puts "waiting for crossvalidation: "+pct.to_s
-              @last_msg=Time.new
-            end
+        puts "test_crossvalidation "+data[:info].to_s+" "+data[:alg_params]
+        p = { 
+          :dataset_uri => data[:data],
+          :algorithm_uri => File.join($algorithm[:uri],"lazar"),
+          :algorithm_params => data[:alg_params],
+          :prediction_feature => data[:feat],
+          :num_folds => 10 }
+          #:num_folds => 2 }
+        t = OpenTox::SubTask.new(nil,0,1)
+        def t.progress(pct)
+          if !defined?@last_msg or @last_msg+10<Time.new
+            puts "waiting for crossvalidation: "+pct.to_s
+            @last_msg=Time.new
           end
-          def t.waiting_for(task_uri); end
-          cv = OpenTox::Crossvalidation.create(p, t)
-          assert cv.uri.uri?
-          if $aa[:uri]
-            assert_unauthorized do
-              OpenTox::Crossvalidation.find(cv.uri)
-            end
-          end
-          cv = OpenTox::Crossvalidation.find(cv.uri)
-          assert_valid_date cv
-          assert cv.uri.uri?
-          stats_val = cv.statistics
-          assert_kind_of OpenTox::Validation,stats_val
-          assert_prob_correct(stats_val)
-          
-          algorithm = cv.metadata[RDF::OT.algorithm.to_s]
-          assert algorithm.uri?
-          cv_list = OpenTox::Crossvalidation.list( {:algorithm => algorithm} )
-          assert cv_list.include?(cv.uri)
-          cv_list.each do |cv_uri|
-            #begin catch not authorized somehow
-              alg = OpenTox::Crossvalidation.find(cv_uri).metadata[RDF::OT.algorithm.to_s]
-              assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
-            #rescue 
-            #end
-          end
-          puts cv.uri unless defined?(DELETE) and DELETE
-          
-          @@cvs << cv
-          @@cv_datasets << data
-          @@cv_identifiers << fminer
         end
+        def t.waiting_for(task_uri); end
+        cv = OpenTox::Crossvalidation.create(p, t)
+        assert cv.uri.uri?
+        if $aa[:uri]
+          assert_unauthorized do
+            OpenTox::Crossvalidation.find(cv.uri)
+          end
+        end
+        cv = OpenTox::Crossvalidation.find(cv.uri)
+        assert_valid_date cv
+        assert cv.uri.uri?
+        stats_val = cv.statistics
+        assert_kind_of OpenTox::Validation,stats_val
+        assert_prob_correct(stats_val)
+        
+        algorithm = cv.metadata[RDF::OT.algorithm.to_s]
+        assert algorithm.uri?
+        cv_list = OpenTox::Crossvalidation.list( {:algorithm => algorithm} )
+        assert cv_list.include?(cv.uri)
+        cv_list.each do |cv_uri|
+          #begin catch not authorized somehow
+            alg = OpenTox::Crossvalidation.find(cv_uri).metadata[RDF::OT.algorithm.to_s]
+            assert alg==algorithm,"wrong algorithm for filtered crossvalidation, should be: '"+algorithm.to_s+"', is: '"+alg.to_s+"'"
+          #rescue 
+          #end
+        end
+        puts cv.uri unless defined?(DELETE) and DELETE
+        
+        @@cvs << cv
+        @@cv_datasets << data
+        @@cv_identifiers << data[:alg_params]
       end
     end
   end
