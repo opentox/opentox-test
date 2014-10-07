@@ -34,7 +34,7 @@ FILES = {
 unless defined?($short_tests)
   FILES.merge!({
     File.new(File.join(test_path,"data","hamster_carcinogenicity.csv")) => :crossvalidation,  
-   # File.new("data/EPAFHM.csv") => :crossvalidation,
+    File.new("data/EPAFHM.medi.csv") => :crossvalidation,
    # File.new("data/hamster_carcinogenicity.csv") => :bootstrap_validation
     })
 end
@@ -61,7 +61,7 @@ class ValidationTest < MiniTest::Test
       data = { :type => type,
           :data => ValidationTestUtil.upload_dataset(file),
           :feat => ValidationTestUtil.prediction_feature_for_file(file),
-          :split_ratio => (file.path=~/EPAFHM/ ? 0.98 : 0.9),
+          :split_ratio => (file.path=~/EPAFHM/ ? 0.98 : 0.9),#only used for split_validation
           :info => file.path, :delete => true} 
       FEAT_GEN[file].each do |feat_gen|
         data[:alg_params] = "feature_generation_uri="+feat_gen
