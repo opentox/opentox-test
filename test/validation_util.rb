@@ -35,6 +35,7 @@ class ValidationTestUtil
   end
   
   def self.prediction_feature_for_file(file)
+    raise "no prediction feature available for #{file.path}" unless @@prediction_features[file.path.to_s]
     @@prediction_features[file.path.to_s]
   end
 
