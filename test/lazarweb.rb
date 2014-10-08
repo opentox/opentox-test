@@ -1,4 +1,3 @@
-=begin
 require_relative "setup.rb"
 require 'capybara'
 require 'capybara-webkit'
@@ -38,7 +37,7 @@ class LazarWebTest < MiniTest::Test
 
   def test_03_check_all_links_exists
     visit('/')
-    links = ['Details', 'SMILES', 'in-silico toxicology gmbh']
+    links = ["Details", "SMILES", "toxicology gmbh 2004 - #{Time.now.year.to_s}"]
     links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
   end
 
@@ -54,7 +53,7 @@ class LazarWebTest < MiniTest::Test
     assert page.has_content?('Neighbors'), "true"
     assert page.has_link?('Significant fragments'), "true"
     assert page.has_link?('v'), "true"
-    # open sf view
+    # open 'significant fragments' view
     find_link('linkPredictionSf').click
     sleep 5
     within_frame('details_overview') do
@@ -79,7 +78,7 @@ class LazarWebTest < MiniTest::Test
       # active
       assert page.has_content?('[#7&A]-[#7&A]'), "true"
       assert page.has_content?('0.99993'), "true"
-      # close sf view
+      # close 'significant fragments' view
       find_button('closebutton').click
     end
     find_link('link0').click
@@ -105,4 +104,3 @@ class LazarWebTest < MiniTest::Test
   end
 
 end
-=end
