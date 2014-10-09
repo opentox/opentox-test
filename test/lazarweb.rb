@@ -11,7 +11,14 @@ Capybara.default_driver = :webkit
 Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
-Capybara.app_host = 'https://services.in-silico.ch'
+Capybara.app_host =$lazar_gui[:uri] 
+
+begin
+  puts "Service URI is: #{$lazar_gui[:uri]}"
+rescue
+  puts "Configuration Error: $aop[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
