@@ -30,13 +30,13 @@ class JsonTest < MiniTest::Test
     result = JSON[response]
     #puts result
     aid = result.collect{|x| x['AID']}
-    assert_includes aid.to_s, "651645"
+    assert_includes aid.to_s, "42314"
     p_active = result.collect{|x| x['p_active']}
     assert_includes p_active.to_s, "0.9701425001453319"
     p_inactive = result.collect{|x| x['p_inactive']}
     assert_includes p_inactive.to_s, "0.029857499854668124"
     assay_name = result.collect{|x| x['Assay Name']}
-    assert_includes assay_name.to_s, "Cell Proliferation Assay against the TMD8 Cell Line"
+    assert_includes assay_name.to_s, "Ability to inhibit [3H]-PK 11195 binding to peripheral-type benzodiazepine receptor(PBR) in rat cerebral cortex homogenate."
   end
 
 end
