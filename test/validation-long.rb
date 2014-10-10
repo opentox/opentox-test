@@ -65,9 +65,18 @@ class ValidationTest < MiniTest::Test
           :info => file.path, :delete => true} 
       FEAT_GEN[file].each do |feat_gen|
         data[:alg_params] = "feature_generation_uri="+feat_gen
-+       data[:alg_params] << ";backbone=false;min_chisq_significance=0.0" if feat_gen=~/fminer/ and data[:info] =~ /mini/
-        data[:alg_params] << ";descriptors="+[ "Openbabel.atoms", "Openbabel.bonds", "Openbabel.dbonds", "Openbabel.HBA1", "Openbabel.HBA2", "Openbabel.HBD", "Openbabel.MP", "Openbabel.MR", "Openbabel.MW", "Openbabel.nF", "Openbabel.sbonds", "Openbabel.tbonds", "Openbabel.TPSA"].join(",") if feat_gen=~/physchem/
-        DATA << data
+        data[:alg_params] << ";backbone=false;min_chisq_significance=0.0" if feat_gen=~/fminer/ and data[:info] =~ /mini/
+        if feat_gen=~/physchem/
+          # validation with physchem descriptors is performed twice, once with feature_generation_uri, once with feature_dataset_uri
+          desc = [ "Openbabel.atoms", "Openbabel.bonds", "Openbabel.dbonds", "Openbabel.HBA1", "Openbabel.HBA2", "Openbabel.HBD", "Openbabel.MP", "Openbabel.MR", "Openbabel.MW", "Openbabel.nF", "Openbabel.sbonds", "Openbabel.tbonds", "Openbabel.TPSA"]
+          data[:alg_params] << ";descriptors="+desc.join(",")
+          DATA << data
+          feature_dataset_uri = OpenTox::Algorithm::Generic.new(feat_gen).run({:dataset_uri => data[:data], :descriptors => desc})
+          data[:alg_params] = "feature_dataset_uri="+feature_dataset_uri
+          DATA << data
+        else
+          DATA << data
+        end
       end
     end
   end
