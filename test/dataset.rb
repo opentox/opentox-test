@@ -207,6 +207,43 @@ class DatasetTest < MiniTest::Test
     assert_equal false, URI.accessible?(dataset.uri)
   end
 
+  def test_compound_index_mapping
+    e = :error 
+    n = nil
+    c1 =  ["F","C","N","O","S","S","S","C"]
+    c2 =  ["F","N","C","O","O","P","C","S"]
+    res = [ 0 , 2 , 1 , 3 , 3 , n , 7,  e ]
+    # compound_index() assings each compound in c2 to a single compound in c1 (required by validation)
+    # explanation for each index of the expected mapping result 'res':
+    # 0: "F" in c2 occurs only once in c1 at the same pos -> 0
+    # 1: "N" in c2 occurs once in c1 at position 2 -> 2
+    # 2: "C" in c2 occurs twice in c1 (1,7), assume that ordering is equal -> 1
+    # 3: "O" in c2 occurs only once in c1 at position 3 (n to 1 mapping possible in direction c2->c1) -> 3
+    # 4: "O" in c2 occurs only once in c1 at position 3 (n to 1 mapping possible in direction c2->c1) -> 3
+    # 5: "P" in c2 does not occur in c1 -> nil
+    # 6: "C" in c2 occurs twice in c1 (1,7), assume that ordering is equal -> 7
+    # 7: "S" in c2 occurs more than once in c1 (n to 1 mapping not possible in direction c1->c2) -> error
+    assert_equal c1.size,c2.size
+    f1 = "/tmp/c1.csv"
+    f2 = "/tmp/c2.csv"
+    File.open(f1, "w") { |file| file.write((["SMILES"]+c1).join("\n")) }
+    File.open(f2, "w") { |file| file.write((["SMILES"]+c2).join("\n")) }
+    d1 = OpenTox::Dataset.new
+    d1.upload f1
+    d2 = OpenTox::Dataset.new
+    d2.upload f2
+    assert_equal d1.compounds.size,c1.size
+    assert_equal d2.compounds.size,c2.size
+    c1.size.times do |i|
+      begin
+        m  = d1.compound_index(d2,i)
+      rescue
+        m = e
+      end
+      assert_equal m,res[i]
+    end
+  end
+
 end
 
 =begin
