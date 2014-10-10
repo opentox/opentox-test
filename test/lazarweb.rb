@@ -1,4 +1,3 @@
-=begin
 require_relative "setup.rb"
 require 'capybara'
 require 'capybara-webkit'
@@ -12,7 +11,14 @@ Capybara.default_driver = :webkit
 Capybara.default_wait_time = 20
 Capybara.javascript_driver = :webkit
 Capybara.run_server = false
-Capybara.app_host = 'https://services.in-silico.ch'
+Capybara.app_host =$lazar_gui[:uri] 
+
+begin
+  puts "Service URI is: #{$lazar_gui[:uri]}"
+rescue
+  puts "Configuration Error: $aop[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
+  exit
+end
 
 class LazarWebTest < MiniTest::Test
   i_suck_and_my_tests_are_order_dependent!
@@ -38,7 +44,7 @@ class LazarWebTest < MiniTest::Test
 
   def test_03_check_all_links_exists
     visit('/')
-    links = ['Details', 'SMILES', 'in-silico toxicology gmbh']
+    links = ["Details", "SMILES", "toxicology gmbh 2004 - #{Time.now.year.to_s}"]
     links.each{|l| puts l.to_s; assert page.has_link?(l), "true"}
   end
 
@@ -54,7 +60,7 @@ class LazarWebTest < MiniTest::Test
     assert page.has_content?('Neighbors'), "true"
     assert page.has_link?('Significant fragments'), "true"
     assert page.has_link?('v'), "true"
-    # open sf view
+    # open 'significant fragments' view
     find_link('linkPredictionSf').click
     sleep 5
     within_frame('details_overview') do
@@ -79,7 +85,7 @@ class LazarWebTest < MiniTest::Test
       # active
       assert page.has_content?('[#7&A]-[#7&A]'), "true"
       assert page.has_content?('0.99993'), "true"
-      # close sf view
+      # close 'significant fragments' view
       find_button('closebutton').click
     end
     find_link('link0').click
@@ -105,4 +111,3 @@ class LazarWebTest < MiniTest::Test
   end
 
 end
-=end
