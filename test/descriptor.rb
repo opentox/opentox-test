@@ -57,7 +57,7 @@ class DescriptorTest < MiniTest::Test
   def test_compound_all
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = OpenTox::Algorithm::Descriptor.physchem c
-    assert_equal 317, result[c.uri].size
+    assert_equal 332, result[c.uri].size
     {
       "Cdk.LongestAliphaticChain.nAtomLAC"=>5,
       "Joelib.count.HeavyBonds"=>7,
