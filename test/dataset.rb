@@ -200,7 +200,7 @@ class DatasetTest < MiniTest::Test
     dataset = OpenTox::Dataset.new nil
     dataset.upload "#{DATA_DIR}/temp_test.csv"
     assert_equal true, URI.accessible?(dataset.uri)
-    assert_equal "Cannot parse compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
+    assert_equal "Cannot parse SMILES compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
     File.delete "#{DATA_DIR}/temp_test.csv"
     dataset.features.each{|f| feature = OpenTox::Feature.find f.uri; feature.delete}
     dataset.delete
