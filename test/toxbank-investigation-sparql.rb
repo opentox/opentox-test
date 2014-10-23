@@ -111,7 +111,7 @@ class TBSPARQLTest < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/factorvalues_by_investigation", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     #puts result
-    ["biosample","sample", "factorname", "value", "ontouri", "unitOnto", "unit", "unitID"].each do |v|
+    ["biosample","sample", "factorname", "value", "ontouri", "unitOnto", "unit"].each do |v|
       assert result["head"]["vars"].include?(v.to_s)
     end
     
