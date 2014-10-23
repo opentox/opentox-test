@@ -244,6 +244,20 @@ class DatasetTest < MiniTest::Test
     end
   end
 
+  def test_same_feature
+    datasets = []
+    features = []
+    2.times do |i|
+      d = OpenTox::Dataset.new nil
+      d.upload "#{DATA_DIR}/hamster_carcinogenicity.mini.csv"
+      features << d.features.first
+      puts features.last.metadata
+      assert features[0].uri==features[-1].uri,"re-upload should find old feature, but created new one"
+      datasets << d
+    end
+    datasets.each{|d| d.delete}
+  end
+
 end
 
 =begin
