@@ -241,8 +241,8 @@ class TBSPARQLTestExtended < MiniTest::Test
       task.wait
       puts task.hasStatus
     end
-    #puts "sleep 120s"
-    #sleep 120
+    puts "sleep 120s"
+    sleep 120
   end  
   
   # Retrieves all factors (name, value, ontology URI of the value) given an investigation URI
