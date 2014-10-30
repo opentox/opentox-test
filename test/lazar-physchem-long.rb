@@ -7,12 +7,16 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
     # check available descriptors
     @descriptors = OpenTox::Algorithm::Descriptor.physchem_descriptors.keys
     assert_equal 111,@descriptors.size,"wrong num physchem descriptors"
+    @descriptor_values = OpenTox::Algorithm::Descriptor.physchem_descriptor_values
+    assert_equal 356,@descriptor_values.size,"wrong num physchem descriptors"
     sum = 0
-    {"Openbabel"=>16,"Cdk"=>50,"Joelib"=>45}.each do |k,v|
-      assert_equal v,@descriptors.select{|x| x=~/^#{k}\./}.size,"wrong num #{k} descriptors"
-      sum += v
+    [ @descriptors, @descriptor_values ].each do |desc|
+      {"Openbabel"=>16,"Cdk"=>(desc==@descriptors ? 50 : 295),"Joelib"=>45}.each do |k,v|
+        assert_equal v,desc.select{|x| x=~/^#{k}\./}.size,"wrong num #{k} descriptors"
+        sum += v
+      end
     end
-    assert_equal 111,sum
+    assert_equal (111+356),sum
 
     # select descriptors for test
     @num_features_offset = 0
