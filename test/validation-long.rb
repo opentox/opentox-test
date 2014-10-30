@@ -245,7 +245,7 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_filter_predictions
-    (@@vs + @@cv).each do |v|
+    (@@vs + @@cvs).each do |v|
 
       v = v.statistics if v.is_a?(OpenTox::Crossvalidation)
       puts v.metadata.to_yaml
