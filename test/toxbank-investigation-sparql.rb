@@ -239,6 +239,7 @@ class TBSPARQLTestExtended < MiniTest::Test
     if subtask != ""
       task = OpenTox::Task.new subtask.chomp
       task.wait
+      puts task.hasStatus
     end
     puts "sleep 120s"
     sleep 120
