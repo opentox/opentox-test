@@ -10,6 +10,8 @@ rescue
 end
 
 DELETE = true
+TEST_LISTS = false
+
 DATA = []
 #DATA << { :type => :crossvalidation,
 #      :data => "http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=100",
@@ -61,7 +63,7 @@ class ValidationTest < MiniTest::Test
       data = { :type => type,
           :data => ValidationTestUtil.upload_dataset(file),
           :feat => ValidationTestUtil.prediction_feature_for_file(file),
-          :split_ratio => (file.path=~/EPAFHM/ ? 0.98 : 0.9),#only used for split_validation
+          :split_ratio => (file.path=~/EPAFHM/ ? 0.95 : 0.9),#only used for split_validation
           :info => file.path, :delete => true} 
       FEAT_GEN[file].each do |feat_gen|
         data[:alg_params] = "feature_generation_uri="+feat_gen
@@ -96,6 +98,7 @@ class ValidationTest < MiniTest::Test
   end  
 
   def test_validation_list
+    return unless TEST_LISTS
     puts "test_validation_list"
     list = OpenTox::Validation.list
     assert list.is_a?(Array)
@@ -178,7 +181,6 @@ class ValidationTest < MiniTest::Test
         #v_uri = "http://localhost:8087/validation/90"
         #v = OpenTox::Validation.find(v_uri)
         
-        puts v.inspect
         assert_valid_date v
         assert v.uri.uri?
         assert_prob_correct(v)
@@ -241,12 +243,31 @@ class ValidationTest < MiniTest::Test
       end
     end
   end
+
+  def test_filter_predictions
+    (@@vs + @@cv).each do |v|
+
+      v = v.statistics if v.is_a?(OpenTox::Crossvalidation)
+      puts v.metadata.to_yaml
+      assert v.metadata[RDF::OT.numInstances.to_s].to_i>3
+ 
+      # get top 3 predictions
+      filtered = v.filter(nil, nil, 3)
+      puts filtered.to_yaml
+      assert filtered[RDF::OT.numInstances.to_s].to_i==3,"#{filtered[RDF::OT.numInstances.to_s]} != 3"
+      assert filtered[RDF::OT.numUnpredicted.to_s].to_i==0
+
+      # get predictions with min confidence 0.5 but at least 5 predictions
+      filtered = v.filter(0.5, 5)
+      puts filtered.to_yaml
+      assert filtered[RDF::OT.numInstances.to_s].to_i>=5
+      
+    end
+  end
   
 
   
   def test_validation_report
-    #@@cv = OpenTox::Crossvalidation.find("http://local-ot/validation/crossvalidation/48", SUBJECTID)
-    
     @@reports = [] unless defined?@@reports
     @@vs.each do |v|
       puts "test_validation_report"
@@ -280,6 +301,7 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_crossvalidation_list
+    return unless TEST_LISTS
     puts "test_crossvalidation_list"
     list = OpenTox::Crossvalidation.list
     assert list.is_a?(Array)
