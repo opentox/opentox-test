@@ -85,10 +85,14 @@ class ValidationTest < MiniTest::Test
   
   def global_teardown
     puts "delete and logout"
+    dataset_deleted = []
     if defined?(DELETE) and DELETE
       [:data, :train_data, :test_data].each do |d|
         DATA.each do |data| 
-          OpenTox::Dataset.new(data[d]).delete if data[d] and data[:delete]
+          if data[d] and data[:delete]
+            OpenTox::Dataset.new(data[d]).delete unless dataset_deleted.include? data[d]
+            dataset_deleted << data[d]
+          end
         end
       end
       @@vs.each{|v| v.delete} if defined?@@vs
@@ -252,13 +256,13 @@ class ValidationTest < MiniTest::Test
       assert v.metadata[RDF::OT.numInstances.to_s].to_i>3
  
       # get top 3 predictions
-      filtered = v.filter(nil, nil, 3)
+      filtered = v.filter_metadata(nil, nil, 3)
       puts filtered.to_yaml
       assert filtered[RDF::OT.numInstances.to_s].to_i==3,"#{filtered[RDF::OT.numInstances.to_s]} != 3"
       assert filtered[RDF::OT.numUnpredicted.to_s].to_i==0
 
       # get predictions with min confidence 0.5 but at least 5 predictions
-      filtered = v.filter(0.5, 5)
+      filtered = v.filter_metadata(0.5, 5)
       puts filtered.to_yaml
       assert filtered[RDF::OT.numInstances.to_s].to_i>=5
       
