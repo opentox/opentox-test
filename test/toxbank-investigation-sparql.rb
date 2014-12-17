@@ -359,10 +359,25 @@ class TBSPARQLTestExtended < MiniTest::Test
   
   def test_20_investigation_by_gene_and_value
     # check for FC, pValue, qValue
+    # with relOperator = below
     ["FC", "pvalue", "qvalue"].each do |value_type|
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "#{value_type}:0.5", :relOperator => "below"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
       result = JSON.parse(response)
-      puts response
+      #puts response
+      ["investigation", "datatype", "title", "value"].each do |v|
+        assert result["head"]["vars"].include?(v.to_s)
+      end
+      assert_equal 200, response.code
+    end
+  end
+  
+  def test_20_investigation_by_gene_and_value_a
+    # check for FC, pValue, qValue
+    # with relOperator = above
+    ["FC", "pvalue", "qvalue"].each do |value_type|
+      response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "#{value_type}:0.5", :relOperator => "above"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+      result = JSON.parse(response)
+      #puts response
       ["investigation", "datatype", "title", "value"].each do |v|
         assert result["head"]["vars"].include?(v.to_s)
       end
