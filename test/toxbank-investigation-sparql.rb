@@ -152,24 +152,24 @@ class TBSPARQLTest < MiniTest::Test
   def test_13_investigation_by_characteristic_value
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_value", {:value => "Saccharomyces cerevisiae (Baker's yeast)"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
-    char_value = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["propname"]["value"]}:::#{n["ontoURI"]["value"]}"}
-    assert char_value.include?("#{@@uri}:::organism:::http://purl.obolibrary.org/obo/NEWT_4932")
+    char_value = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
+    assert char_value.include?("#{@@uri}")
     assert_equal 200, response.code
   end
 
   def test_14_investigation_by_characteristic_name
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic_name", {:value => "organism"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
-    char_name = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["value"]["value"]}:::#{n["ontoURI"]["value"]}"}
-    assert char_name.include?("#{@@uri}:::Saccharomyces cerevisiae (Baker's yeast):::http://purl.obolibrary.org/obo/NEWT_4932")
+    char_name = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
+    assert char_name.include?("#{@@uri}")
     assert_equal 200, response.code
   end
 
   def test_15_investigation_by_characteristic
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_characteristic", {:value => "http://purl.obolibrary.org/obo/NEWT_4932"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
-    inv_char = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["propname"]["value"]}:::#{n["value"]["value"]}"}
-    assert inv_char.include?("#{@@uri}:::organism:::Saccharomyces cerevisiae (Baker's yeast)")
+    inv_char = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
+    assert inv_char.include?("#{@@uri}")
     assert_equal 200, response.code
   end
   
@@ -299,9 +299,9 @@ class TBSPARQLTestExtended < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factors", {:factorValues => "['http://purl.obolibrary.org/chebi/CHEBI:28748']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     result = JSON.parse(response)
-    inv_factors = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
+    inv_factors = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_factors.include?("#{@@uri}:::compound:::DOXORUBICIN")
+    assert inv_factors.include?("#{@@uri}")
   end
 
   # Retrieves investigation URI given a factor value URI (e.g. compound URI)
@@ -309,9 +309,9 @@ class TBSPARQLTestExtended < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_factor", {:value => "http://purl.obolibrary.org/chebi/CHEBI:28748"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     result = JSON.parse(response)
-    inv_factor = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["factorname"]["value"]}:::#{n["value"]["value"]}"}
+    inv_factor = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_factor.include?("#{@@uri}:::compound:::DOXORUBICIN")
+    assert inv_factor.include?("#{@@uri}")
   end
 
   def test_16_investigation_by_pvalue
@@ -319,36 +319,36 @@ class TBSPARQLTestExtended < MiniTest::Test
     result = JSON.parse(response)
     #puts response
     result = JSON.parse(response)
-    inv_pvalue = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["gene"]["value"]}"}
+    inv_pvalue = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_pvalue.include?("#{@@uri}:::http://onto.toxbank.net/isa/Entrez/3075")
+    assert inv_pvalue.include?("#{@@uri}")
   end
   
   def test_17_investigation_by_qvalue
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_qvalue", {:value => "0.805517"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     #puts response
     result = JSON.parse(response)
-    inv_qvalue = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["gene"]["value"]}"}
+    inv_qvalue = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_qvalue.include?("#{@@uri}:::http://onto.toxbank.net/isa/Entrez/3075")
+    assert inv_qvalue.include?("#{@@uri}")
   end
   
   def test_18_investigation_by_foldchange
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_foldchange", {:value => "0.035"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     #puts response
-    inv_foldchange = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["gene"]["value"]}"}
+    inv_foldchange = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_foldchange.include?("#{@@uri}:::http://onto.toxbank.net/isa/Entrez/3075")
+    assert inv_foldchange.include?("#{@@uri}")
   end
   
   def test_19_investigation_by_genes
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_genes", {:geneIdentifiers => "['entrez:3075']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     #puts response
-    inv_genes = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["datatype"]["value"]}:::#{n["title"]["value"]}:::#{n["valuetype"]["value"]}:::#{n["value"]["value"]}"}
+    inv_genes = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
-    assert inv_genes.include?("#{@@uri}:::http://onto.toxbank.net/isa/bii/data_types/microarray_derived_data:::q-value[Low.8hr-Control.8hr]:::http://onto.toxbank.net/isa/qvalue:::0.911237")
+    assert inv_genes.include?("#{@@uri}")
   end
 
   def test_19_b_investigation_by_genes
@@ -364,7 +364,7 @@ class TBSPARQLTestExtended < MiniTest::Test
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "#{value_type}:0.5", :relOperator => "below"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
       result = JSON.parse(response)
       #puts response
-      ["investigation", "datatype", "title", "value"].each do |v|
+      ["investigation"].each do |v|
         assert result["head"]["vars"].include?(v.to_s)
       end
       assert_equal 200, response.code
@@ -378,7 +378,7 @@ class TBSPARQLTestExtended < MiniTest::Test
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_gene_and_value", {:geneIdentifiers => "['entrez:3075', 'uniprot:P10809']", :value => "#{value_type}:0.5", :relOperator => "above"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
       result = JSON.parse(response)
       #puts response
-      ["investigation", "datatype", "title", "value"].each do |v|
+      ["investigation"].each do |v|
         assert result["head"]["vars"].include?(v.to_s)
       end
       assert_equal 200, response.code
