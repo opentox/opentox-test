@@ -1,0 +1,165 @@
+namespace :renew do
+  desc "renews the triple store backend in case of damage or disfunction."
+  task :backend do
+    #TODO finish
+    require_relative '../setup.rb'
+    STDOUT.puts "Remind this command does not enable data save of a destroyed backend!"
+    STDOUT.puts "do you really want to proceed (y/n)"
+    answer = STDIN.gets.strip
+    case answer
+    when "y"
+      puts "delete"
+    when "n"
+      puts "exit"
+    else
+      puts "exit"
+    end
+  end
+end
+
+namespace :service_uri do
+  desc "Rewriting service uris for prediction models and components"
+  task :rewrite do
+    #TODO fix sed
+    STDOUT.puts "Please enter models directory name.\n#{`ls -d */`}\n"
+    input = STDIN.gets.strip
+    dir = File.join(File.dirname(File.expand_path __FILE__), input)
+    if File.directory?(dir)
+      STDOUT.puts "Directory found."
+    else
+      STDOUT.puts "Directory not found."
+    end
+    # change working directory
+    Dir.chdir dir
+    original = IO.readlines("logfile.txt")[1].gsub(/\/model\/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/, "") 
+    STDOUT.puts "Service url is: #{original}\nPlease enter new service path:"
+    new = STDIN.gets.strip
+    if new != ""# and new.uri?
+      puts "processing with '#{new}'"
+      #cmd for rewriting service url
+      `sed -i 's,#{original},#{new},g' *.nt`
+      `sed -i 's,#{original},#{new},g' *.txt`
+    else
+      STDOUT.puts "Original service url is #{}.\nPlease enter new service url:"
+    end
+  end #task
+end #namespace
+
+namespace :save do
+  desc "Save models used to predict compounds"
+  task :prediction_models do
+    
+    require_relative '../setup.rb'
+    d = Time.new
+    date = d.strftime("%d-%m-%Y_%H-%M-%S")
+    dir = File.join File.dirname(File.expand_path __FILE__), "models_save_#{date}"
+    puts "Created dir 'models_save_#{date}'."
+    `mkdir #{dir}`
+    File.new("#{dir}/logfile.txt", "w")
+    File.new("#{dir}/details.txt", "w")
+    models = `curl -Lk -X GET -H accept:text/plain #{$model[:uri]}`.chomp.split("\n")
+    model_uris = models.collect{|m| m.split(" ").first.gsub(/\<|\>/, "")} 
+    puts "#{model_uris.size} models found." unless model_uris.size == 0
+    puts "-----------------------------"
+    puts "service uri is: #{$model[:uri]}"
+    model_uris.each_with_index do |model_uri, idx|
+      # get model by uri
+      model = OpenTox::Model::Lazar.find "#{model_uri}"
+      puts "model details:\n#{model.metadata}\n"
+      if model.type.include?(RDF::OT.PredictionModel)
+        # store model as nt file
+        `curl -Lk -X GET -H accept:text/plain #{model_uri} -o #{dir}/model_#{idx}.nt`.chomp
+        puts "model #{idx}:\t#{model.title} stored."
+        # write to logfile
+        File.open("#{dir}/logfile.txt", 'a'){|f| f.write("model_#{idx}\n#{model_uri}\n\n")}
+        # write details
+        File.open("#{dir}/details.txt", 'a'){|f| f.write("ID:\tmodel_#{idx}\ntitle:\t#{model.title}\nuri:\t#{model_uri}\n---\n")}
+        # get models features
+        model_features = []
+        model_features << model[RDF::OT.dependentVariables]
+        model_features << model[RDF::OT.predictedVariables]
+        puts "#{model_features.flatten.size} features for model #{idx} found."
+        model_features.flatten!.each_with_index do |uri, i|
+          `curl -Lk -X GET -H accept:text/plain #{uri} -o #{dir}/feature_#{i}_model#{idx}.nt`.chomp
+          # write to logfile
+          File.open("#{dir}/logfile.txt", 'a'){|f| f.write("feature_#{i}_model#{idx}\n#{uri}\n\n")}
+          puts "model feature #{i} stored."
+        end
+        puts " | | "    
+        
+        # get all datasets and single dataset features
+        puts "collect datasets."
+        [model[RDF::OT.trainingDataset], model[RDF::OT.featureDataset]].each_with_index do |dataset_uri, index|
+          if index == 0
+            which = "trainingDataset"
+          else
+            which = "featureDataset"
+          end
+          # get dataset
+          dataset = OpenTox::Dataset.find "#{dataset_uri}"
+          # store dataset
+          puts "#{which}: #{dataset_uri}"
+          `curl -Lk -X GET -H accept:text/plain #{dataset_uri} -o #{dir}/#{which}_model_#{idx}.nt`.chomp
+          puts "#{which} of model #{idx} stored."
+          # write to logfile
+          File.open("#{dir}/logfile.txt", 'a'){|f| f.write("#{which}_model_#{idx}\n#{dataset_uri}\n\n")}
+          features =[]
+          feature_uris =[]
+          dataset.features.each{|f| features << f}
+          features.each{|f| feature_uris << f.uri}
+          # store each feature as file
+          feature_uris.each_with_index do |uri, i| 
+            `curl -Lk -X GET -H accept:text/plain #{uri} -o #{dir}/feature_#{i}_#{which}_model_#{idx}.nt`.chomp
+            puts "feature #{i} of #{which} stored."
+            # write to logfile
+            File.open("#{dir}/logfile.txt", 'a'){|f| f.write("feature_#{i}_#{which}_model_#{idx}\n#{uri}\n\n")}
+          end
+        end
+      else
+        puts "ignore #{model.title}, is no prediction model."
+      end
+    puts "#######################################"
+
+    end
+    puts "------------------------------\n"
+    puts "all prediction models from #{$model[:uri]} locally stored !"
+    puts "------------------------------\n"
+    puts "Execute 'rake models:rewrite' to set a new service uri inside the saved models and components."
+  end # task
+end # namespace
+
+namespace :prediction_models do
+  desc "Imports local models to service backend."
+  task :import do
+
+    require_relative "../setup.rb"
+    require File.join "../../../opentox-server/lib/4store.rb"
+    pair = {}
+    #files = Dir["models_save/*.nt"]
+    
+    STDOUT.puts "Please enter models directory name.\n#{`ls -d */`}\n"
+    input = STDIN.gets.strip
+    dir = File.join(File.dirname(File.expand_path __FILE__), input)
+    if File.directory?(dir)
+      STDOUT.puts "Directory found."
+    else
+      STDOUT.puts "Directory not found."
+    end
+    files = Dir["#{input}/*.nt"]
+    # change working directory
+    Dir.chdir dir
+
+    uris = File.read(File.join "logfile.txt")
+    uris.split("\n\n").each do |u|
+      pair["#{u.split.first}"] = u.split.last
+    end
+    files.each do |file|
+      file = file.split("/").last
+      f = file.split("/").last.gsub(".nt", "")
+      puts "file:\t#{file}\ntarget:\t#{pair[f]}\n"
+      OpenTox::Backend::FourStore.put pair[f].to_s, File.read(file), "text/plain"
+      puts "imported."
+    end
+
+  end #task
+end #namespace
