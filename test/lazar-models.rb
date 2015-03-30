@@ -161,7 +161,7 @@ class LazarModelTest < MiniTest::Test
       compound_dataset = OpenTox::Dataset.new
       compound_dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
       assert_equal compound_dataset.uri.uri?, true
-      prediction_uri = this_model.predict :dataset_uri => dataset.uri
+      prediction_uri = this_model.predict :dataset_uri => compound_dataset.uri
       prediction = OpenTox::Dataset.new prediction_uri
       assert_equal prediction.uri.uri?, true
 #      puts prediction.uri
