@@ -22,7 +22,10 @@ Capybara.run_server = false
 Capybara.app_host = $aop[:uri]
 
 class LazarWebTest < MiniTest::Test
-  i_suck_and_my_tests_are_order_dependent!
+
+  def self.test_order
+    :sorted
+  end
 
   include Capybara::DSL
 

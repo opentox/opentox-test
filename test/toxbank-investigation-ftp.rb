@@ -12,8 +12,10 @@ end
 
 class TBInvestigationFTP < MiniTest::Test
 
-  i_suck_and_my_tests_are_order_dependent!
-  
+  def self.test_order
+    :sorted
+  end
+
   $testfile = File.join File.dirname(__FILE__), "data/toxbank-investigation/valid", "unformated.zip"
   $testdir = "nightlytempdir#{Time.now.strftime("%Y%m%d")}" # test directory on ftp server e.G.: nightlytempdir20140528
 

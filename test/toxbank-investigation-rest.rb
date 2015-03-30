@@ -9,7 +9,6 @@ rescue
 end
 
 class TBInvestigationBasic < MiniTest::Test
-  #i_suck_and_my_tests_are_order_dependent!
   
   # check response from service without header,
   # @note expect OpenTox::BadRequestError
@@ -51,7 +50,10 @@ class TBInvestigationBasic < MiniTest::Test
 end
 
 class TBInvestigationREST < MiniTest::Test
-  i_suck_and_my_tests_are_order_dependent!
+
+  def self.test_order
+    :sorted
+  end
 
   def test_00_pre_01_check_subjectids
     assert OpenTox::Authorization.is_token_valid(OpenTox::RestClientWrapper.subjectid), "Subjectid for default test user is not valid."

@@ -10,7 +10,9 @@ end
 
 class StressTest < MiniTest::Test
 
-  i_suck_and_my_tests_are_order_dependent!
+  def self.test_order
+    :sorted
+  end
 
   # Do multiple POST and check if completed
   def test_01_multiple_upload

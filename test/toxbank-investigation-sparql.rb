@@ -3,7 +3,9 @@ require_relative "toxbank-setup.rb"
 # Test API extension SPARQL templates 
 class TBSPARQLTest < MiniTest::Test
 
-  i_suck_and_my_tests_are_order_dependent!
+  def self.test_order
+    :sorted
+  end
 
   # login as pi and create a test investigation
   def test_00_create_investigation
@@ -219,7 +221,9 @@ end
 
 class TBSPARQLTestExtended < MiniTest::Test
 
-  i_suck_and_my_tests_are_order_dependent!
+  def self.test_order
+    :sorted
+  end
 
   # login as pi and create a test investigation
   def test_00_create_investigation

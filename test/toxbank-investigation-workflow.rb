@@ -9,7 +9,11 @@ rescue
 end
 
 class TBInvestigationWorkflow < MiniTest::Test
-  i_suck_and_my_tests_are_order_dependent!
+  
+  def self.test_order
+    :sorted
+  end
+  
 # Permission Matrix for owner, user1 (with GET permission (e.G.: group-permission) and user2 (no permission)
 # Sum    = isSummarySearchable=true
 # noSum  = isSummarySearchable=false
