@@ -197,6 +197,11 @@ class TBSPARQLTest < MiniTest::Test
     #assert value.include?("http://purl.obolibrary.org/chebi/CHEBI:28748")
   end
   
+  def test_17_genelist
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/genelist", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    result = JSON.parse(response)
+    assert result["head"]["vars"].include?("genes")
+  end
 
   def test_30_empty_factorValues_search
     assert_raises OpenTox::BadRequestError do
