@@ -6,6 +6,8 @@ class UploadTest < MiniTest::Test
   def test_01_basic_response
     response = `curl -i -k --user #{$four_store[:user]}:#{$four_store[:password]} '#{$four_store[:uri]}/status/'`.chomp
     assert_match /200/, response
+    response = `curl -k --user #{$four_store[:user]}:#{$four_store[:password]} '#{$four_store[:uri]}/test/bla'`.chomp
+    puts response.sub("Not found","") # show Version of 4store server
     response = `curl -i -k -u guest:guest '#{$four_store[:uri]}/status/'`.chomp
     assert_match /401/, response unless $four_store[:uri].match(/localhost/)
   end
