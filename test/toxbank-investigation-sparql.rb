@@ -75,12 +75,10 @@ class TBSPARQLTest < MiniTest::Test
   def test_06_investigation_endpoint_technology
     response = OpenTox::RestClientWrapper.get "#{@@uri}/sparql/investigation_endpoint_technology", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
+    #puts result
     endpointtechnologies = result["results"]["bindings"].map {|n|  "#{n["endpoint"]["value"]}:::#{n["technology"]["value"]}"}
-    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000424:::http://purl.org/obo/owl/OBI#0400148")
-    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000366:::http://purl.org/obo/owl/OBI#OBI_0000470")
-    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#OBI_0000615:::http://purl.org/obo/owl/OBI#OBI_0000470")
-    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#0000424:::http://purl.org/obo/owl/OBI#0400148")
-    assert_equal endpointtechnologies.size, 4
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#424:::http://purl.org/obo/owl/OBI#400148")
+    assert_equal endpointtechnologies.size, 1 
   end
 
   def test_07_investigation_and_characteristics
@@ -96,16 +94,14 @@ class TBSPARQLTest < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigations_and_protocols", {}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     inv_protocols = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}:::#{n["protocol"]["value"]}:::#{n["label"]["value"]}"}
-    #puts inv_protocols
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P2:::biotin labeling")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P6:::EukGE-WS4")
+    #puts result
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P11:::biotin labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P4:::EukGE-WS4")
     assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P1:::metabolite extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P5:::mRNA extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P9:::biotin labeling")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P8:::mRNA extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P4:::protein extraction")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P3:::EukGE-WS4")
-    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P7:::ITRAQ labeling")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P10:::mRNA extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P5:::protein extraction")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P3:::growth protocol")
+    assert inv_protocols.include?("#{@@uri}:::#{@@uri}/P9:::ITRAQ labeling")
     assert_equal 200, response.code
   end
 
