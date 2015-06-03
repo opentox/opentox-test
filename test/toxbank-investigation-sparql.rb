@@ -78,7 +78,10 @@ class TBSPARQLTest < MiniTest::Test
     #puts result
     endpointtechnologies = result["results"]["bindings"].map {|n|  "#{n["endpoint"]["value"]}:::#{n["technology"]["value"]}"}
     assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#424:::http://purl.org/obo/owl/OBI#400148")
-    assert_equal endpointtechnologies.size, 1 
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#OBI_0000615:::http://purl.org/obo/owl/OBI#OBI_0000470")
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#366:::http://purl.org/obo/owl/OBI#OBI_0000470")
+    assert endpointtechnologies.include?("http://purl.org/obo/owl/OBI#424:::http://purl.org/obo/owl/OBI#400148")
+    assert_equal endpointtechnologies.size, 4 
   end
 
   def test_07_investigation_and_characteristics
