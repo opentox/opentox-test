@@ -415,6 +415,12 @@ class TBSPARQLTestExtended < MiniTest::Test
     end
   end
 
+  def test_22_biosearch_json
+    # check the json output for a bio search gene
+    response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/biosearch", {:geneIdentifiers => "['entrez:3075']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
+    assert response.include?("Entrez:3075")
+  end
+
   # delete investigation/{id}
   # @note expect code 200
   def test_90_delete_investigation
