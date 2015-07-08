@@ -25,6 +25,7 @@ class TaskTest < MiniTest::Test
       sleep 5
       $task[:uri]
     end
+      p $task[:uri]
     assert_equal true,  task.running?
     assert_equal "Running", task.hasStatus
     assert_equal 202, task.code
@@ -42,7 +43,7 @@ class TaskTest < MiniTest::Test
     assert_equal Array, all.class
     t = all.last
     assert_equal OpenTox::Task, t.class
-    assert_equal RDF::OT.Task, t[RDF.type]
+    assert_equal "Task", t[:type]
   end
 
   def test_03_create_and_cancel
@@ -71,9 +72,9 @@ class TaskTest < MiniTest::Test
     assert task.error?
     assert_equal 500, task.code
     assert_equal "Error", task.hasStatus
-    assert_equal "A runtime error occured", task.error_report[RDF::OT.message]
-    assert_equal "500", task.error_report[RDF::OT.statusCode]
-    refute_empty task.error_report[RDF::OT.errorCause]
+    assert_equal "A runtime error occured", task.error_report["message"]
+    assert_equal 500, task.error_report["statusCode"]
+    refute_empty task.error_report["errorCause"]
     refute_empty task.created_at
     refute_empty task.finished_at
   end
@@ -90,9 +91,9 @@ class TaskTest < MiniTest::Test
     assert task.error?
     assert_equal 500, task.code
     assert_equal "Error", task.hasStatus
-    assert_equal "An OpenTox::Error occured", task.error_report[RDF::OT.message]
-    assert_equal "500", task.error_report[RDF::OT.statusCode]
-    refute_empty task.error_report[RDF::OT.errorCause]
+    assert_equal "An OpenTox::Error occured", task.error_report["message"]
+    assert_equal 500, task.error_report["statusCode"]
+    refute_empty task.error_report["errorCause"]
   end
 
   def test_06_create_and_fail_with_not_found_error
@@ -107,10 +108,10 @@ class TaskTest < MiniTest::Test
     assert task.error?
     assert_equal 404, task.code
     assert_equal "Error", task.hasStatus
-    assert_equal "An OpenTox::ResourceNotFoundError occured", task.error_report[RDF::OT.message]
-    assert_equal "OpenTox::ResourceNotFoundError", task.error_report[RDF::OT.errorCode]
-    refute_empty task.error_report[RDF::OT.errorCause]
-    assert_equal "404", task.error_report[RDF::OT.statusCode]
+    assert_equal "An OpenTox::ResourceNotFoundError occured", task.error_report["message"]
+    assert_equal "OpenTox::ResourceNotFoundError", task.error_report["errorCode"]
+    refute_empty task.error_report["errorCause"]
+    assert_equal 404, task.error_report["statusCode"]
   end
 
   def test_07_create_and_fail_with_rest_not_found_error
@@ -125,8 +126,8 @@ class TaskTest < MiniTest::Test
     assert task.error?
     assert_equal 404, task.code
     assert_equal "Error", task.hasStatus
-    refute_empty task.error_report[RDF::OT.errorCause]
-    assert_equal "404", task.error_report[RDF::OT.statusCode]
+    refute_empty task.error_report["errorCause"]
+    assert_equal 404, task.error_report["statusCode"]
   end
 
   def test_08_create_and_fail_with_restclientwrapper_error
@@ -141,8 +142,8 @@ class TaskTest < MiniTest::Test
     assert task.error?
     assert_equal 400, task.code
     assert_equal "Error", task.hasStatus
-    refute_empty task.error_report[RDF::OT.errorCause]
-    assert_equal "400", task.error_report[RDF::OT.statusCode]
+    refute_empty task.error_report["errorCause"]
+    assert_equal 400, task.error_report["statusCode"]
   end
 
   def test_09_check_resultURIs
@@ -169,7 +170,7 @@ class TaskTest < MiniTest::Test
       resource_not_found_error "test", "http://username:password@test.org/fake_uri"
     end
     task.wait
-    refute_match %r{username|password},  task.error_report[RDF::OT.actor]
+    refute_match %r{username|password},  task.error_report["actor"]
   end
 
   def test_11a_plain_errors
@@ -188,6 +189,7 @@ class TaskTest < MiniTest::Test
       rescue => ex
         assert ex.is_a?(test[:error]),"error type should be a #{test[:error]}, but is a #{ex.class}"
         assert ex.message=~/#{test[:msg]}/,"message should be #{test[:msg]}, but is #{ex.message}"
+        p ex.error_cause
         assert ex.error_cause=~/test.rb:#{test[:line]}/,"code line number test.rb:#{test[:line]} is lost or wrong: #{ex.error_cause}"
         assert ex.uri==test[:uri]
       end
@@ -225,8 +227,8 @@ class TaskTest < MiniTest::Test
 
       ## test2: test if task is set accordingly
       assert task.error?
-      assert task.error_report[RDF::OT.errorCode]==OpenTox::BadRequestError.to_s,"errorCode should be #{OpenTox::BadRequestError.to_s}, but is #{task.error_report[RDF::OT.errorCode]}"
-      check_msg(task.error_report[RDF::OT.message],task.error_report[RDF::OT.errorCause])
+      assert task.error_report["errorCode"]==OpenTox::BadRequestError.to_s,"errorCode should be #{OpenTox::BadRequestError.to_s}, but is #{task.error_report["errorCode"]}"
+      check_msg(task.error_report["message"],task.error_report["errorCause"])
     end
   end
 
@@ -249,10 +251,12 @@ class TaskTest < MiniTest::Test
       assert task.error?
       assert_equal 500, task.code
       assert_equal "Error", task.hasStatus
-      refute_empty task.error_report[RDF::OT.errorCause]
-      assert_match error_msg,task.error_report[RDF::OT.message]
+      refute_empty task.error_report["errorCause"]
+      assert_match error_msg,task.error_report["message"]
     end
     
   end
+=begin
+=end
 
 end

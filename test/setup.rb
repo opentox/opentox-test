@@ -17,7 +17,7 @@ class OpenTox::Error
     s = super.to_s
     if error_cause
       s << "\nerror-cause:\n"
-      s << error_cause
+      error_cause.is_a?(String) ?  s << error_cause : s << JSON.pretty_generate(error_cause)
       s << "\n"
     end
     s
