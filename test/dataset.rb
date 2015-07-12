@@ -38,7 +38,7 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_create_empty
-    d = OpenTox::Dataset.new File.join($dataset[:uri],SecureRandom.uuid)
+    d = OpenTox::Dataset.new #File.join($dataset[:uri],SecureRandom.uuid)
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
   end
@@ -56,7 +56,7 @@ class DatasetTest < MiniTest::Test
     d = OpenTox::Dataset.new nil
     assert_equal OpenTox::Dataset, d.class
     assert_match /#{$dataset[:uri]}/, d.uri.to_s
-    d.title = "Create dataset test"
+    d[:title] = "Create dataset test"
 
     # features not set
     assert_raises OpenTox::BadRequestError do
@@ -66,8 +66,8 @@ class DatasetTest < MiniTest::Test
     # add data entries
     d.features = ["test1", "test2"].collect do |title|
       f = OpenTox::Feature.new nil
-      f.title = title
-      f[RDF.type] = [RDF::OT.NumericFeature, RDF::OT.Feature]
+      f[:title] = title
+      f[:type] = ["NumericFeature", "Feature"]
       f.put
       f
     end

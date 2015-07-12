@@ -88,7 +88,7 @@ class FeatureRestTest < MiniTest::Test
 
     list = OpenTox::Feature.all 
     listsize1 = list.length
-    assert_equal true, list.collect{|f| f.uri}.include?(@feature.uri)
+    assert_equal true, list.collect{|f| f["uri"]}.include?(@feature.uri)
 
     # modify feature
     @feature2 = OpenTox::Feature.new @feature.uri

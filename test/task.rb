@@ -25,7 +25,6 @@ class TaskTest < MiniTest::Test
       sleep 5
       $task[:uri]
     end
-      p $task[:uri]
     assert_equal true,  task.running?
     assert_equal "Running", task.hasStatus
     assert_equal 202, task.code
@@ -203,7 +202,7 @@ class TaskTest < MiniTest::Test
     # TODO: remove test uris from services, e.g. dynamically instantiate Sinatra routes instead
     
     def check_msg(msg,complete)
-      assert msg=~/bad_request_error_in_task/,"orignial task error message ('bad_request_error_in_task') is lost: #{msg}"
+      assert msg=~/bad_request_error_in_task/,"original task error message ('bad_request_error_in_task') is lost: #{msg}"
       assert((msg=~/\\/)==nil,"no backslashes please!")
       assert complete=~/test.rb:9/,"code line number test.rb:9 is lost"
     end
@@ -222,6 +221,9 @@ class TaskTest < MiniTest::Test
         assert false,"should have thrown an error because there was an error in the task we have waited for"
       rescue => ex
         assert ex.is_a?(OpenTox::BadRequestError),"not a bad request error, instead: #{ex.class}"
+        p ex
+        p ex.message
+        p ex.error_cause
         check_msg(ex.message,ex.error_cause)
       end
 
