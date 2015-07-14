@@ -97,7 +97,8 @@ class DatasetLongTest < MiniTest::Test
 =begin
   # comparison with mongodb
   # fails after ~350 seconds with RestClient::ServerBrokeConnection: Server broke connection 
-  # backend runs @ 100% CPU for ~7 minutes
+  # backend runs @ 100% CPU 
+  # syslog reports "finished add" after 10 minutes
   def test_06_upload_feature_dataset
     t1 = Time.now
     f = File.join DATA_DIR, "rat_feature_dataset.csv"
