@@ -38,13 +38,15 @@ class DatasetLongTest < MiniTest::Test
     d = OpenTox::Dataset.new 
     d.upload f
     csv = CSV.read f
-    assert_equal true, d.features.first[RDF.type].include?(RDF::OT.NominalFeature)
-    assert_nil d.metadata[RDF::OLO.index]
+    feature = OpenTox::Feature.new d.features.first["uri"]
+    assert_equal true, feature["type"].include?("NominalFeature")
+    #assert_equal true, d.features.first["type"].include?("NominalFeature")
+    assert_nil d["index"]
     assert_equal csv.size-1-errors.size, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1-errors.size, d.data_entries.size
     (duplicates+errors).each do |uri|
-      assert d.metadata[RDF::OT.Warnings].grep %r{#{uri}}
+      assert d["Warnings"].grep %r{#{uri}}
     end
     d.delete
     assert_equal false, URI.accessible?(d.uri)
@@ -86,6 +88,25 @@ class DatasetLongTest < MiniTest::Test
     f = File.join DATA_DIR, "kazius.csv"
     d = OpenTox::Dataset.new 
     d.upload f
+    csv = CSV.read f
+    assert_equal csv.size-1, d.compounds.size
+    assert_equal csv.first.size-1, d.features.size
+    assert_equal csv.size-1, d.data_entries.size
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
+  end
+
+  def test_06_upload_feature_dataset
+    t1 = Time.now
+    f = File.join DATA_DIR, "rat_feature_dataset.csv"
+    d = OpenTox::Dataset.new 
+    d.upload f
+    t2 = Time.now
+    p "Upload: #{t2-t1}"
+    d2 = OpenTox::Dataset.new d.uri
+    d2.get# true
+    t3 = Time.now
+    p "Dowload: #{t3-t2}"
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
