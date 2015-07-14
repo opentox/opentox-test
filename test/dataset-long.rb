@@ -94,4 +94,28 @@ class DatasetLongTest < MiniTest::Test
     assert_equal false, URI.accessible?(d.uri)
   end
 
+=begin
+  # comparison with mongodb
+  # fails after ~350 seconds with RestClient::ServerBrokeConnection: Server broke connection 
+  # backend runs @ 100% CPU for ~7 minutes
+  def test_06_upload_feature_dataset
+    t1 = Time.now
+    f = File.join DATA_DIR, "rat_feature_dataset.csv"
+    d = OpenTox::Dataset.new 
+    d.upload f
+    t2 = Time.now
+    p "Upload: #{t2-t1}"
+    d2 = OpenTox::Dataset.new d.uri
+    d2.get# true
+    t3 = Time.now
+    p "Dowload: #{t3-t2}"
+    csv = CSV.read f
+    assert_equal csv.size-1, d.compounds.size
+    assert_equal csv.first.size-1, d.features.size
+    assert_equal csv.size-1, d.data_entries.size
+    d.delete
+    assert_equal false, URI.accessible?(d.uri)
+  end
+=end
+
 end
