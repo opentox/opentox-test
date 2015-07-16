@@ -1,3 +1,5 @@
+# TODO: check json specification at https://github.com/opentox-api/api-specification/issues/2
+
 require_relative "setup.rb"
 
 class DatasetTest < MiniTest::Test
@@ -83,6 +85,8 @@ class DatasetTest < MiniTest::Test
     assert_equal 3, d.compounds.size
     assert_equal 2, d.features.size
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
+#p(JSON.pretty_generate(d["data"]))
+p d["data"]
     d.put
     # check if dataset has been saved correctly
     new_dataset = OpenTox::Dataset.new d.uri
@@ -100,7 +104,7 @@ class DatasetTest < MiniTest::Test
     # create empty dataset
     new_dataset = OpenTox::Dataset.new d.uri
     # get metadata
-    assert_equal "multicolumn.csv",  new_dataset[RDF::OT.hasSource]
+    assert_equal "multicolumn.csv",  new_dataset["hasSource"]
     assert_equal "multicolumn.csv",  new_dataset.title
     # get features
     assert_equal 6, new_dataset.features.size
@@ -113,8 +117,8 @@ class DatasetTest < MiniTest::Test
     d = OpenTox::Dataset.new nil
     d.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     assert_equal OpenTox::Dataset, d.class
-    refute_nil d[RDF::OT.Warnings]
-    assert_equal "EPAFHM.mini.csv",  d[RDF::OT.hasSource]
+    refute_nil d["Warnings"]
+    assert_equal "EPAFHM.mini.csv",  d["hasSource"]
     assert_equal "EPAFHM.mini.csv",  d.title
     d.delete 
     assert_equal false, URI.accessible?(d.uri)
@@ -123,23 +127,22 @@ class DatasetTest < MiniTest::Test
   def test_create_from_file_with_wrong_smiles_compound_entries
     d = OpenTox::Dataset.new nil
     d.upload File.join(DATA_DIR,"wrong_dataset.csv")
-    refute_nil d[RDF::OT.Warnings]
-    assert_match /2|3|4|5|6|7|8/, d[RDF::OT.Warnings]
+    refute_nil d["Warnings"]
+    assert_match /2|3|4|5|6|7|8/, d["Warnings"]
     d.delete
   end
 
   def test_multicolumn_csv
     d = OpenTox::Dataset.new nil
     d.upload "#{DATA_DIR}/multicolumn.csv"
-    refute_nil d[RDF::OT.Warnings]
-    assert_match /Duplicate compound/,  d[RDF::OT.Warnings]
-    assert_match /3, 5/,  d[RDF::OT.Warnings]
+    refute_nil d["Warnings"]
+    assert d["Warnings"].grep(/Duplicate compound/)  
+    assert d["Warnings"].grep(/3, 5/)  
     assert_equal 6, d.features.size
     assert_equal 7, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.uri}.uniq.size
-    assert_equal [["1", "1", "true", "true", "test", 1.1], ["1", "2", "false", "7.5", "test", 0.24], ["1", "3", "true", "5", "test", 3578.239], ["0", "4", "false", "false", "test", -2.35], ["1", "2", "true", "4", "test_2", 1.0], ["1", "2", "false", "false", "test", -1.5], ["1", nil, "false", nil, nil, 1.0]], d.data_entries
+    assert_equal [["1", "1", "true", "true", "test", "1.1"], ["1", "2", "false", "7.5", "test", "0.24"], ["1", "3", "true", "5", "test", "3578.239"], ["0", "4", "false", "false", "test", "-2.35"], ["1", "2", "true", "4", "test_2", "1"], ["1", "2", "false", "false", "test", "-1.5"], ["1", nil, "false", nil, nil, "1.0"]], d.data_entries
     assert_equal "c1cc[nH]c1,1,,false,,,1.0", d.to_csv.split("\n")[7]
-    #assert_equal 'c1ccc[nH]1,1,,false,,,1.0', d.to_csv.split("\n")[7]
     csv = CSV.parse(OpenTox::RestClientWrapper.get d.uri, {}, {:accept => 'text/csv'})
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.shift
@@ -200,7 +203,7 @@ class DatasetTest < MiniTest::Test
     dataset = OpenTox::Dataset.new nil
     dataset.upload "#{DATA_DIR}/temp_test.csv"
     assert_equal true, URI.accessible?(dataset.uri)
-    assert_equal "Cannot parse SMILES compound '' at position 3, all entries are ignored.",  dataset[RDF::OT.Warnings]
+    assert_equal "Cannot parse SMILES compound '' at position 3, all entries are ignored.",  dataset["Warnings"]
     File.delete "#{DATA_DIR}/temp_test.csv"
     dataset.features.each{|f| feature = OpenTox::Feature.find f.uri; feature.delete}
     dataset.delete

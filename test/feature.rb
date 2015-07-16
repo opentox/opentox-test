@@ -84,6 +84,7 @@ class FeatureRestTest < MiniTest::Test
     @feature[:title] = "tost"
     @feature.put
     uri = @feature.uri
+    p uri
     assert_equal true, URI.accessible?(@feature.uri), "#{@feature.uri} is not accessible."
 
     list = OpenTox::Feature.all 
