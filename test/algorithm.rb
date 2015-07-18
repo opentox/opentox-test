@@ -12,10 +12,11 @@ class AlgorithmTest < MiniTest::Test
   def test_set_parameters
     a = OpenTox::Algorithm::Generic.new 
     a.parameters = [
-      {RDF::DC.title => "test", RDF::OT.paramScope => "mandatory"},
-      {RDF::DC.title => "test2", RDF::OT.paramScope => "optional"}
+      {"title" => "test", "paramScope" => "mandatory"},
+      {"title" => "test2", "paramScope" => "optional"}
     ]
+    p a
     assert_equal 2, a.parameters.size
-    assert_equal "mandatory", a.parameters.select{|p| p[RDF::DC.title] == "test"}.first[RDF::OT.paramScope]
+    assert_equal "mandatory", a.parameters.select{|p| p["title"] == "test"}.first["paramScope"]
   end
 end
