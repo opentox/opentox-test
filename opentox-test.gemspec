@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.name          = "opentox-test"
   gem.require_paths = ["test"]
-  gem.required_ruby_version = '>= 1.9.2'
+  gem.required_ruby_version = '>= 2.0.0'
 
   gem.add_runtime_dependency 'minitest'
   gem.add_runtime_dependency "opentox-client"

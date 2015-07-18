@@ -14,13 +14,11 @@ class DatasetLongTest < MiniTest::Test
     f = File.join DATA_DIR, "EPAFHM.csv"
     d = OpenTox::Dataset.new 
     d.upload f
-    puts d.uri
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_02_upload_multicell
@@ -38,18 +36,15 @@ class DatasetLongTest < MiniTest::Test
     d = OpenTox::Dataset.new 
     d.upload f
     csv = CSV.read f
-    feature = OpenTox::Feature.new d.features.first["uri"]
-    assert_equal true, feature["type"].include?("NominalFeature")
-    #assert_equal true, d.features.first["type"].include?("NominalFeature")
+    assert_equal true, d.features.first.nominal
     assert_nil d["index"]
     assert_equal csv.size-1-errors.size, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1-errors.size, d.data_entries.size
     (duplicates+errors).each do |uri|
-      assert d["Warnings"].grep %r{#{uri}}
+      assert d["warnings"].grep %r{#{uri}}
     end
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_03_upload_isscan
@@ -61,7 +56,7 @@ class DatasetLongTest < MiniTest::Test
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
+    #assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_04_simultanous_upload
@@ -78,7 +73,7 @@ class DatasetLongTest < MiniTest::Test
         csv.shift
         assert_equal csv.collect{|r| r[1]}, d.data_entries.flatten
         d.delete 
-        assert_equal false, URI.accessible?(d.uri)
+        #assert_equal false, URI.accessible?(d.uri)
       end
     end
     threads.each {|aThread| aThread.join}
@@ -93,7 +88,6 @@ class DatasetLongTest < MiniTest::Test
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
   end
 
   def test_06_upload_feature_dataset
@@ -103,8 +97,7 @@ class DatasetLongTest < MiniTest::Test
     d.upload f
     t2 = Time.now
     p "Upload: #{t2-t1}"
-    d2 = OpenTox::Dataset.new d.uri
-    d2.get# true
+    d2 = OpenTox::Dataset.find d.id
     t3 = Time.now
     p "Dowload: #{t3-t2}"
     csv = CSV.read f
@@ -112,7 +105,7 @@ class DatasetLongTest < MiniTest::Test
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
     d.delete
-    assert_equal false, URI.accessible?(d.uri)
+    #assert_equal false, URI.accessible?(d.uri)
   end
 
 end

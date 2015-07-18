@@ -4,8 +4,11 @@ class ErrorTest < MiniTest::Test
 
   def test_bad_request
     object = OpenTox::Feature.new 
-    assert_raises OpenTox::ResourceNotFoundError do
-      response = object.get
+    p object.id
+    #TODO
+    #assert_raises OpenTox::ResourceNotFoundError do
+    assert_raises Mongoid::Errors::DocumentNotFound do
+      response = OpenTox::Feature.find(object.id)
     end
   end
 
