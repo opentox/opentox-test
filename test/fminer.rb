@@ -5,20 +5,24 @@ class FminerTest < MiniTest::Test
   def test_fminer_bbrc
     dataset = OpenTox::Dataset.new
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    assert_equal dataset.uri.uri?, true
+    refute_nil dataset.id
 
-    dataset_uri = OpenTox::Algorithm::Fminer.bbrc :dataset_uri => dataset.uri
-    feature_dataset = OpenTox::Dataset.new dataset_uri
-    assert_equal dataset_uri.uri?, true
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc :dataset => dataset
+    # TODO do we need tasks here?
+    #task = OpenTox::Algorithm::Fminer.bbrc :dataset => dataset#.uri
+    #task.wait
+    #feature_dataset = task.result
+    #p task.code
+    #p feature_dataset.features
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
-    assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', OpenTox::Feature.new(feature_dataset.features.first.uri).title
+    assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', feature_dataset.features.first.title
     compounds = feature_dataset.compounds
-    smarts = feature_dataset.features.collect{|f| f.title}
+    smarts = feature_dataset.features.collect{|f| f.smarts}
     match = OpenTox::Algorithm::Descriptor.smarts_match compounds, smarts
     compounds.each_with_index do |c,i|
       smarts.each_with_index do |s,j|
-        assert_equal match[c.uri][s], feature_dataset.data_entries[i][j].to_i
+        assert_equal match[i][j], feature_dataset.data_entries[i][j].to_i
       end
     end
 
@@ -29,14 +33,19 @@ class FminerTest < MiniTest::Test
   def test_fminer_last
     dataset = OpenTox::Dataset.new
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    assert_equal dataset.uri.uri?, true
-
-    dataset_uri = OpenTox::Algorithm::Fminer.last :dataset_uri => dataset.uri
-    feature_dataset = OpenTox::Dataset.new dataset_uri
-    assert_equal dataset_uri.uri?, true
+    feature_dataset = OpenTox::Algorithm::Fminer.last :dataset => dataset
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 21, feature_dataset.features.size
-    assert_equal '[#6&A]-[#6&a]:[#6&a]:[#6&a]:[#6&a]:[#6&a]', OpenTox::Feature.new(feature_dataset.features.first.uri).title
+    assert_equal '[#6&A]-[#6&a]:[#6&a]:[#6&a]:[#6&a]:[#6&a]', feature_dataset.features.first.smarts
+
+    compounds = feature_dataset.compounds
+    smarts = feature_dataset.features.collect{|f| f.smarts}
+    match = OpenTox::Algorithm::Descriptor.smarts_match compounds, smarts
+    compounds.each_with_index do |c,i|
+      smarts.each_with_index do |s,j|
+        assert_equal match[i][j], feature_dataset.data_entries[i][j].to_i
+      end
+    end
 
     dataset.delete
     feature_dataset.delete

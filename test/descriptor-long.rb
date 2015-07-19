@@ -13,9 +13,9 @@ class DescriptorLongTest < MiniTest::Test
     dataset = OpenTox::Dataset.new 
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.mini.csv")
     d = OpenTox::Algorithm::Descriptor.physchem dataset
-    assert_equal dataset.compounds.size, d.data_entries.size
-    assert_equal 332, d.data_entries[0].size
-    d.delete
+    assert_equal dataset.compounds.size, d.keys.size
+    assert_equal 332, d.first.last.size
+    #d.delete
   end
 
 end

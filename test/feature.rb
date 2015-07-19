@@ -11,7 +11,6 @@ class FeatureTest < MiniTest::Test
 
     list = OpenTox::Feature.all
     listsize1 = list.length
-    p list
     assert_equal true, list.collect{|f| f.id}.include?(@feature.id)
     # modify feature
     @feature2 = OpenTox::Feature.find(@feature.id)
