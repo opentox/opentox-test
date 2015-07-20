@@ -23,23 +23,22 @@ class LazarFminerTest < MiniTest::Test
       :prediction => "false",
       :confidence => 0.3639589577089577
     } ].each do |example|
-      prediction = model.predict :compound => example[:compound]
-      p prediction
-      p prediction.features
-      p prediction.compounds
-      prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == example[:compound].uri}.first
-      assert_equal example[:prediction], prediction[:value]
-      assert_equal example[:confidence], prediction[:confidence]
-      prediction_dataset.delete
+      prediction_dataset = model.predict :compound => example[:compound]
+
+      prediction = prediction_dataset.data_entries.first.first
+      confidence = prediction_dataset.data_entries.first.last
+      assert_equal example[:prediction], prediction
+      assert_equal example[:confidence], confidence
     end
 
     # make a dataset prediction
     compound_dataset = OpenTox::Dataset.new
     compound_dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
-    assert_equal compound_dataset.uri.uri?, true
-    prediction_uri = model.predict :dataset_uri => dataset.uri
-    prediction = OpenTox::Dataset.new prediction_uri
-    assert_equal prediction.uri.uri?, true
+    #assert_equal compound_dataset.uri.uri?, true
+    prediction = model.predict :dataset => compound_dataset
+    assert_equal compound_dataset.compounds, prediction.compounds
+    #prediction = OpenTox::Dataset.new prediction_uri
+    #assert_equal prediction.uri.uri?, true
 
     # cleanup
     [dataset,model,feature_dataset,compound_dataset].each{|o| o.delete}
