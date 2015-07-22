@@ -3,25 +3,18 @@ require_relative "setup.rb"
 class LazarExtendedTest < MiniTest::Test
 
   def test_lazar_bbrc_ham_minfreq
-    dataset = OpenTox::Dataset.new 
+    dataset = OpenTox::MeasuredDataset.new 
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    assert_equal dataset.uri.uri?, true
-    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 5
-    assert_equal model_uri.uri?, true
-    model = OpenTox::Model::Lazar.new model_uri
-    assert_equal model.uri.uri?, true
-    feature_dataset_uri = model[RDF::OT.featureDataset]
-    feature_dataset = OpenTox::Dataset.new feature_dataset_uri 
+    model = OpenTox::Model::Lazar.create OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 5)
+    feature_dataset = OpenTox::CalculatedDataset.find model.feature_dataset_id
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 41, feature_dataset.features.size
-    assert_equal '[#7&A]-[#6&A]=[#7&A]', OpenTox::Feature.new(feature_dataset.features.first.uri).title
+    assert_equal '[#7&A]-[#6&A]=[#7&A]', feature_dataset.features.first.title
     compound = OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H")
-    prediction_uri = model.run :compound_uri => compound.uri
-    prediction_dataset = OpenTox::Dataset.new prediction_uri
-    assert_equal prediction_dataset.uri.uri?, true
-    prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == compound.uri}.first
-    assert_equal "false", prediction[:value]
-    assert_equal 0.12380952380952381, prediction[:confidence]
+    prediction_dataset = model.predict :compound => compound
+    prediction = prediction_dataset.data_entries.first
+    assert_equal "false", prediction.first
+    assert_equal 0.12380952380952381, prediction.last
     dataset.delete
     model.delete
     feature_dataset.delete
@@ -29,24 +22,20 @@ class LazarExtendedTest < MiniTest::Test
   end
 
   def test_lazar_bbrc_large_ds
-    dataset = OpenTox::Dataset.new 
+    # TODO fminer crashes with these settings
+    dataset = OpenTox::MeasuredDataset.new 
     dataset.upload File.join(DATA_DIR,"multi_cell_call_no_dup.csv")
-    assert_equal dataset.uri.uri?, true
-    model_uri = OpenTox::Model::Lazar.create :dataset_uri => dataset.uri, :feature_generation_uri => File.join($algorithm[:uri],"fminer","bbrc"), :min_frequency => 75
-    assert_equal model_uri.uri?, true
-    model = OpenTox::Model::Lazar.new model_uri
-    assert_equal model.uri.uri?, true
-    feature_dataset_uri = model[RDF::OT.featureDataset]
-    feature_dataset = OpenTox::Dataset.new feature_dataset_uri 
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)#, :min_frequency => 15)
+    model = OpenTox::Model::Lazar.create feature_dataset
+    model.save
+    p model.id
+    feature_dataset = OpenTox::CalculatedDataset.find model.feature_dataset_id
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 52, feature_dataset.features.size
-    assert_equal '[#17&A]-[#6&A]', OpenTox::Feature.new(feature_dataset.features.first.uri).title
+    assert_equal '[#17&A]-[#6&A]', feature_dataset.features.first.title
     compound = OpenTox::Compound.from_inchi("InChI=1S/C10H9NO2S/c1-8-2-4-9(5-3-8)13-6-10(12)11-7-14/h2-5H,6H2,1H3")
-    prediction_uri = model.run :compound_uri => compound.uri
-    prediction_dataset = OpenTox::Dataset.new prediction_uri
-    assert_equal prediction_dataset.uri.uri?, true
-    prediction = prediction_dataset.predictions.select{|p| p[:compound].uri == compound.uri}.first
-    assert_equal "0", prediction[:value]
+    prediction_dataset = model.predict :compound => compound
+    prediction = prediction_dataset.data_entries.first
     assert_in_delta 0.025, prediction[:confidence], 0.001
     #assert_equal 0.025885845574483608, prediction[:confidence]
     # with compound change in training_dataset see:
@@ -56,6 +45,17 @@ class LazarExtendedTest < MiniTest::Test
     model.delete
     feature_dataset.delete
     prediction_dataset.delete
+  end
+
+  def test_lazar_kazius
+    # TODO find a solution for feature datasets > 16M (size limit in mongodb)
+    dataset = OpenTox::MeasuredDataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 100)
+    assert_equal feature_dataset.compounds.size, dataset.compounds.size
+    model = OpenTox::Model::Lazar.create feature_dataset
+    p model.id
+    dataset.delete
+    #feature_dataset.delete
   end
 
 end

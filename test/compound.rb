@@ -31,15 +31,24 @@ class CompoundTest < MiniTest::Test
     assert_equal "c1ccccc1", c.smiles
   end
 
+  def test_sdf_import
+    c = OpenTox::Compound.from_sdf File.read(File.join DATA_DIR, "acetaldehyde.sdf")
+    assert_equal "InChI=1S/C2H4O/c1-2-3/h2H,1H3", c.inchi
+    assert_equal "CC=O", c.smiles
+    assert c.names.include? "Acetylaldehyde"
+  end
+
+  def test_sdf_export
+    c = OpenTox::Compound.from_smiles "CC=O"
+    assert_match /7  6  0  0  0  0  0  0  0  0999 V2000/, c.sdf
+  end
+
   def test_compound_image
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
     testbild = "/tmp/testbild.png"
-    f = File.open(testbild, "w")
-    f.puts c.png
-    f.close
+    File.open(testbild, "w"){|f| f.puts c.png}
     assert_match "image/png", `file -b --mime-type /tmp/testbild.png`
     File.unlink(testbild)
-    #assert_match /^\x89PNG/, c.png #32bit only?
   end
 
   # OpenBabel segfaults randomly during inchikey calculation
@@ -47,8 +56,6 @@ class CompoundTest < MiniTest::Test
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
     assert_equal "UHOVQNZJYSORNB-UHFFFAOYSA-N", c.inchikey
   end
-=begin
-=end
 
   def test_cid
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"

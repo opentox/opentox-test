@@ -1,39 +1,40 @@
 require_relative "setup.rb"
 
-begin
-  puts "Service URI is: #{$algorithm[:uri]}"
-rescue
-  puts "Configuration Error: $algorithm[:uri] is not defined in: " + File.join(ENV["HOME"],".opentox","config","test.rb")
-  exit
-end
-
 class DescriptorTest < MiniTest::Test
 
   def test_list
-    skip "TODO: Test descriptor list"
-  end
-
-  def test_lookup
-    skip "TODO: Test descriptor lookup"
+    # check available descriptors
+    @descriptors = OpenTox::Algorithm::Descriptor::DESCRIPTORS.keys
+    assert_equal 111,@descriptors.size,"wrong num physchem descriptors"
+    @descriptor_values = OpenTox::Algorithm::Descriptor::DESCRIPTOR_VALUES
+    assert_equal 356,@descriptor_values.size,"wrong num physchem descriptors"
+    sum = 0
+    [ @descriptors, @descriptor_values ].each do |desc|
+      {"Openbabel"=>16,"Cdk"=>(desc==@descriptors ? 50 : 295),"Joelib"=>45}.each do |k,v|
+        assert_equal v,desc.select{|x| x=~/^#{k}\./}.size,"wrong num #{k} descriptors"
+        sum += v
+      end
+    end
+    assert_equal (111+356),sum
   end
 
   def test_smarts
     c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
     result = OpenTox::Algorithm::Descriptor.smarts_match c, "FF"
-    assert_equal 1, result[c]["FF"]
-    smarts = {"CC"=>1, "C"=>1, "C=C"=>1, "CO"=>0, "FF"=>1, "C1CCCC1"=>1, "NN"=>0}
-    result = OpenTox::Algorithm::Descriptor.smarts_match c, smarts.keys
-    assert_equal smarts, result[c]
-    smarts_count = {"CC"=>10, "C"=>6, "C=C"=>2, "CO"=>0, "FF"=>2, "C1CCCC1"=>10, "NN"=>0}
-    result = OpenTox::Algorithm::Descriptor.smarts_count c, smarts_count.keys
-    assert_equal smarts_count, result[c]
+    assert_equal [[1]], result
+    smarts = ["CC", "C", "C=C", "CO", "FF", "C1CCCC1", "NN"]
+    result = OpenTox::Algorithm::Descriptor.smarts_match c, smarts
+    assert_equal [[1, 1, 1, 0, 1, 1, 0]], result
+    smarts_count = [[10, 6, 2, 0, 2, 10, 0]]
+    result = OpenTox::Algorithm::Descriptor.smarts_count c, smarts
+    assert_equal smarts_count, result
   end
 
   def test_compound_openbabel_single
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = OpenTox::Algorithm::Descriptor.physchem c, ["Openbabel.logP"]
-    assert_equal 1, result[c].size
-    assert_equal 1.12518, result[c]["Openbabel.logP"]
+    assert_equal 1, result[0].size
+    assert_equal 1.12518, result[0][0]
   end
 
   def test_compound_cdk_single

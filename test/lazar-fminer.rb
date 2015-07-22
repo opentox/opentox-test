@@ -3,10 +3,10 @@ require_relative "setup.rb"
 class LazarFminerTest < MiniTest::Test
 
   def test_lazar_fminer
-    dataset = OpenTox::Dataset.new
+    dataset = OpenTox::MeasuredDataset.new
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     model = OpenTox::Model::Lazar.create OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)
-    feature_dataset = OpenTox::Dataset.find model.feature_dataset_id
+    feature_dataset = OpenTox::CalculatedDataset.find model.feature_dataset_id
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
     feature_dataset.data_entries.each do |e|
@@ -32,7 +32,7 @@ class LazarFminerTest < MiniTest::Test
     end
 
     # make a dataset prediction
-    compound_dataset = OpenTox::Dataset.new
+    compound_dataset = OpenTox::MeasuredDataset.new
     compound_dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
     #assert_equal compound_dataset.uri.uri?, true
     prediction = model.predict :dataset => compound_dataset

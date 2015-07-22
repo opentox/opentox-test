@@ -9,20 +9,20 @@ class FeatureRestTest < MiniTest::Test
     f = OpenTox::Feature.new 
     f.title = "first"
     f.description = "first test description"
-    f.put
+    f.save
     
     # get object to compare first
-    f2 = OpenTox::Feature.find f.uri
+    f2 = OpenTox::Feature.find f.id
     assert_equal f.title, f2.title
     assert_equal f.description, f2.description
 
     # edit object and PUT back
     f2.title = "second"
     f2.description = f.description.reverse
-    f2.put
+    f2.save
     
     # get object to compare again
-    f3 = OpenTox::Feature.find f.uri
+    f3 = OpenTox::Feature.find f.id
     refute_equal f.title, f3.title
     refute_equal f.description, f3.description
   end

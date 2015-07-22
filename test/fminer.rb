@@ -8,12 +8,6 @@ class FminerTest < MiniTest::Test
     refute_nil dataset.id
 
     feature_dataset = OpenTox::Algorithm::Fminer.bbrc :dataset => dataset
-    # TODO do we need tasks here?
-    #task = OpenTox::Algorithm::Fminer.bbrc :dataset => dataset#.uri
-    #task.wait
-    #feature_dataset = task.result
-    #p task.code
-    #p feature_dataset.features
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
     assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', feature_dataset.features.first.title

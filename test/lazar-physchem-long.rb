@@ -5,18 +5,9 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
   def test_lazar_pc_descriptors
 
     # check available descriptors
-    @descriptors = OpenTox::Algorithm::Descriptor.physchem_descriptors.keys
-    assert_equal 111,@descriptors.size,"wrong num physchem descriptors"
-    @descriptor_values = OpenTox::Algorithm::Descriptor.physchem_descriptor_values
-    assert_equal 356,@descriptor_values.size,"wrong num physchem descriptors"
-    sum = 0
-    [ @descriptors, @descriptor_values ].each do |desc|
-      {"Openbabel"=>16,"Cdk"=>(desc==@descriptors ? 50 : 295),"Joelib"=>45}.each do |k,v|
-        assert_equal v,desc.select{|x| x=~/^#{k}\./}.size,"wrong num #{k} descriptors"
-        sum += v
-      end
-    end
-    assert_equal (111+356),sum
+    @descriptors = OpenTox::Algorithm::Descriptor::DESCRIPTORS.keys
+    assert_equal 111,@descriptors.size,"wrong number of physchem descriptors"
+    @descriptor_values = OpenTox::Algorithm::Descriptor::DESCRIPTOR_VALUES
 
     # select descriptors for test
     @num_features_offset = 0
@@ -32,10 +23,8 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
     puts "Descriptors: #{@descriptors}"
 
     # UPLOAD DATA
-    @dataset = OpenTox::Dataset.new 
-    @dataset.upload File.join(DATA_DIR,"EPAFHM.medi.csv")
-    assert_equal @dataset.uri.uri?, true
-    puts "Dataset: "+@dataset.uri
+    @dataset = OpenTox::MeasuredDataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
+    puts "Dataset: "+@dataset.id
 
     @compound_smiles = "CC(C)(C)CN"
     @compound_inchi = "InChI=1S/C5H13N/c1-5(2,3)4-6/h4,6H2,1-3H3"
@@ -53,8 +42,8 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
 
   def build_model_and_predict(precompute_feature_dataset=true)
 
-    model_params = {:dataset_uri => @dataset.uri}
-    feat_gen_uri = File.join($algorithm[:uri],"descriptor","physchem")
+    model_params = {:dataset => @dataset}
+    #feat_gen_uri = File.join($algorithm[:uri],"descriptor","physchem")
     
     if precompute_feature_dataset
       # PRECOMPUTE FEATURES
@@ -63,26 +52,46 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
       f.puts File.read(File.join(DATA_DIR,"EPAFHM.medi.csv"))
       f.puts "\"#{@compound_smiles}\","
       f.close
-      d = OpenTox::Dataset.new 
-      d.upload p
-      model_params[:feature_dataset_uri] = OpenTox::Algorithm::Generic.new(feat_gen_uri).run({:dataset_uri => d.uri, :descriptors => @descriptors})
+      d = OpenTox::Dataset.from_csv_file p
+      descriptors = OpenTox::Algorithm::Descriptor.physchem(d.compounds, @descriptors)
+      #model_params[:feature_dataset_uri] = OpenTox::Algorithm::Generic.new(feat_gen_uri).run({:dataset_uri => d.uri, :descriptors => @descriptors})
     else
       model_params[:feature_generation_uri] = feat_gen_uri
       model_params[:descriptors] = @descriptors
     end
       
     # BUILD MODEL
-    model_uri = OpenTox::Model::Lazar.create model_params
-    puts "Model: "+model_uri
-    model = OpenTox::Model::Lazar.new model_uri
-    assert_equal model_uri.uri?, true
-    puts "Predicted variable: "+model.predicted_variable
+
+    #p descriptors
+    feature_dataset = OpenTox::CalculatedDataset.new
+    feature_dataset.compounds = @dataset.compounds
+    feature_dataset.data_entries = descriptors
+    feature_dataset.features = @descriptors.collect{|d| OpenTox::Feature.find_or_create_by(:title => d)}
+    feature_dataset["inchis"].each do |inchi|
+      assert_kind_of String, inchi
+    end
+    feature_dataset["feature_ids"].each do |id|
+      assert_kind_of BSON::ObjectId, id
+    end
+    feature_dataset.data_entries.each do |entry|
+      #p entry
+      assert_kind_of Array, entry
+      entry.each do |e|
+        #p e
+        assert_kind_of Float, e
+      end
+    end
+    feature_dataset.save
+    model = OpenTox::Model::Lazar.create @dataset, feature_dataset
+    #model = OpenTox::Model::Lazar.new model_uri
+    #assert_equal model_uri.uri?, true
+    #puts "Predicted variable: "+model.predicted_variable
     
     # CHECK FEATURE DATASET
-    feature_dataset_uri = model.metadata[RDF::OT.featureDataset].first
-    puts "Feature dataset: #{feature_dataset_uri}"
-    feature_dataset = OpenTox::Dataset.new(feature_dataset_uri)
-    assert_equal @dataset.compounds.size,feature_dataset.compounds.size-(precompute_feature_dataset ? 1 : 0),"num compounds in feature dataset not correct"
+    #feature_dataset_uri = model.metadata[RDF::OT.featureDataset].first
+    #puts "Feature dataset: #{feature_dataset_uri}"
+    #feature_dataset = OpenTox::Dataset.new(feature_dataset_uri)
+    assert_equal @dataset.compounds.size,feature_dataset.compounds.size,"Incorrect number of compounds in feature dataset"
     features = feature_dataset.features
     feature_titles = features.collect{|f| f.title}
     @descriptors.each do |d|
@@ -96,14 +105,17 @@ class LazarPhyschemDescriptorTest < MiniTest::Test
         assert feature_titles.include?(d),"feature not found #{d} in feature dataset #{feature_titles.inspect}"
       end
     end
-    assert_equal (@descriptors.size+@num_features_offset),features.size,"wrong num features in feature dataset"
+    assert_equal @descriptors.size,features.size,"Incorrect number of features in feature dataset"
+    #assert_equal (@descriptors.size+@num_features_offset),features.size,"wrong num features in feature dataset"
 
     # predict compound
     compound_uri = "#{$compound[:uri]}/#{@compound_inchi}"
-    prediction_uri = model.predict :compound_uri => compound_uri
-    prediction = OpenTox::Dataset.new prediction_uri
-    assert_equal prediction.uri.uri?, true
-    puts "Prediction "+prediction.uri
+    compound = OpenTox::Compound.new @compound_inchi
+    prediction = model.predict :compound => compound
+    p prediction
+    #prediction = OpenTox::Dataset.new prediction_uri
+    #assert_equal prediction.uri.uri?, true
+    #puts "Prediction "+prediction.uri
     
     # check prediction
     assert prediction.features.collect{|f| f.uri}.include?(model.predicted_variable),"prediction feature #{model.predicted_variable} not included prediction dataset #{prediction.features.collect{|f| f.uri}}"
