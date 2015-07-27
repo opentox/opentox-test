@@ -3,16 +3,18 @@ require_relative "setup.rb"
 class LazarFminerTest < MiniTest::Test
 
   def test_lazar_fminer
-    dataset = OpenTox::MeasuredDataset.new
-    dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = OpenTox::Model::Lazar.create OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)
-    feature_dataset = OpenTox::CalculatedDataset.find model.feature_dataset_id
-    assert_equal dataset.compounds.size, feature_dataset.compounds.size
+    training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => training_dataset)
+    #p feature_dataset
+    model = OpenTox::Model::Lazar.create training_dataset, feature_dataset
+    #feature_dataset = OpenTox::Dataset.find model.feature_dataset_id
+    p model
+    assert_equal training_dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
-    feature_dataset.data_entries.each do |e|
-      assert_equal e.size, feature_dataset.features.size
-    end
-    assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', feature_dataset.features.first.title
+    #feature_dataset.data_entries.each do |e|
+      #assert_equal e.size, feature_dataset.features.size
+    #end
+    assert_equal '[#6&A]-[#6&A]-[#6&A]=[#6&A]', feature_dataset.features.first.smarts
 
     [ {
       :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
@@ -32,8 +34,7 @@ class LazarFminerTest < MiniTest::Test
     end
 
     # make a dataset prediction
-    compound_dataset = OpenTox::MeasuredDataset.new
-    compound_dataset.upload File.join(DATA_DIR,"EPAFHM.mini.csv")
+    compound_dataset = OpenTox::Dataset.from_sdf File.join(DATA_DIR,"EPAFHM.mini.csv")
     #assert_equal compound_dataset.uri.uri?, true
     prediction = model.predict :dataset => compound_dataset
     assert_equal compound_dataset.compounds, prediction.compounds

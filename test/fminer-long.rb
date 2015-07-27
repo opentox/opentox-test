@@ -4,7 +4,7 @@ class FminerTest < MiniTest::Test
 
   def test_fminer_multicell
     # TODO aborts, probably fminer
-    dataset = OpenTox::MeasuredDataset.new 
+    dataset = OpenTox::Dataset.new 
     #multi_cell_call.csv
     dataset.upload File.join(DATA_DIR,"multi_cell_call.csv")
     feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)#, :min_frequency => 15)
@@ -13,8 +13,7 @@ class FminerTest < MiniTest::Test
   end
 
   def test_fminer_isscan
-    dataset = OpenTox::MeasuredDataset.new 
-    dataset.upload File.join(DATA_DIR,"ISSCAN-multi.csv")
+    dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"ISSCAN-multi.csv")
     feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)#, :min_frequency => 15)
     assert_equal feature_dataset.compounds.size, dataset.compounds.size
     p feature_dataset
@@ -23,8 +22,9 @@ class FminerTest < MiniTest::Test
   end
 
   def test_fminer_kazius
-    dataset = OpenTox::MeasuredDataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
-    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 200)
+    dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)#, :min_frequency => 50)
+    #feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 200)
     #feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset)#, :min_frequency => 15)
     assert_equal feature_dataset.compounds.size, dataset.compounds.size
     p feature_dataset.compounds.size

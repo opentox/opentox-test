@@ -44,7 +44,9 @@ class DataEntryTest < MiniTest::Test
     assert_kind_of NumericBioAssay, feature
     assert_match "EPAFHM.mini.csv",  feature.source
     assert_equal 0.0113, DataEntry[d.compounds.first, feature]
+    assert_equal 0.0113, d[d.compounds.first, feature]
     assert_equal 0.00323, DataEntry[d.compounds[5], feature]
+    assert_equal 0.00323, d[d.compounds[5], feature]
   end
 
   def test_upload_kazius
@@ -57,30 +59,25 @@ class DataEntryTest < MiniTest::Test
   end
 
   def test_upload_feature_dataset
-    t1 = Time.now
+    t = Time.now
     f = File.join DATA_DIR, "rat_feature_dataset.csv"
     d = OpenTox::Dataset.from_csv_file f
     assert_equal 458, d.features.size
     d.save
-    t2 = Time.now
-    p "Upload: #{t2-t1}"
+    p "Upload: #{Time.now-t}"
     d2 = OpenTox::Dataset.find d.id
-    t3 = Time.now
-    p "Dowload: #{t3-t2}"
+    t = Time.now
     assert_equal d.features.size, d2.features.size
     csv = CSV.read f
-    assert_equal csv.size-1, d2.compounds.size
+    csv.shift # remove header
+    assert_equal csv.size, d2.compounds.size
     assert_equal csv.first.size-1, d2.features.size
-    # asserting complete ds
-    3.times do
-      cid = rand(d.compounds.size)
-      3.times do
-        fid = rand(d.features.size)
-        # TODO data access is slow
-        assert_equal csv[cid+1][fid+1].to_i, DataEntry[d2.compounds[cid],d2.features[fid]]
-      end
+    d2.compounds.each_with_index do |compound,i|
+      row = csv[i]
+      row.shift # remove compound
+      assert_equal row, d2.fingerprint(compound)
     end
-    #assert_equal csv.size-1, d.data_entries.size
+    p "Dowload: #{Time.now-t}"
     d2.delete
     assert_raises Mongoid::Errors::DocumentNotFound do
       Dataset.find d.id
