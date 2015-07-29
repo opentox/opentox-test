@@ -5,7 +5,7 @@ class LazarExtendedTest < MiniTest::Test
   def test_lazar_bbrc_ham_minfreq
     dataset = OpenTox::MeasuredDataset.new 
     dataset.upload File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = OpenTox::Model::Lazar.create OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 5)
+    model = OpenTox::Model::Lazar.create OpenTox::Algorithm::Fminer.bbrc(dataset, :min_frequency => 5)
     feature_dataset = OpenTox::CalculatedDataset.find model.feature_dataset_id
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 41, feature_dataset.features.size
@@ -48,13 +48,22 @@ class LazarExtendedTest < MiniTest::Test
   end
 
   def test_lazar_kazius
-    # TODO find a solution for feature datasets > 16M (size limit in mongodb)
-    dataset = OpenTox::MeasuredDataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
-    feature_dataset = OpenTox::Algorithm::Fminer.bbrc(:dataset => dataset, :min_frequency => 100)
+    dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    feature_dataset = Algorithm::Fminer.bbrc(dataset, :min_frequency => 100)
     assert_equal feature_dataset.compounds.size, dataset.compounds.size
-    model = OpenTox::Model::Lazar.create feature_dataset
+    model = Model::Lazar.create dataset, feature_dataset
+    #model = Model::Lazar.find('55b8e9c07a78383f6700017e')
     p model.id
-    dataset.delete
+    #prediction_times = []
+    2.times do
+    compound = Compound.from_smiles("Clc1ccccc1NN")
+    prediction = model.predict :compound => compound
+    p prediction.data_entries
+    assert_equal "1", prediction.data_entries.first.first
+    assert_in_delta 0.019858401199860445, prediction.data_entries.first.last, 0.001
+    end
+
+    #dataset.delete
     #feature_dataset.delete
   end
 

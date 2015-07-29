@@ -43,10 +43,12 @@ class DataEntryTest < MiniTest::Test
     feature = d.features.first
     assert_kind_of NumericBioAssay, feature
     assert_match "EPAFHM.mini.csv",  feature.source
-    assert_equal 0.0113, DataEntry[d.compounds.first, feature]
     assert_equal 0.0113, d[d.compounds.first, feature]
-    assert_equal 0.00323, DataEntry[d.compounds[5], feature]
     assert_equal 0.00323, d[d.compounds[5], feature]
+    d2 = Dataset.find d.id
+    p d2.data_entries
+    assert_equal 0.0113, d2[d.compounds.first, feature]
+    assert_equal 0.00323, d2[d.compounds[5], feature]
   end
 
   def test_upload_kazius

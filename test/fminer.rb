@@ -5,29 +5,16 @@ class FminerTest < MiniTest::Test
   def test_fminer_bbrc
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     refute_nil dataset.id
-    feature_dataset = OpenTox::Algorithm::Fminer.bbrc :dataset => dataset
+    feature_dataset = OpenTox::Algorithm::Fminer.bbrc dataset
+    feature_dataset = Dataset.find feature_dataset.id
     assert_equal dataset.compounds.size, feature_dataset.compounds.size
     assert_equal 54, feature_dataset.features.size
     assert_equal "C-C-C=C", feature_dataset.features.first.smarts
     compounds = feature_dataset.compounds
     smarts = feature_dataset.features.collect{|f| f.smarts}
     match = OpenTox::Algorithm::Descriptor.smarts_count compounds, smarts
-    p smarts
-    compounds.each_with_index do |c,i|
-      p c.smiles
-      p match[i]
-      p feature_dataset.feature_values(c)
-      smarts.each_with_index do |s,j|
-        #unless match[i][j] == DataEntry.where(:dataset_id => feature_dataset.id, :compound_id => c.id, :feature_id => feature_dataset.features[j]).distinct(:value).first
-          #p c
-          #p s
-          #p feature_dataset.features[j]
-          #p match[i][j]
-          #p DataEntry.where(:dataset_id => feature_dataset.id, :compound_id => c.id, :feature_id => feature_dataset.features[j]).distinct(:value)
-        #end
-
-        #assert_equal match[i][j], feature_dataset[c,feature_dataset.features[j]]
-      end
+    feature_dataset.data_entries.each_with_index do |fingerprint,i|
+      assert_equal match[i], fingerprint
     end
 
     dataset.delete

@@ -12,8 +12,7 @@ class DatasetLongTest < MiniTest::Test
 
   def test_01_upload_epafhm
     f = File.join DATA_DIR, "EPAFHM.csv"
-    d = OpenTox::Dataset.new 
-    d.upload f
+    d = OpenTox::Dataset.from_csv_file f
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
@@ -33,8 +32,7 @@ class DatasetLongTest < MiniTest::Test
     ]
     errors = ['O=P(H)(OC)OC', 'C=CCNN.HCl' ]
     f = File.join DATA_DIR, "multi_cell_call.csv"
-    d = OpenTox::Dataset.new 
-    d.upload f
+    d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal true, d.features.first.nominal
     assert_nil d["index"]
@@ -49,8 +47,7 @@ class DatasetLongTest < MiniTest::Test
 
   def test_03_upload_isscan
     f = File.join DATA_DIR, "ISSCAN-multi.csv"
-    d = OpenTox::Dataset.new 
-    d.upload f
+    d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
@@ -63,8 +60,7 @@ class DatasetLongTest < MiniTest::Test
     threads = []
     3.times do |t|
       threads << Thread.new(t) do |up|
-        d = OpenTox::Dataset.new 
-        d.upload "#{DATA_DIR}/hamster_carcinogenicity.csv"
+        d = OpenTox::Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
         assert_equal OpenTox::Dataset, d.class
         assert_equal 1, d.features.size
         assert_equal 85, d.compounds.size
@@ -81,8 +77,7 @@ class DatasetLongTest < MiniTest::Test
 
   def test_05_upload_kazius
     f = File.join DATA_DIR, "kazius.csv"
-    d = OpenTox::Dataset.new 
-    d.upload f
+    d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
@@ -93,8 +88,7 @@ class DatasetLongTest < MiniTest::Test
   def test_06_upload_feature_dataset
     t1 = Time.now
     f = File.join DATA_DIR, "rat_feature_dataset.csv"
-    d = OpenTox::Dataset.new 
-    d.upload f
+    d = OpenTox::Dataset.from_csv_file f 
     t2 = Time.now
     p "Upload: #{t2-t1}"
     d2 = OpenTox::Dataset.find d.id
