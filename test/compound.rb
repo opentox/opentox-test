@@ -68,4 +68,10 @@ class CompoundTest < MiniTest::Test
     assert_equal "CHEMBL581676", c.chemblid
   end
 
+  def test_sdf_storage
+    c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
+    c.sdf
+    assert !c.sdf_id.nil?
+  end
+
 end
