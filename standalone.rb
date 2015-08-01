@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 [
+  "feature",
   "algorithm",
   "compound",
   "dataset-long",
@@ -7,13 +8,13 @@ require 'minitest/autorun'
   "descriptor-long",
   "descriptor",
   "edit_objects",
-  #"error",
+  "error",
   "fminer",
   "lazar-fminer",
   "lazar-long",
 #"lazar-models",
-  #"lazar-physchem-long",
-  #"lazar-physchem-short",
+  "lazar-physchem-long",
+  "lazar-physchem-short",
 #"lazarweb",
   #"task",
   #"validation-long",
