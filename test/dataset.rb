@@ -129,8 +129,7 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_from_csv
-    d = OpenTox::Dataset.new
-    d.upload "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    d = OpenTox::Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     assert_equal OpenTox::Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size

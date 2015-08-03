@@ -45,12 +45,19 @@ class LazarExtendedTest < MiniTest::Test
   end
 
   def test_lazar_kazius
+    t = Time.now
     dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    p "Dataset upload: #{Time.now-t}"
+    t = Time.now
     feature_dataset = Algorithm::Fminer.bbrc(dataset, :min_frequency => 100)
+    p "Feature mining: #{Time.now-t}"
+    t = Time.now
     assert_equal feature_dataset.compounds.size, dataset.compounds.size
     model = Model::Lazar.create dataset, feature_dataset
-    #model = Model::Lazar.find('55b8e9c07a78383f6700017e')
-    p model.id
+=begin
+=end
+    #model = Model::Lazar.find('55bcf5bf7a7838381200017e')
+    #p model.id
     #prediction_times = []
     2.times do
       compound = Compound.from_smiles("Clc1ccccc1NN")
@@ -58,8 +65,8 @@ class LazarExtendedTest < MiniTest::Test
       assert_equal "1", prediction[:value]
       assert_in_delta 0.019858401199860445, prediction[:confidence], 0.001
     end
-    dataset.delete
-    feature_dataset.delete
+    #dataset.delete
+    #feature_dataset.delete
   end
 
 end
