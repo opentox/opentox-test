@@ -74,4 +74,20 @@ class CompoundTest < MiniTest::Test
     assert !c.sdf_id.nil?
   end
 
+  def test_fingerprint
+    c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
+    assert c.fp4.collect{|fid| Feature.find(fid).name}.include? ("1,3-Tautomerizable")
+    assert_equal c.fp4.size, c.fp4_size
+  end
+
+  def test_neighbors
+    d = Dataset.from_csv_file "data/EPAFHM.csv"
+    d.compounds.each do |c|
+      refute_nil c.fp4
+    end
+    c = d.compounds[371]
+    #p c
+    p c.neighbors
+  end
+
 end
