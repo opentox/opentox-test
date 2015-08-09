@@ -85,6 +85,7 @@ class CompoundTest < MiniTest::Test
     d.compounds.each do |c|
       refute_nil c.fp4
     end
+    # TODO assert neighbor size
     c = d.compounds[371]
     #p c
     p c.neighbors
