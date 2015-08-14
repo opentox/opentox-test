@@ -418,7 +418,13 @@ class TBSPARQLTestExtended < MiniTest::Test
   def test_22_biosearch_json
     # check the json output for a bio search gene
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/biosearch", {:geneIdentifiers => "['entrez:3075']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
-    assert response.include?("Entrez:3075")
+    result = JSON.parse(response)
+    #puts response
+    gene = result["results"]["bindings"].map{|n| "#{n["gene"]}"}
+    assert_equal 200, response.code
+    assert gene.include?("Entrez:3075")
+    title = result["results"]["bindings"].map{|n| "#{n["title"]["value"]}"}
+    assert title.include?("p-value'High.24hr-Control.24hr'")
   end
 
   # delete investigation/{id}
