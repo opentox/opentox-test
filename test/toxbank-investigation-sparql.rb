@@ -326,7 +326,6 @@ class TBSPARQLTestExtended < MiniTest::Test
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_pvalue", {:value => "0.65614"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
     #puts response
-    result = JSON.parse(response)
     inv_pvalue = result["results"]["bindings"].map{|n| "#{n["investigation"]["value"]}"}
     assert_equal 200, response.code
     assert inv_pvalue.include?("#{@@uri}")
