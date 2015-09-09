@@ -321,7 +321,7 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert_equal 200, response.code
     assert inv_factor.include?("#{@@uri}")
   end
-
+=begin
   def test_16_investigation_by_pvalue
     response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_pvalue", {:value => "0.65614"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
     result = JSON.parse(response)
@@ -357,7 +357,7 @@ class TBSPARQLTestExtended < MiniTest::Test
     assert_equal 200, response.code
     assert inv_genes.include?("#{@@uri}")
   end
-
+=end
   def test_19_b_investigation_by_genes
     assert_raises OpenTox::BadRequestError do
       response = OpenTox::RestClientWrapper.get "#{$investigation[:uri]}/sparql/investigation_by_genes", {:geneIdentifiers => "['entrez3075', 'uniprot:P10809']"}, {:accept => "application/json", :subjectid => $pi[:subjectid]}
